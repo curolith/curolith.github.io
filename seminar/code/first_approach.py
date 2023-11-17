@@ -1,25 +1,60 @@
-def probability_for_color(character, box):
-	return box.count(character)/len(box)
-
-def calculate_combination_probability(combination, box):
-	probability = 1
-	for character in combination:
-		probability = probability * probability_for_color(character, box)
-	return probability
-
-def find_all_combinations(combination_length):
-	combinations = []
-	for i in range(0, 2**combination_length):
-		binary_suffix = (list(str(bin(i)))[2:])
-		#string representations of binary values have 0b in the first two locations		
-		binary_prefix = ['0'] * (combination_length - len(binary_suffix))
-		binary_representation = binary_prefix + binary_suffix
-		combination = map(
-			(lambda x : 'r' if x == '1' else 'b'), binary_representation)
-		combinations.append(list(combination))
-	return combinations
+import unittest
 
 
+def increment(n_ary_counter: list, base: int):
+    incremented = False
+    index = len(n_ary_counter) - 1
+    while not incremented:
+        if n_ary_counter[index] == base - 1:
+            index -= 1
+            if index < 0:
+                return
+        else:
+            n_ary_counter[index] += 1
+            for i in range(index + 1, len(n_ary_counter)):
+                n_ary_counter[i] = 0
+            incremented = True
+    return
 
-#print(find_all_combinations(5))
-#print(list(map(lambda x: calculate_combination_probability(x, ['r', 'b', 'b']), find_all_combinations(5))))
+
+def probability_for_item(item, box):
+    return box.count(item) / len(box)
+
+
+def first_approach(box: list, combination_length: int, collector=None):
+    if collector is None:
+        collector = []
+    different_types = list(set(box))
+    results = []
+    n_ary_counter = [0] * combination_length
+    base = len(different_types)
+    while len(results) < (base ** combination_length):
+        combination = [different_types[i] for i in n_ary_counter]
+        combination_probability = 1
+        for item in combination:
+            combination_probability *= probability_for_item(item, box)
+        item = [combination, combination_probability]
+        collector.append(item)
+        results.append(item)
+        increment(n_ary_counter, base)
+    return collector
+
+
+class TestFirstApproach(unittest.TestCase):
+
+    def test_count_adds_up_4(self):
+        for i in range(1, 4):
+            assert len(first_approach(['b', 'r', 'r', 't', 'k'], i)) == 4 ** i, "Number of combinations did not match " \
+                                                                                "for length: " + str(i)
+
+    def test_count_adds_up_7(self):
+        for i in range(1, 4):
+            assert len(first_approach(['b', 'r', 'r', 't', 'k', 'x', 'y', 'z'], i)) == 7 ** i, "Number of " \
+                                                                                               "combinations did not " \
+                                                                                               "match " \
+                                                                                               "for length: " + str(i)
+
+    def test_first_approach(self):
+        print("testing first approach...\n")
+        for line in first_approach(['b', 'r', 'r', 't', 'k'], 3):
+            print(line)
