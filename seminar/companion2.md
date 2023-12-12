@@ -1,6 +1,6 @@
 # Functional Programming - Second Look
 
-[pseudocode](https://github.com/seminar/code/pseudocode.java)
+[pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
 
 # Sources
 
