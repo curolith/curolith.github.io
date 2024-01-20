@@ -132,7 +132,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    border-radius: 40%;
+    border-radius: 45%;
     z-index: 1; 
     transform-origin: center center;
     animation: round3 15s linear infinite;
@@ -161,7 +161,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    border-radius: 30%;
+    border-radius: 50%;
     z-index: 1; 
     transform-origin: center center;
     animation: round4 15s linear infinite;
