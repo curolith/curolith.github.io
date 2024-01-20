@@ -181,8 +181,10 @@
         transform: translate(-50%, -50%) rotate(-360deg);
     }
 }
+
+/*
 .css-loader5 {
-    width: 10vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    width: 10vmax; /*this makes edges round and hence circle (only when square format)
     height: 10vmax;
     transform: translate(-50%, -50%);
     background: black;
@@ -209,3 +211,4 @@
         transform: translate(-50%, -50%) rotate(360deg);
     }
 }
+*/
