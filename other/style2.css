@@ -95,8 +95,8 @@
 
 
 .css-loader2 {
-    width: 40vmax; /*this makes edges round and hence circle (only when square format)*/ 
-    height: 40vmax;
+    width: 45vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 45vmax;
     transform: translate(-50%, -50%);
     background: black;
     position: absolute;
@@ -125,8 +125,8 @@
 
 
 .css-loader3 {
-    width: 30vmax; /*this makes edges round and hence circle (only when square format)*/ 
-    height: 30vmax;
+    width: 40vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 40vmax;
     transform: translate(-50%, -50%);
     background: black;
     position: absolute;
@@ -154,8 +154,8 @@
 }
 
 .css-loader4 {
-    width: 20vmax; /*this makes edges round and hence circle (only when square format)*/ 
-    height: 20vmax;
+    width: 35vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 35vmax;
     transform: translate(-50%, -50%);
     background: black;
     position: absolute;
