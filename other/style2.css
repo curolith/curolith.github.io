@@ -154,8 +154,8 @@
 }
 
 .css-loader4 {
-    width: 35vmax; /*this makes edges round and hence circle (only when square format)*/ 
-    height: 35vmax;
+    width: 38vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 38vmax;
     transform: translate(-50%, -50%);
     background: black;
     position: absolute;
