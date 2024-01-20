@@ -1,0 +1,211 @@
+.gradient-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 141.42vmax; /* sqrt(2) * 100% */
+    height: 141.42vmax; /* sqrt(2) * 100% */
+    transform: translate(-50%, -50%) rotate(0deg); /* Center and initial rotation */
+    transform-origin: center; /* Set transform origin to center */
+    animation: fadeBackground 20s linear infinite;
+    z-index: -1;
+}
+
+.gradient-box::before,
+.gradient-box::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    animation: fadeInOut 20s linear infinite;
+}
+
+.gradient-box::before {
+    background: linear-gradient(rgb(0, 0, 0), rgb(69, 0, 0), rgb(159, 0, 0));
+    animation-delay: -5s;
+}
+
+.gradient-box::after {
+    background: linear-gradient(rgb(46, 0, 0), rgb(21, 0, 66), rgb(4, 0, 119));
+    animation-delay: -15s;
+}
+
+@keyframes fadeBackground {
+    0%, 100% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    50% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    25%, 75% { opacity: 1; }
+}
+
+
+.text {
+    font-size: xx-large;
+    color: white;
+    background: none;
+    text-align: center center justify;
+}
+
+
+.css-loader {
+    width: 50vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 50vmax;
+    transform: translate(-50%, -50%);
+    background: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    z-index: 1; 
+    transform-origin: center center;
+    animation: round 15s linear infinite;
+    border: 1px ridge rgba(167, 167, 167, 0.19);
+    background:  rgba(167, 167, 167, 0.033);
+    backdrop-filter: blur(7.6px);
+    -webkit-backdrop-filter: blur(7.6px);
+
+
+
+    /*
+
+
+    box-sizing: border-box;
+    
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.13);
+ 
+    margin: 0;
+
+
+    */
+}
+@keyframes round {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+
+.css-loader2 {
+    width: 40vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 40vmax;
+    transform: translate(-50%, -50%);
+    background: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 45%;
+    z-index: 1; 
+    transform-origin: center center;
+    animation: round2 15s linear infinite;
+    border: 1px ridge rgba(167, 167, 167, 0.19);
+    background:  rgba(167, 167, 167, 0.033);
+    backdrop-filter: blur(7.6px);
+    -webkit-backdrop-filter: blur(7.6px);
+}
+
+
+
+@keyframes round2 {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(-360deg);
+    }
+}
+
+
+.css-loader3 {
+    width: 30vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 30vmax;
+    transform: translate(-50%, -50%);
+    background: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 40%;
+    z-index: 1; 
+    transform-origin: center center;
+    animation: round3 15s linear infinite;
+    border: 1px ridge rgba(167, 167, 167, 0.19);
+    background:  rgba(167, 167, 167, 0.033);
+    backdrop-filter: blur(7.6px);
+    -webkit-backdrop-filter: blur(7.6px);
+}
+
+
+
+@keyframes round3 {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+.css-loader4 {
+    width: 20vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 20vmax;
+    transform: translate(-50%, -50%);
+    background: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 30%;
+    z-index: 1; 
+    transform-origin: center center;
+    animation: round4 15s linear infinite;
+    border: 1px ridge rgba(167, 167, 167, 0.19);
+    background:  rgba(167, 167, 167, 0.033);
+    backdrop-filter: blur(7.6px);
+    -webkit-backdrop-filter: blur(7.6px);
+}
+
+
+
+@keyframes round4 {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(-360deg);
+    }
+}
+.css-loader5 {
+    width: 10vmax; /*this makes edges round and hence circle (only when square format)*/ 
+    height: 10vmax;
+    transform: translate(-50%, -50%);
+    background: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 20%;
+    z-index: 1; 
+    transform-origin: center center;
+    animation: round5 15s linear infinite;
+    border: 1px ridge rgba(167, 167, 167, 0.19);
+    background:  rgba(167, 167, 167, 0.033);
+    backdrop-filter: blur(7.6px);
+    -webkit-backdrop-filter: blur(7.6px);
+}
+
+
+
+@keyframes round5 {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
