@@ -11,6 +11,7 @@ h1 {
 </style>
 
 
+
 <script type="text/javascript" charset="utf-8" 
 src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,
 https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
@@ -18,6 +19,8 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 
 # Functional Programming - Second Look
 
+
+# Functional Programming - Second Look
 
 ## [pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
 
