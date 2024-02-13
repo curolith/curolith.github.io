@@ -4,10 +4,14 @@
 #- jekyll-remote-theme
 
 #logo: /images/logo.jpg
-title: Compainion
 
-baseurl: "/seminar/companion2"
+theme: minima
 
-header_pages: seminar/companion2.
+title: Companion 2
+
+baseurl: "./seminar/companion2"
+
+header_pages: seminar/companion2.md
 
 categories: markdown
+
