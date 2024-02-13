@@ -1,3 +1,12 @@
+---
+layout: 
+---
+
+
+{% include navigation.html %}
+{% exclude banner.html %}
+
+
 <script type="text/javascript" charset="utf-8" 
 src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,
 https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
@@ -42,9 +51,3 @@ $\textbf{Score of a path}$: Sum of weights of the edges in its list.
 - Schmidt, D. and Schmidt, M. (2022). Algorithmen und Datenstrukturen. [online] Heinrich-Heine-Universität Düsseldorf. Available at: <https://ilias.hhu.de/goto.php?target=file_1567461_download&client_id=UniRZ> [Accessed 8 Dec. 2023]. 
 
 - Skript zur Vorlesung.WikiDiff. (2017). Memorize vs Memoize - What’s the difference? [online] Available at: <https://wikidiff.com/memoize/memorize> [Accessed 8 Dec. 2023].
-
-
-
-
-</body>
-</html>
