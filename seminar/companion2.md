@@ -4,13 +4,8 @@ title: Companion 2
 categories: markdown
 ---
 
-<header>
-
-  
-</header>
-
 <style>
-header {
+h1 {
     display: none;
 }
 </style>
