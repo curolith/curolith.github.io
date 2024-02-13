@@ -4,6 +4,9 @@ title: Companion 2
 categories: markdown
 ---
 
+<header>
+  <!-- TL;DR -->
+</header>
 
 <script type="text/javascript" charset="utf-8" 
 src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,
@@ -18,7 +21,7 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 ## Tourism in Manhattan
 ### Definitions
 
-$\textbf{Ordered}$: knowledge assumed (important: ordered $\neq$ sorted)
+$\textbf{Ordered}$: knowledge assumed (important: **ordered $\neq$ sorted**)
 
 $\textbf{Graph}$: Tuple $G = (N, E)$ where $N$ is the set of Nodes (intersections) and $E$ is the set of Edges
 
