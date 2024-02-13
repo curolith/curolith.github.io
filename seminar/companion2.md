@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Companion 2
+categories: markdown
 ---
 
 
