@@ -8,7 +8,9 @@ categories: markdown
 src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,
 https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 
+<scrypt>
 * <newline> {:toc}
+</scrypt>
 
 
 ## [pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
