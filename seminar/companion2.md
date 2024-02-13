@@ -5,7 +5,9 @@ categories: markdown
 ---
 
 <style>
-a {
+@import "{{ site.theme }}";
+
+header {
     display: none;
 }
 </style>
