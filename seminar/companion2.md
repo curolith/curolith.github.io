@@ -1,10 +1,10 @@
 # Functional Programming - Second Look
 
 
-# [pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
+## [pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
 
-# Tourism in Manhattan
-## Definitions
+## Tourism in Manhattan
+### Definitions
 
 $\textbf{Ordered}$: knowledge assumed (important: ordered $\neq$ sorted)
 
@@ -22,7 +22,7 @@ $\textbf{Path}$: List $P$ of Edges $(a_i, b_i)$ where $b_i = a_{i+1}$
 
 $\textbf{Score of a path}$: Sum of weights of the edges in its list.
 
-# Sources
+## Sources
 
 - Abramov, D. (n.d.). What the fuck is memoization? ・ Dan’s JavaScript Glossary. [online] whatthefuck.is. Available at: <https://whatthefuck.is/memoization> [Accessed 8 Dec. 2023].
 

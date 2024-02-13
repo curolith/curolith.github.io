@@ -3,12 +3,7 @@ title: "Folio"
 author: Tim Eulenberg
 ---
 
-
-# Welcome
-
-My name is Tim Eulenberg. 
-
-This page is still under construction.
+This page is under construction.
 
 ```
 ⢀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⣠⣤⣶⣶
