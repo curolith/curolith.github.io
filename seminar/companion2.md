@@ -1,11 +1,10 @@
 ---
-layout: 
+layout: default
+title: Companion 2
 ---
 
 
 {% include navigation.html %}
-{% exclude banner.html %}
-
 
 <script type="text/javascript" charset="utf-8" 
 src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,
