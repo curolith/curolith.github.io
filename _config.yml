@@ -5,13 +5,4 @@
 
 #logo: /images/logo.jpg
 
-theme: minima
-
-title: Companion 2
-
-baseurl: "./seminar/companion2"
-
-header_pages: seminar/companion2.md
-
-categories: markdown
 
