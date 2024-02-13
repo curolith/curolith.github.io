@@ -1,18 +1,26 @@
 # Functional Programming - Second Look
 
 
-[pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
+# [pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
 
 # Tourism in Manhattan
 ## Definitions
-- $\textbf{Ordered}$: knowledge assumed (important: ordered $\neq$ sorted)
-- $\textbf{Graph}$: Tuple $G = (N, E)$ where $N$ is the set of Nodes (intersections) and $E$ is the set of Edges
-- $\textbf{Node}$: includes a Set of outward edges
-- $\textbf{Edge}$: Tuple $(a, b)$ where $a$ and $b$ are connected Nodes
-- $\textbf{Weighted edge}$: Edge $(a, b, w)$ where $w$ is the weight value
-- $\textbf{Directed edge}$: Edge $(a, b)$ where $(a, b) \neq (b, a)$ (ordered)
-- $\textbf{Path}$: List $P$ of Edges $(a_i, b_i)$ where $b_i = a_{i+1}$ 
-- $\textbf{Score of a path}$: Sum of weights of the edges in its list.
+
+$\textbf{Ordered}$: knowledge assumed (important: ordered $\neq$ sorted)
+
+$\textbf{Graph}$: Tuple $G = (N, E)$ where $N$ is the set of Nodes (intersections) and $E$ is the set of Edges
+
+$\textbf{Node}$: includes a Set of outward edges
+
+$\textbf{Edge}$: Tuple $(a, b)$ where $a$ and $b$ are connected Nodes
+
+$\textbf{Weighted edge}$: Edge $(a, b, w)$ where $w$ is the weight value
+
+$\textbf{Directed edge}$: Edge $(a, b)$ where $(a, b) \neq (b, a)$ (ordered)
+
+$\textbf{Path}$: List $P$ of Edges $(a_i, b_i)$ where $b_i = a_{i+1}$ 
+
+$\textbf{Score of a path}$: Sum of weights of the edges in its list.
 
 # Sources
 
