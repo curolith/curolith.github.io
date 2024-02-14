@@ -4,11 +4,8 @@ title: Companion 2
 categories: markdown
 ---
 
-<script type="text/javascript" charset="utf-8" 
-src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,
-https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 
-## [pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
+
 
 * TOC <newline>
 {:toc}
@@ -31,6 +28,26 @@ $\textbf{Directed edge}$: Edge $(a, b)$ where $(a, b) \neq (b, a)$ (ordered)
 $\textbf{Path}$: List $P$ of Edges $(a_i, b_i)$ where $b_i = a_{i+1}$ 
 
 $\textbf{Score of a path}$: Sum of weights of the edges in its list.
+
+
+
+
+
+
+
+### File with collected pseudocode
+
+[pseudocode](https://github.com/curolith/curolith.github.io/blob/main/seminar/code/pseudocode.java)
+
+
+### Pseudocode
+
+```java
+public static void main(String args) {
+    System.out.println("hello World");
+}
+```
+
 
 ## Sources
 
