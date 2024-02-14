@@ -8,7 +8,7 @@ categories: markdown
 src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,
 https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 
-
+# Dynamic Programming - Second Look
 
 * TOC <newline>
 {:toc}
