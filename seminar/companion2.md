@@ -2,6 +2,7 @@
 layout: default
 title: Companion 2
 categories: markdown
+obsidianshare: "true"
 ---
 
 <script type="text/javascript" charset="utf-8" 
@@ -14,6 +15,7 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 {:toc}
 
 ## Tourism in Manhattan
+....
 
 ### Definitions
 
