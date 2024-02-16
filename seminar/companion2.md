@@ -31,16 +31,42 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 
 ### Definitions
 
-- $\textbf{Graph}$: $G = (N, E, w)$, where
+- $\textbf{Weighted graph}$: $G = (N, E, w)$, where
 	- $N$ is a set of Nodes
 	- $E$ is a set of Edges
 	- $w$ is a function mapping each edge to a weight.
 - $\textbf{Node}$: unique element $n \in N$ 
 - $\textbf{Edge}$: $e = (u, v)$ where $e \in E$ and $u, v \in N$ 
-- Function $w: E \to \mathbb{N}$ (can be implemented in constant time, see [below](https://curolith.github.io/seminar/companion2#constant-function))
+- Function $w: E \to \mathbb{N}$ (can be implemented in constant time, see example [below](https://curolith.github.io/seminar/companion2#constant-function))
 - $\textbf{Path}$: Ordered set $P \subset E$ where $\forall e_i = (u_i, v_i) \in P, i > 1, i \in \mathbb{N} \in P: (u_{i} = v_{i-1})$
 - $\textbf{Score of a path}$: $\sum_{e \in P} w(e)$
 - $\textbf{Max score path}$:  $max\left(\sum_{e \in P} w\left(e\right)\right), P \subset E$
+
+### Constant time weight function
+
+To give an example of how the weight function can be implemented with constant time, consider the Graph:
+$G = (N, E, w)$
+$N = {1, 2, 3}$
+$E = {(1, 2), (1, 3), (2, 3)}$
+with the edge weights:
+$w(1, 2)=0$
+$w(1,3)=1$
+$w(2,3)=1$
+
+assume the weights are stored in a two dimensional array:
+```python
+weights = [
+	#from   1  2  3 to:
+		   [0, 0, 0],#  1
+		   [0, 0, 1],#  2
+		   [0, 1, 0],#  3
+]
+
+def w(u, v):
+	weights[v][w]
+#   note that v and w are inverted because of the
+#   subarray access order.
+```
 
 ### Pseudocode
 
