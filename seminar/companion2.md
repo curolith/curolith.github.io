@@ -8,11 +8,10 @@ obsidianshare: "true"
 
 
 
-```
+
 <script type="text/javascript" charset="utf-8" 
 src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,
 https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
-```
 
 
 
@@ -22,10 +21,9 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 # Contents
 
 
-```
+
 * TOC 
 {:toc}
-```
 
 
 ## Tourism in Manhattan
@@ -33,22 +31,16 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 
 ### Definitions
 
-$\textbf{Ordered}$: knowledge assumed (important: **ordered $\neq$ sorted**)
-
-$\textbf{Graph}$: Tuple $G = (N, E)$ where $N$ is the set of Nodes (intersections) and $E$ is the set of Edges
-
-$\textbf{Node}$: includes a Set of outward edges
-
-$\textbf{Edge}$: Tuple $(a, b)$ where $a$ and $b$ are connected Nodes
-
-$\textbf{Weighted edge}$: Edge $(a, b, w)$ where $w$ is the weight value
-
-$\textbf{Directed edge}$: Edge $(a, b)$ where $(a, b) \neq (b, a)$ (ordered)
-
-$\textbf{Path}$: List $P$ of Edges $(a_i, b_i)$ where $b_i = a_{i+1}$ 
-
-$\textbf{Score of a path}$: Sum of weights of the edges in its list.
-
+- $\textbf{Graph}$: $G = (N, E, w)$, where
+	- $N$ is a set of Nodes
+	- $E$ is a set of Edges
+	- $w$ is a function mapping each edge to a weight.
+- $\textbf{Node}$: unique element $n \in N$ 
+- $\textbf{Edge}$: $e = (u, v)$ where $e \in E$ and $u, v \in N$ 
+- Function $w: E \to \mathbb{N}$ (can be implemented in constant time, see [below](https://curolith.github.io/seminar/companion2#constant-function))
+- $\textbf{Path}$: Ordered set $P \subset E$ where $\forall e_i = (u_i, v_i) \in P, i > 1, i \in \mathbb{N} \in P: (u_{i} = v_{i-1})$
+- $\textbf{Score of a path}$: $\sum_{e \in P} w(e)$
+- $\textbf{Max score path}$:  $max\left(\sum_{e \in P} w\left(e\right)\right), P \subset E$
 
 ### Pseudocode
 
