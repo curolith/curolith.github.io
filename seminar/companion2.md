@@ -29,8 +29,9 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 ## Tourism in Manhattan
 
 
-### Definitions
+### Definitions 
 
+#### Problem 
 - $\textbf{Weighted graph}$: $G = (N, E, w)$, where
 	- $N$ is a set of Nodes
 	- $E$ is a set of Edges
@@ -56,7 +57,7 @@ $w(2,3)=1$
 assume the weights are stored in a two dimensional array:
 ```python
 weights = [
-	#from   1  2  3 to:
+		#from   1  2  3 to:
 		   [0, 0, 0],#  1
 		   [0, 0, 1],#  2
 		   [0, 1, 0],#  3
