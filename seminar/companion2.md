@@ -56,7 +56,7 @@ $w(2,3)=1$
 
 assume the weights are stored in a two dimensional array:
 ```python
-weights = [#from
+weights = [#   from:
 		   #1  2  3    to:
 		   [0, 0, 0],#  1
 		   [0, 0, 1],#  2
