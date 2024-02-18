@@ -43,8 +43,7 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 	- $w$ is a function mapping each edge to a weight. (number of attractions)    
 - $\textbf{Node}$: $a = (i, j) \in N$   
 - $\textbf{Edge}$: $e = (a, b) \in E$, where $a, b \in N$   
-- Function $w: E \to \mathbb{N}, w((a, b)) = w(((i_{a}, j_{a}), (i_{b}, j_{b})))$, where $a, b \in N$    
-	(can be implemented in constant time, see [below](https://curolith.github.io/seminar/companion2#constant-time-weight-function))  
+- Function $w: E \to \mathbb{N}, w((a, b)) = w(((i_{a}, j_{a}), (i_{b}, j_{b})))$, where $a, b \in N$ (can be implemented in constant time, see [below](https://curolith.github.io/seminar/companion2#constant-time-weight-function))  
 - $\textbf{Path}$: Sequence $P \subset E$ where $\forall a, b \in P, \space a = P_i, \space b = P_{i+1}$:    
 		$b$ is either one column to the right of $a$:    
 			$b = (i_a, \space j_a+1)$     
