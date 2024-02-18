@@ -61,14 +61,14 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 ### Constant time weight function
 
 To give an example of how the weight function can be implemented with constant time, consider the Graph
-: $G = (N, E, w)$
-: $N = {1, 2, 3}$
-: $E = {(1, 2), (1, 3), (2, 3)}$  
+	: $G = (N, E, w)$
+	: $N = {1, 2, 3}$
+	: $E = {(1, 2), (1, 3), (2, 3)}$  
 
-with the edge weights:  
-	$w(1, 2)=0$  
-	$w(1,3)=1$  
-	$w(2,3)=1$
+with the edge weights  
+	: $w(1, 2)=0$  
+	: $w(1,3)=1$  
+	: $w(2,3)=1$
 
 
 assume the weights are stored in a two dimensional array:
