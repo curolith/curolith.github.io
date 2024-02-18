@@ -60,9 +60,9 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 
 ### Constant time weight function
 
-To give an example of how the weight function can be implemented with constant time, consider the Graph:  
-:$G = (N, E, w)$  
-:$N = {1, 2, 3}$  
+To give an example of how the weight function can be implemented with constant time, consider the Graph:
+:$G = (N, E, w)$
+:$N = {1, 2, 3}$
 :$E = {(1, 2), (1, 3), (2, 3)}$  
 
 with the edge weights:  
