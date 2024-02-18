@@ -67,8 +67,8 @@ To give an example of how the weight function can be implemented with constant t
 
 with the edge weights
 : $w(1, 2)=0$  
-: : $w(1,3)=1$  
-: : : $w(2,3)=1$
+:: $w(1,3)=1$  
+::: $w(2,3)=1$
 
 
 assume the weights are stored in a two dimensional array:
