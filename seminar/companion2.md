@@ -32,16 +32,27 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 ### Definitions 
 
 #### Problem 
-- $\textbf{Weighted graph}$: $G = (N, E, w)$, where
-	- $N$ is a set of Nodes
-	- $E$ is a set of Edges
-	- $w$ is a function mapping each edge to a weight.
-- $\textbf{Node}$: unique element $n \in N$ 
-- $\textbf{Edge}$: $e = (u, v)$ where $e \in E$ and $u, v \in N$ 
-- Function $w: E \to \mathbb{N}$ (can be implemented in constant time, see example [below](https://curolith.github.io/seminar/companion2#constant-function))
-- $\textbf{Path}$: Ordered set $P \subset E$ where $\forall e_i = (u_i, v_i) \in P, i > 1, i \in \mathbb{N} \in P: (u_{i} = v_{i-1})$
-- $\textbf{Score of a path}$: $\sum_{e \in P} w(e)$
-- $\textbf{Max score path}$:  $max\left(\sum_{e \in P} w\left(e\right)\right), P \subset E$
+- $\textbf{Graph}$: $G = (N, E, w)$, where
+	- $N$ is a set of Nodes $(i, j)$
+	- $E$ is a set of Edges $(n, m)$ with according to the rules:
+		$m$ being either one column to the right of $n$:
+			$m = (i_n, \space j_n+1)$ 
+		or one row below $n$:
+			$m = (i_n + 1, \space j_n)$
+	- $w$ is a function mapping each edge to a weight. (number of attractions)
+- $\textbf{Node}$: $n = (i, j) \in N$ 
+- $\textbf{Edge}$: $e = (a, b) \in E$, where $a, b \in N$ 
+- Function $w: E \to \mathbb{N}, w(a, b) = w((i_{a}, j_{a}), (i_{b}, j_{b}))$, where $a, b \in N$
+	(can be implemented in constant time, see [below](https://curolith.github.io/seminar/companion2#constant-time-weight-function))
+- $\textbf{Path}$: Sequence $P \subset E$ where $\forall e_{i}, e_{i+1} \in P:$
+		$e_{i+1}$ is either one column to the right of $e_{i}$:
+			$m = (i_n, \space j_n+1)$ 
+		or one row below $e_{i}$:
+			$m = (i_n + 1, \space j_n)$
+	- $e_{1}=(0,0)$ (start is top left)
+	- $e_{max}  = (i_{max}, j_{max})$
+- $\textbf{Score of a path}$: $\sum_{e \in P} w(e)$ (stop is bottom right)
+- $\textbf{Max score path}$:  $max\left(\sum_{e \in P} w\left(e\right)\right), \space P \subset E$
 
 ### Constant time weight function
 
