@@ -33,44 +33,44 @@ https://vincenttam.github.io/javascripts/MathJaxLocal.js"></script>
 
 #### Problem 
 
-- $\textbf{Graph}$: $G = (N, E, w)$, where
-	- $N$ is a set of Nodes $(i, j)$
-	- $E$ is a set of Edges $(a, b)$ with according to the rules:
-		$m$ being either one column to the right of $a$:
-			$b = (i_a, \space j_a+1)$ 
-		or one row below $n$:
-			$b = (i_a + 1, \space j_a)$
-	- $w$ is a function mapping each edge to a weight. (number of attractions)
+- $\textbf{Graph}$: $G = (N, E, w)$, where  
+	- $N$ is a set of Nodes $(i, j)$  
+	- $E$ is a set of Edges $(a, b)$ with according to the rules:  
+		$m$ being either one column to the right of $a$:  
+			$b = (i_a, \space j_a+1)$   
+		or one row below $n$:  
+			$b = (i_a + 1, \space j_a)$  
+	- $w$ is a function mapping each edge to a weight. (number of attractions)  
 - $\textbf{Node}$: $a = (i, j) \in N$ 
 - $\textbf{Edge}$: $e = (a, b) \in E$, where $a, b \in N$ 
-- Function $w: E \to \mathbb{N}, w((a, b)) = w(((i_{a}, j_{a}), (i_{b}, j_{b})))$, where $a, b \in N$
+- Function $w: E \to \mathbb{N}, w((a, b)) = w(((i_{a}, j_{a}), (i_{b}, j_{b})))$, where $a, b \in N$  
 	(can be implemented in constant time, see [below](https://curolith.github.io/seminar/companion2#constant-time-weight-function))
-- $\textbf{Path}$: Sequence $P \subset E$ where $\forall a, b \in P, \space a = P_i, \space b = P_{i+1}$:
-		$b$ is either one column to the right of $a$:
-			$b = (i_a, \space j_a+1)$ 
-		or one row below $a$:
-			$b = (i_a + 1, \space j_a)$
-	- $P_{1}=(0,0)$ (start is top left)
-	- $P_{max} = (i_{max}, j_{max})$  (stop is bottom right)
-- $\textbf{Score of a path}$: Function $s: P \rightarrow \mathbb{N}, \space s(P) = \sum_{e \in P} w(e)$
-- $\textbf{Max score path}$: Path $P \subset E : s(P) = max(s(Q))$, where $Q$ is any Path in $E$ 
-	- subset, meaning there can be multiple maximising paths with equal scores
-	- The problem is to find one of these maximising paths
+- $\textbf{Path}$: Sequence $P \subset E$ where $\forall a, b \in P, \space a = P_i, \space b = P_{i+1}$:  
+		$b$ is either one column to the right of $a$:  
+			$b = (i_a, \space j_a+1)$   
+		or one row below $a$:  
+			$b = (i_a + 1, \space j_a)$  
+	- $P_{1}=(0,0)$ (start is top left)  
+	- $P_{max} = (i_{max}, j_{max})$  (stop is bottom right)  
+- $\textbf{Score of a path}$: Function $s: P \rightarrow \mathbb{N}, \space s(P) = \sum_{e \in P} w(e)$  
+- $\textbf{Max score path}$: Path $P \subset E : s(P) = max(s(Q))$, where $Q$ is any Path in $E$   
+	- subset, meaning there can be multiple maximising paths with equal scores  
+	- The problem is to find one of these maximising paths  
 
 
 
 ### Constant time weight function
 
-To give an example of how the weight function can be implemented with constant time, consider the Graph:
-$G = (N, E, w)$
-$N = {1, 2, 3}$
-$E = {(1, 2), (1, 3), (2, 3)}$
-with the edge weights:
-$w(1, 2)=0$
-$w(1,3)=1$
-$w(2,3)=1$
+To give an example of how the weight function can be implemented with constant time, consider the Graph:  
+	$G = (N, E, w)$  
+	$N = {1, 2, 3}$  
+	$E = {(1, 2), (1, 3), (2, 3)}$  
+with the edge weights:  
+	$w(1, 2)=0$  
+	$w(1,3)=1$  
+	$w(2,3)=1$  
 
-assume the weights are stored in a two dimensional array:
+assume the weights are stored in a two dimensional array:  
 ```python
 weights = [#   from:
 		   #1  2  3    to:
