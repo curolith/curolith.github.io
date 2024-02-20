@@ -260,7 +260,7 @@ for i = 1 ... n: #one dependency on n -> O(n)
 
 - Cormen, T.H., Charles Eric Leiserson, Rivest, R.L., Stein, C. and Al, E. (2009). _Introduction to algorithms_. MIT Press.
 
-- Demaine, E. (2011). _Lecture 19: Dynamic Programming I: Fibonacci, Shortest Paths | Introduction to Algorithms | Electrical Engineering and Computer Science_. [online] MIT OpenCourseWare. Available at: https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/lecture-19-dynamic-programming-i-fibonacci-shortest-paths/ [Accessed 8 Dec. 2023].
+- Demaine, E. (2011). _Lecture 19: Dynamic Programming I: Fibonacci, Shortest Paths - Introduction to Algorithms - Electrical Engineering and Computer Science_. [online] MIT OpenCourseWare. Available at: https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/resources/lecture-19-dynamic-programming-i-fibonacci-shortest-paths/ [Accessed 8 Dec. 2023].
 
 - Holländer, B. (2020). _Understanding Combinatorics: Number of Paths on a Grid_. [online] Medium. Available at: https://towardsdatascience.com/understanding-combinatorics-number-of-paths-on-a-grid-bddf08e28384 [Accessed 8 Dec. 2023].
 
