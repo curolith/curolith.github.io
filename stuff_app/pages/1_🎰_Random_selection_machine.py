@@ -2,6 +2,7 @@ import random
 
 import cachetools
 import streamlit as st
+import pyperclip
 
 st.set_page_config(page_title="Random Selection Machine", page_icon=":slot_machine:")
 
@@ -69,7 +70,22 @@ def even_dist(n, i):
 
 
 def fill(n, i):
-    boxes = [[] * n]
+    elements = st.session_state.elements.copy()
+    boxes = [[] for j in range(0, n)]
+    print(boxes)
+    c_box = 0
+    while len(elements) > 0 and c_box < n:
+        print(len(elements), len(boxes[c_box]), print(c_box))
+        boxes[c_box].append(elements.pop(random.randint(0, len(elements) - 1)))
+
+        if len(boxes[c_box]) == i:
+            c_box = c_box + 1
+
+    st.session_state.distribution = boxes
+    if len(elements) > 0:
+        st.session_state.remaining = elements
+    else:
+        st.session_state.remaining = []
 
 
 
@@ -115,11 +131,12 @@ with st.container():
 
         with col3:
             d_even_dist = st.toggle("Distribute evenly")
-    st.button("Random Selection", on_click=random_selection(n_elements, i_size, d_even_dist))
+    st.button("Randomize", on_click=random_selection(n_elements, i_size, d_even_dist), type='primary')
 
 print(n_elements, i_size, d_even_dist)
 
-st.divider()
+if len(st.session_state.distribution) > 0:
+    st.divider()
 
 with st.container():
 
@@ -136,7 +153,7 @@ with st.container():
             if len(st.session_state.remaining) > 0:
                 tripple_dist[iter_index].append(['Remaining', st.session_state.remaining])
         else:
-            tripple_dist[iter_index].append([f"Group {counter}", boxes.pop()])
+            tripple_dist[iter_index].append([f"Group {counter}", boxes.pop(0)])
             counter = counter+1
             if iter_index == 2:
                 iter_index = 0
@@ -168,3 +185,13 @@ with st.container():
                 st.write(element_map[0])
                 for elitem in element_map[1]:
                     st.button(elitem, key=key_gen())
+
+
+
+if len(st.session_state.distribution) > 0:
+    st.divider()
+    st.write("Click the icon on the right to copy the selection:")
+    st.code(st.session_state.distribution + st.session_state.remaining)
+
+
+
