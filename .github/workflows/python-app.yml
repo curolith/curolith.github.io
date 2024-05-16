@@ -43,7 +43,7 @@ jobs:
           module_name = filename[:-3]
           try:
             module = __import__(module_name)
-             module.main()
+            module.main()
           except Exception as e:
             print(f'Exception occurred while running main method in {module_name}:', e)
             exit(1)
