@@ -1,7 +1,3 @@
----
-title: "Folio"
-author: Tim Eulenberg
----
 
 This page is under construction.
 
