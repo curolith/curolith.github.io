@@ -25,7 +25,8 @@
               href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/styles/default.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/highlight.min.js"></script>
 
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
+        <link rel="icon"
+              href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
         <style>
 
 
@@ -292,7 +293,6 @@
 
         function createTextField() {
             return createDiv("text-field").apply(textField => {
-                textField.innerHTML = `I am Text: ${textField.id}`;
                 textField.contentEditable = 'true';
             });
         }
@@ -361,11 +361,16 @@
         function ensureAny() {
             const container = document.querySelector('#cell-container');
             if (container.childElementCount === 0) {
-                container.append(createCodeCell(
-                    "const greeting = \"Hello\";\n" +
-                    "global.planet = \"Saturn\"; // global is available to all cells\n" +
-                    "console.log(`${greeting} ${global.planet}!`);"
-                ).apply(highlightCell));
+                container.append((document.configData?.demoCodeFilledOnce ?
+                    createCodeCell() :
+                    (() => {
+                        document.configData = {demoCodeFilledOnce: true};
+                        return createCodeCell(
+                            "const greeting = \"Hello\";\n" +
+                            "global.planet = \"Saturn\"; // global is available to all cells\n" +
+                            "console.log(`${greeting} ${global.planet}!`);"
+                        )
+                    })()).apply(highlightCell));
             }
         }
 
