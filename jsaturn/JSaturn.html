@@ -487,7 +487,7 @@
                 if (lastSave) {
                     JSaturnStorage.restoreState();
                 } else {
-                    JSaturnDataModel.deserialize(JSON.parse(`{"persistenceKey":"root-container","data":{"children":[{"persistenceKey":"cell-container","data":{"children":[{"persistenceKey":"text-cell","data":"This is a text cell. Default formatting is supported:<br>- <b>CTRL + B</b><br>- <i>CTRL&nbsp; + I</i><br>- <u>CTRL + U</u>"},{"persistenceKey":"code-cell","data":"const greeting = \\"Hello\\";\\nglobal.planet = \\"Saturn\\"; // global is available to all cells\\nconsole.log(\`${greeting} ${global.planet}!\`);"}]}}]}}`))
+                    JSaturnDataModel.deserialize(JSON.parse('{"persistenceKey":"root-container","data":{"children":[{"persistenceKey":"cell-container","data":{"children":[{"persistenceKey":"text-cell","data":"This is a text cell. Default formatting is supported:<br>- <b>CTRL + B</b><br>- <i>CTRL&nbsp; + I</i><br>- <u>CTRL + U</u>"},{"persistenceKey":"code-cell","data":"const greeting = \\"Hello\\";\\nglobal.planet = \\"Saturn\\"; // global is available to all cells\\nconsole.log(\`${greeting} ${global.planet}!\`);"}]}}]}}'))
                 }
             }
 
