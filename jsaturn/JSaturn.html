@@ -430,6 +430,10 @@
         }
 
         function init() {
+            const lastSave = load('lastSave');
+            if(lastSave) {
+                restoreState();
+            }
             ensureAny();
         }
 
@@ -576,6 +580,12 @@
             return [...persistenceElement.children].map(serializeJSaturnElement).filter(Boolean);
         }
 
+        function serializeFromRoot() {
+            // TODO rename to: root-container
+            const root = document.querySelector('#book-container')
+            return serializeJSaturnElement(root);
+        }
+
         function store(storable) {
             if (!storable.key) {
                 log(
@@ -585,11 +595,11 @@
                     storable
                 )
             }
-            localStorage.setItem(storable.key, storable.data);
+            localStorage.setItem(storable.key, JSON.stringify(storable.data));
         }
 
         function load(key) {
-            return localStorage.getItem(key);
+            return JSON.parse(localStorage.getItem(key));
         }
 
         function deleteStored(key) {
@@ -603,6 +613,23 @@
                 storedItems[key] = localStorage.getItem(key);
             }
             return storedItems;
+        }
+
+        function saveState() {
+            const serializedData = serializeFromRoot();
+            store({
+                key: 'jSaturnRootData',
+                data: serializedData
+            });
+            store({
+                key: 'lastSave',
+                data: Date.now()
+            })
+        }
+
+        function restoreState() {
+            const serializedData = load('jSaturnRootData');
+            deserializeJSaturnData(serializedData);
         }
 
         // const deserializedA = parser.parseFromString(JSaturnRuntimeData.a, 'application/xhtml+xml')
@@ -620,6 +647,7 @@
             <div id="header" class="cell">
                 <div id="book-container-top-bar" class="control-bar">
                     <button id="run-all" onclick="runAll()">⏩</button>
+                    <button id="save" onclick="saveState()">💾</button>
                 </div>
             </div>
             <div id="cell-container" class="cell-container"></div>
