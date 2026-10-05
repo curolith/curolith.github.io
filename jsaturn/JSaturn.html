@@ -513,6 +513,10 @@
             static importFromClipboard() {
                 window.navigator.clipboard.readText().then(value => JSaturnDataModel.deserialize(JSON.parse(value)));
             }
+
+            static removeAll() {
+                [...document.querySelector('#cell-container').children].forEach(cell => cell.remove());
+            }
         }
 
         class JSaturnDataModel {
@@ -673,11 +677,27 @@
                 <div id="root-container-bar-container" class="control-bar-container">
                     <div id="root-container-top-bar-left" class="control-bar-left">
                         <button id="save" onclick="JSaturnStorage.saveState()">💾</button>
-<!--                        <button id="export-import" onclick="JSaturnPopups.exportImport()">📤📥</button>-->
-                        <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋</button>
-                        <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥</button>
+                        <!--                        <button id="export-import" onclick="JSaturnPopups.exportImport()">•••</button>-->
                     </div>
                     <div id="root-container-top-bar-center" class="control-bar-center">
+                        <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋</button>
+
+                    </div>
+                    <div id="root-container-top-bar-right" class="control-bar-right">
+                        <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥</button>
+                    </div>
+                </div>
+            </div>
+            <div id="header-2" class="cell">
+<!--                undo split and move to popup-->
+                <div id="root-container-bar-container-2" class="control-bar-container">
+                    <div id="root-container-top-bar-left-2" class="control-bar-left">
+                        <button class="remove-all"
+                                onclick="JSaturnRoot.removeAll()">
+                            🗑️
+                        </button>
+                    </div>
+                    <div id="root-container-top-bar-center-2" class="control-bar-center">
                         <button class="add-cell-below-button"
                                 onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createCodeCell())">
                             ➕ <>
@@ -687,7 +707,7 @@
                             ➕ T
                         </button>
                     </div>
-                    <div id="root-container-top-bar-right" class="control-bar-right">
+                    <div id="root-container-top-bar-right-2" class="control-bar-right">
                         <button id="run-all" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
                     </div>
                 </div>
