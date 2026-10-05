@@ -375,6 +375,9 @@
 
         function runCell(cell) {
             const code = cell.querySelector('.code-field');
+            if (!code) {
+                return;
+            }
             const codeText = code.innerText;
             const resultStrings = [];
             const logOutput = (args) => resultStrings.push("> " + String(args));
@@ -418,7 +421,7 @@
         }
 
         function runAll() {
-            document.querySelectorAll(".code-cell-content").forEach(cell => {
+            document.querySelectorAll(".cell").forEach(cell => {
                 runCell(cell);
             });
         }
@@ -475,6 +478,7 @@
             return applicable(element);
         }
 
+        // TODO maybe remove since data driven serialization
         const serializer = new XMLSerializer();
         const parser = new DOMParser();
 
