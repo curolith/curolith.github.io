@@ -320,6 +320,7 @@
 
         function createCodeCell(code) {
             return createCell().apply(cell => {
+                cell['persistenceKey'] = 'code-cell';
                 cell.querySelector('.cell-content').append(
                     createDiv("code-output-box").apply(codeOutputBox => {
                         codeOutputBox.append(
@@ -346,8 +347,12 @@
             })
         }
 
-        function createTextCell() {
-            return createCell().apply(cell => cell.querySelector('.cell-content').append(createTextField()));
+        function createTextCell(text) {
+            return createCell().apply(cell => {
+                cell['persistenceKey'] = 'text-cell';
+                cell.querySelector('.cell-content')
+                    .append(createTextField().apply(textField => textField.innerHTML = text ?? ""));
+            });
         }
     </script>
 
@@ -463,78 +468,105 @@
 
     <script>
         function createJSaturnElement(tagName) {
-            return applicable(document.createElement(tagName)).apply(element => {
-                setPersistor(element, 'default');
-            });
+            return applicable(document.createElement(tagName));
         }
 
         function jSaturnElementOf(element) {
-            return applicable(element).apply(element => {
-                setPersistor(element, 'default');
-            });
+            return applicable(element);
         }
 
         const serializer = new XMLSerializer();
         const parser = new DOMParser();
 
         const Persistence = {
-            default: {
-                deserialize(persistenceElement) {
-                    return parser.parseFromString(persistenceElement.data, "application/xhtml+xml").documentElement;
+            'code-cell': {
+                deserialize: (persistenceData) => {
+                    return createCodeCell(persistenceData.data).apply(highlightCell);
                 },
-                serialize(jSaturnElement) {
+                serialize: (jSaturnElement) => {
                     return {
-                        persistenceKey: 'default',
-                        data: serializer.serializeToString(jSaturnElement)
-                    };
+                        persistenceKey: 'code-cell',
+                        data: jSaturnElement.querySelector('.code-field').innerText
+                    }
                 }
             },
 
-            cellContainer: {
-                deserialize(persistenceData) {
+            'text-cell': {
+                deserialize: (persistenceData) => {
+                    return createTextCell(persistenceData.data);
+                },
+                serialize: (jSaturnElement) => {
+                    return {
+                        persistenceKey: 'text-cell',
+                        data: jSaturnElement.querySelector('.text-field').innerHTML
+                    }
+                }
+            },
+
+            'book-container': {
+                deserialize: (persistenceData) => {
+                    const bookContainer = jSaturnElementOf(document.querySelector('#book-container'));
+                    // bookContainer.innerHTML = '';
+                    const children = [...persistenceData.data?.children]?.map(deserializeJSaturnData);
+                    bookContainer.append(...children);
+                    return bookContainer;
+                },
+                serialize: (jSaturnElement) => {
+                    return {
+                        persistenceKey: 'book-container',
+                        data: {
+                            children: serializeChildren(jSaturnElement)
+                        }
+                    }
+                }
+            },
+
+            'cell-container': {
+                deserialize: (persistenceData) => {
                     const cellContainer = jSaturnElementOf(document.querySelector('#cell-container'));
-                    cellContainer.childNodes.forEach(childNode => childNode.remove())
-                    const children = persistenceData.data?.children?.map(deserializeJSaturnData);
+                    cellContainer.innerHTML = '';
+                    const children = [...persistenceData.data?.children]?.map(deserializeJSaturnData);
                     cellContainer.append(...children);
                     return cellContainer;
                 },
-                serialize(jSaturnElement) {
+                serialize: (jSaturnElement) => {
                     return {
-                        persistenceKey: 'cellContainer',
+                        persistenceKey: 'cell-container',
                         data: {
-                            children: jSaturnElement.children.map(serializeJSaturnElement)
+                            children: serializeChildren(jSaturnElement)
                         }
                     }
                 }
             }
         }
 
+        function getPersistenceImplementation(object) {
+            return Persistence[object['persistenceKey'] ?? object['className'] ?? 'default'] ?? null;
+        }
+
+        function isPersistenceSupported(object) {
+            return Boolean(getPersistenceImplementation(object));
+        }
+
         function deserializeJSaturnData(persistenceData) {
-            const persistenceKey = persistenceData.persistenceKey;
-            if (!Persistence[persistenceKey]) {
-                log(
-                    'error',
-                    'No persistence implementation found for ' + String(persistenceKey),
-                    'c5daf159-06bb-4260-a1a8-701671981408',
-                    persistenceData
-                )
-                return null;
+            const element = getPersistenceImplementation(persistenceData)?.deserialize(persistenceData);
+            if (element) {
+                return element;
             }
-            return Persistence[persistenceKey].deserialize(persistenceData);
+            log(
+                'error',
+                'No deserialization implementation found',
+                '8ae76dbf-fd43-4ffd-84f1-a4a40619d440',
+                persistenceData
+            )
         }
 
         function serializeJSaturnElement(persistenceElement) {
-            const persistenceKey = persistenceElement.persistenceKey;
-            if (!Persistence[persistenceKey]) {
-                log(
-                    'error',
-                    'No persistence implementation found for ' + String(persistenceKey),
-                    '21b2e5e0-17da-490f-b757-522fa5159e72',
-                    persistenceElement
-                )
-                return null;
-            }
-            return Persistence[persistenceKey].serialize(persistenceElement);
+            return getPersistenceImplementation(persistenceElement)?.serialize(persistenceElement);
+        }
+
+        function serializeChildren(persistenceElement) {
+            return [...persistenceElement.children].map(serializeJSaturnElement).filter(Boolean);
         }
 
         function store(storable) {
