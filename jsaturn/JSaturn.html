@@ -29,7 +29,6 @@
               href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
         <style>
 
-
             :root {
                 /*region variables*/
                 --color-background: #B36125;
@@ -112,7 +111,14 @@
                 width: stretch;
             }
 
-            .control-bar {
+            .cell-top-bar {
+                gap: var(--gap-small);
+                display: flex;
+                align-items: center;
+                flex-direction: row;
+            }
+
+            .cell-bottom-bar {
                 gap: var(--gap-small);
                 display: flex;
                 align-items: center;
@@ -211,7 +217,6 @@
                 padding-bottom: var(--padding-medium);
             }
 
-
             .cell {
                 transition: ease-in-out 1.25s;
                 padding: 1rem;
@@ -227,18 +232,19 @@
         </style>
     </head>
 
-    <!--    region scripts-->
-    <script id="utility">
+    <!--    TODO refactor all in old-->
+    <!--    region old-->
+    <script id="utility-old">
         function applicable(o) {
             o['apply'] = (f) => {
                 f(o);
                 return o;
             }
-            o['applyAll'] = (...ops) => {
-                ops.forEach(f => f(o));
-                return o;
-            }
             return o;
+        }
+
+        function mountDebugger() {
+            console.log("mountDebugger");
         }
     </script>
 
@@ -247,27 +253,12 @@
             element.id = crypto.randomUUID();
         }
 
-        function setClassName(className) {
-            return (element) => element.className = className;
-        }
-
-        function append(...items) {
-            return (element) => items?.length > 0 ? element.append(...items) : null;
-        }
-
-        function supportDataSerialization(element) {
-            element.serializableData = {
-                className: element.className,
-                tag: element.tag
-            };
-            element.serializeData = () => {
-                element.serializableData.childNodes = element.childNodes.map(childNode => childNode.serializeData?.());
-            }
-        }
-
         function createElement(tag, className) {
             return applicable(document.createElement(tag))
-                .applyAll(addUUID, setClassName(className), supportDataSerialization);
+                .apply(element => {
+                    addUUID(element);
+                    element.className = className;
+                });
         }
 
         function createDiv(className) {
@@ -286,7 +277,6 @@
             return createDiv('code-field').apply(codeField => {
                     codeField.contentEditable = 'true';
                     codeField.innerHTML = code ?? "";
-                    codeField.getCode = () => codeField;
                 }
             )
         }
@@ -297,63 +287,43 @@
             });
         }
 
-        function createCell(contentType) {
-            return createDiv("cell").apply(cell => {
-                cell['contentType'] = contentType;
-            });
+        function createCell() {
+            return createDiv("cell").apply(cell => cell.append(
+                createDiv("cell-top-bar").apply(cellControls => cellControls.append(
+                    createButton('delete-cell-button', (button) => {
+                        button.param.remove();
+                        ensureAny()
+                    }, `❌`, cell)
+                )),
+                createDiv("cell-content"),
+                createDiv("cell-bottom-bar").apply(divider => divider.append(
+                    createButton('add-cell-below-button', (button) => button.param.after(createCodeCell()), '➕ <>', cell),
+                    createButton('add-text-below-button', (button) => button.param.after(createTextCell()), '➕ T', cell)
+                ))
+            ));
         }
 
         function createCodeCell(code) {
-            return createCell('code').apply(cell => cell.append(
-                    createDiv("control-bar").apply(bar => {
-                        bar.append(
-                            createButton('delete-cell-button', (button) => {
-                                button.param.remove();
-                                ensureAny()
-                            }, `❌`, cell),
-                            createButton('run-button', (button) => runCell(button.param), '▶️', cell)
-                        )
-                    }),
+            return createCell().apply(cell => {
+                cell.querySelector('.cell-content').append(
                     createCodeField(code).apply(codeField => {
-                        cell.getCodeField = () => codeField;
                         codeField.addEventListener('keypress', function (e) {
                             if (e.key === '\n') {
-                                runCell(cell)
+                                runCell(codeCellContent)
                             }
                         });
                     }),
-                    createDiv("code-output").apply(outputField => {
-                        cell.setOutput = output => {
-                            outputField.innerHTML = output;
-                        }
-                    }),
-                    createCellBottomBar(cell)
+                    createDiv("code-output")
                 )
-            );
+                cell.querySelector('.cell-top-bar').append(
+                    createButton('run-button', (button) => runCell(button.param), '▶️', cell)
+                )
+            })
         }
 
         function createTextCell() {
-            return createCell('text').apply(cell => {
-                    cell.append(
-                        createDiv("cell-controls").apply(append(
-                            createButton('delete-cell-button', (button) => {
-                                button.param.remove();
-                                ensureAny()
-                            }, `❌`, cell)
-                        )),
-                        createTextField(),
-                        createCellBottomBar(cell)
-                    )
-                    cell.style = "cell";
-                }
-            );
-        }
-
-        function createCellBottomBar(cell) {
-            return createDiv("control-bar").apply(divider => divider.append(
-                createButton('add-cell-below-button', (button) => button.param.after(createCodeCell()), '➕ <>', cell),
-                createButton('add-text-below-button', (button) => button.param.after(createTextCell()), '➕ T', cell)
-            ));
+            return createCell().apply(cell => cell.append(createDiv('text-cell-content')
+                .apply(textCellContent => textCellContent.append(createTextField()))));
         }
     </script>
 
@@ -375,10 +345,7 @@
         }
 
         function runCell(cell) {
-            if (cell.contentType !== 'code') {
-                return
-            }
-            const code = cell.getCodeField();
+            const code = cell.querySelector('.code-field');
             const codeText = code.innerText;
             const resultStrings = [];
             const logOutput = (args) => resultStrings.push("> " + String(args));
@@ -397,16 +364,23 @@
             }
             document['global'] = global;
             console = consoleBox;
-            cell.setOutput(resultStrings.join("<br>"));
+            cell.querySelector('.code-output').innerHTML = resultStrings.join("<br>");
             highlightCell(cell);
         }
 
         function highlightCell(cell) {
-            const code = cell.getCodeField();
-            const codeText = code.innerText//.replace(/\n/g, '/*br*/');
+            const codeField = cell.querySelector('.code-field');
+            if (!codeField) {
+                log(
+                    'error',
+                    "No code-field found on cell to highlight",
+                    "62a5a9b2-eaf1-4d79-a441-0e006f6def10",
+                    cell
+                )
+            }
+            const codeText = codeField.innerText//.replace(/\n/g, '/*br*/');
             const highlighted = hljs.highlightAuto(codeText);
-            const highlightedHtml = highlighted.value.replace(/\n/g, '<br>');
-            cell.getCodeField().innerHTML = highlightedHtml;
+            codeField.innerHTML = highlighted.value.replace(/\n/g, '<br>');
             window.getSelection().removeAllRanges();
             // TODO https://dev.to/saurabh_raj_afaabe1844a4c/mastering-selection-and-ranges-in-javascript-never-to-look-back-again-2mkk
             // myRange = document.createRange();
@@ -414,17 +388,13 @@
             // window.setSelection(selectionData);
         }
 
+        function runAll() {
+            document.querySelectorAll(".code-cell-content").forEach(cell => {
+                runCell(cell);
+            });
+        }
+
         function init() {
-            document.querySelector("#book-container-top-bar").append(
-                createDiv("control-bar").apply(divider => divider.append(
-                        createButton('run-all', (button) => {
-                            document.querySelectorAll(".cell").forEach(cell => {
-                                runCell(cell);
-                            });
-                        }, '⏩', divider)
-                    )
-                )
-            )
             ensureAny();
         }
 
@@ -433,13 +403,174 @@
             console.log(m);
         };
     </script>
+    <!-- endregion old-->
+
+    <!--    region scripts-->
+    <script id="runtime">
+        const JSaturnRuntimeData = {
+            log: [],
+        };
+
+        function log(type, message, causeId, context) {
+            const logObject = JSON.stringify({
+                type: type,
+                message: message,
+                causeId: causeId,
+                context: context,
+            });
+            console.log(logObject);
+            JSaturnRuntimeData.log.push(logObject);
+        }
+    </script>
+
+    <script id="utility">
+        function applicable(o) {
+            o.apply = function (f) {
+                f(o);
+                return o;
+            }
+            return o;
+        }
+
+        function setPersistor(element, persistor) {
+            element.persistor = persistor;
+        }
+    </script>
+
+    <script>
+        function createJSaturnElement(tagName) {
+            return applicable(document.createElement(tagName)).apply(element => {
+                setPersistor(element, 'default');
+            });
+        }
+
+        function jSaturnElementOf(element) {
+            return applicable(element).apply(element => {
+                setPersistor(element, 'default');
+            });
+        }
+
+        const serializer = new XMLSerializer();
+        const parser = new DOMParser();
+
+        const Persistence = {
+            default: {
+                deserialize(persistenceElement) {
+                    return parser.parseFromString(persistenceElement.data, "application/xhtml+xml").documentElement;
+                },
+                serialize(jSaturnElement) {
+                    return {
+                        persistenceKey: 'default',
+                        data: serializer.serializeToString(jSaturnElement)
+                    };
+                }
+            },
+
+            cellContainer: {
+                deserialize(persistenceData) {
+                    const cellContainer = jSaturnElementOf(document.querySelector('#cell-container'));
+                    cellContainer.childNodes.forEach(childNode => childNode.remove())
+                    const children = persistenceData.data?.children?.map(deserializeJSaturnData);
+                    cellContainer.append(...children);
+                    return cellContainer;
+                },
+                serialize(jSaturnElement) {
+                    return {
+                        persistenceKey: 'cellContainer',
+                        data: {
+                            children: jSaturnElement.children.map(serializeJSaturnElement)
+                        }
+                    }
+                }
+            }
+        }
+
+        function deserializeJSaturnData(persistenceData) {
+            const persistenceKey = persistenceData.persistenceKey;
+            if (!Persistence[persistenceKey]) {
+                log(
+                    'error',
+                    'No persistence implementation found for ' + String(persistenceKey),
+                    'c5daf159-06bb-4260-a1a8-701671981408',
+                    persistenceData
+                )
+                return null;
+            }
+            return Persistence[persistenceKey].deserialize(persistenceData);
+        }
+
+        function serializeJSaturnElement(persistenceElement) {
+            const persistenceKey = persistenceElement.persistenceKey;
+            if (!Persistence[persistenceKey]) {
+                log(
+                    'error',
+                    'No persistence implementation found for ' + String(persistenceKey),
+                    '21b2e5e0-17da-490f-b757-522fa5159e72',
+                    persistenceElement
+                )
+                return null;
+            }
+            return Persistence[persistenceKey].serialize(persistenceElement);
+        }
+
+        function store(storable) {
+            if (!storable.key) {
+                log(
+                    'error',
+                    'No key provided for storable',
+                    '06afa351-f87c-4c3f-ad4a-7e90afac5281',
+                    storable
+                )
+            }
+            localStorage.setItem(storable.key, storable.data);
+        }
+
+        function load(key) {
+            return localStorage.getItem(key);
+        }
+
+        function deleteStored(key) {
+            localStorage.removeItem(key);
+        }
+
+        function getStorage() {
+            const storedItems = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                storedItems[key] = localStorage.getItem(key);
+            }
+            return storedItems;
+        }
+
+        // const deserializedA = parser.parseFromString(JSaturnRuntimeData.a, 'application/xhtml+xml')
+        // document.querySelector('#book-container').append(deserializedA.firstElementChild)
+
+        // function init() {
+        //     console.log()
+        // }
+    </script>
     <!-- endregion scripts-->
+
+    <!--                   
+                document.querySelector("#book-container-top-bar").append(
+                    createDiv("control-bar").apply(divider => divider.append(
+                            createButton('run-all', (button) => {
+                                document.querySelectorAll(".cell").forEach(cell => {
+                                    runCell(cell);
+                                });
+                            }, '⏩', divider)
+                        )
+                    )
+                )
+    -->
 
     <body>
         <div id="book-container">
             <h1>> JSaturn</h1>
             <div id="header" class="cell">
-                <div id="book-container-top-bar" class="control-bar"></div>
+                <div id="book-container-top-bar" class="control-bar">
+                    <button id="run-all" onclick="runAll()">⏩</button>
+                </div>
             </div>
             <div id="cell-container" class="cell-container"></div>
         </div>
