@@ -54,6 +54,8 @@
                 --border-radius-big: calc(2 * var(--border-radius-small));
 
                 --gap-small: 1rem;
+                --gap-medium: calc(2 * var(--gap-small));
+
                 --padding-small: .5rem;
                 --padding-medium: calc(2 * var(--padding-small));
 
@@ -109,6 +111,12 @@
                 /*#d3d3d3;*/
                 height: 100%;
                 width: stretch;
+            }
+
+            .book-container {
+                gap: var(--gap-medium);
+                display: flex;
+                flex-direction: column;
             }
 
             .cell-top-bar {
@@ -219,12 +227,9 @@
             }
 
             .cell-container {
-                margin-inline: auto;
                 display: flex;
                 flex-direction: column;
-                gap: calc(2 * var(--gap-small));
-                padding-top: var(--padding-medium);
-                padding-bottom: var(--padding-medium);
+                gap: var(--gap-medium);
             }
 
             .cell {
@@ -570,21 +575,8 @@
     </script>
     <!-- endregion scripts-->
 
-    <!--
-                document.querySelector("#book-container-top-bar").append(
-                    createDiv("control-bar").apply(divider => divider.append(
-                            createButton('run-all', (button) => {
-                                document.querySelectorAll(".cell").forEach(cell => {
-                                    runCell(cell);
-                                });
-                            }, '⏩', divider)
-                        )
-                    )
-                )
-    -->
-
     <body>
-        <div id="book-container">
+        <div id="book-container" class="book-container">
             <h1>> JSaturn</h1>
             <div id="header" class="cell">
                 <div id="book-container-top-bar" class="control-bar">
