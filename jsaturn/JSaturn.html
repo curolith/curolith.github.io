@@ -191,9 +191,19 @@
                 outline: var(--color-effect) solid 3px;
             }
 
-            .code-output {
+            .code-output-box {
                 font-family: Consolas, "Courier New", monospace;
                 background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p37-5)));
+                color: var(--color-secondary-p75);
+                border-radius: 0.5rem;
+                inset: 1rem;
+                /*box-shadow: var(--shadow-inset-dark-small);*/
+                transition: ease-in-out .25s;
+                outline: transparent;
+            }
+
+            .code-output-field {
+                font-family: Consolas, "Courier New", monospace;
                 color: var(--color-secondary-p75);
                 border-radius: 0.5rem;
                 inset: 1rem;
@@ -293,7 +303,7 @@
                     createButton('delete-cell-button', (button) => {
                         button.param.remove();
                         ensureAny()
-                    }, `❌`, cell)
+                    }, `❌`, cell),
                 )),
                 createDiv("cell-content"),
                 createDiv("cell-bottom-bar").apply(divider => divider.append(
@@ -306,14 +316,24 @@
         function createCodeCell(code) {
             return createCell().apply(cell => {
                 cell.querySelector('.cell-content').append(
-                    createCodeField(code).apply(codeField => {
-                        codeField.addEventListener('keypress', function (e) {
-                            if (e.key === '\n') {
-                                runCell(codeCellContent)
+                    createDiv("code-output-box").apply(codeOutputBox => {
+                        codeOutputBox.append(
+                            createCodeField(code).apply(codeField => {
+                                codeField.addEventListener('keypress', function (e) {
+                                    if (e.key === '\n') {
+                                        runCell(cell)
+                                    }
+                                });
+                            }),
+                        )
+                        codeOutputBox.setOutput = (output) => {
+                            codeOutputBox.querySelectorAll('.code-output-field').forEach(field => field.remove());
+                            if (output.length > 0) {
+                                codeOutputBox.append(createDiv("code-output-field")
+                                    .apply(outputField => outputField.innerHTML = output));
                             }
-                        });
-                    }),
-                    createDiv("code-output")
+                        }
+                    })
                 )
                 cell.querySelector('.cell-top-bar').append(
                     createButton('run-button', (button) => runCell(button.param), '▶️', cell)
@@ -322,8 +342,7 @@
         }
 
         function createTextCell() {
-            return createCell().apply(cell => cell.append(createDiv('text-cell-content')
-                .apply(textCellContent => textCellContent.append(createTextField()))));
+            return createCell().apply(cell => cell.querySelector('.cell-content').append(createTextField()));
         }
     </script>
 
@@ -364,7 +383,7 @@
             }
             document['global'] = global;
             console = consoleBox;
-            cell.querySelector('.code-output').innerHTML = resultStrings.join("<br>");
+            cell.querySelector('.code-output-box').setOutput(resultStrings.join("<br>"));
             highlightCell(cell);
         }
 
@@ -551,7 +570,7 @@
     </script>
     <!-- endregion scripts-->
 
-    <!--                   
+    <!--
                 document.querySelector("#book-container-top-bar").append(
                     createDiv("control-bar").apply(divider => divider.append(
                             createButton('run-all', (button) => {
