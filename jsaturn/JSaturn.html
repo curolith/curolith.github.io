@@ -411,7 +411,10 @@
                 )
             }
             const codeText = codeField.innerText//.replace(/\n/g, '/*br*/');
-            const highlighted = hljs.highlightAuto(codeText);
+            const highlighted = hljs.highlight(codeText, {
+                language: 'javascript',
+                ignoreIllegals: true
+            });
             codeField.innerHTML = highlighted.value.replace(/\n/g, '<br>');
             window.getSelection().removeAllRanges();
             // TODO https://dev.to/saurabh_raj_afaabe1844a4c/mastering-selection-and-ranges-in-javascript-never-to-look-back-again-2mkk
