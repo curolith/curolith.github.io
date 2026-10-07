@@ -42,12 +42,14 @@
                 --color-back: #000000;
                 --color-transparency: rgb(0 0 0 / 0);
 
-                --color-shadow-light: hsl(0 0% 100% / 0.63);
+                --color-shadow-light: hsl(0 0% 100% / 0.47);
                 --color-shadow-dark: hsl(0 0 0 / .25);
 
                 --shadow-dark-small: -2px 2px 2px var(--color-shadow-dark);
                 --shadow-dark-large: -10px 10px 20px var(--color-shadow-dark);
-                --shadow-inset-light-small: inset -2px 2px 2px var(--color-shadow-light);
+                --shadow-inset-light-small: inset -2px 2px .2rem /*.25rem /*2px*/ var(--color-shadow-light);
+                --shadow-inset-light-counter-dark-small: inset 2px -2px .15rem color-mix(var(--color-shadow-dark), color-mix(var(--color-shadow-dark), var(--color-transparency)));
+                --3d-outwards-small: var(--shadow-inset-light-small), var(--shadow-inset-light-counter-dark-small);
                 --shadow-inset-dark-small: inset -2px 2px 2px var(--color-shadow-dark);
 
                 --border-radius-small: .5rem;
@@ -127,7 +129,7 @@
                 gap: 1rem;
                 font-family: system-ui, sans-serif;
                 backdrop-filter: var(--filter-textless);
-                box-shadow: var(--shadow-inset-light-small),
+                box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-large);
             }
 
@@ -181,7 +183,7 @@
 
             h1 {
                 font-family: Consolas, "Courier New", monospace;
-                margin: var(--padding-medium);
+                padding: var(--padding-medium);
                 color: var(--color-secondary-p50);
                 font-size: xxx-large;
                 font-weight: bolder;
@@ -196,6 +198,7 @@
                 padding: var(--padding-small);
                 transition: ease-in-out .25s;
                 outline: transparent;
+                overflow-wrap: anywhere;
             }
 
             .text-field:focus, .text-field:active {
@@ -210,7 +213,7 @@
                 text-align: justify;
                 font-family: system-ui, sans-serif;
                 color: var(--color-text-normal);
-                box-shadow: var(--shadow-inset-light-small),
+                box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-small);
                 border: none;
                 transition: ease-in-out 0.25s;
@@ -220,7 +223,7 @@
 
             button:hover {
                 transition: ease-in-out 0.25s;
-                box-shadow: var(--shadow-inset-light-small),
+                box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-small);
                 border-radius: 0;
             }
@@ -240,6 +243,7 @@
                 padding: var(--padding-small);
                 transition: ease-in-out .25s;
                 outline: transparent;
+                overflow-wrap: anywhere;
             }
 
             .code-field:focus, .code-field:active {
@@ -282,13 +286,13 @@
             .cell {
                 transition: ease-in-out 1.25s;
                 padding: 1rem;
-                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75)));
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75))));
                 border-radius: 1rem;
                 gap: 1rem;
                 display: grid;
                 font-family: system-ui, sans-serif;
                 backdrop-filter: var(--filter-textless);
-                box-shadow: var(--shadow-inset-light-small),
+                box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-large);
             }
         </style>
@@ -391,7 +395,7 @@
                             codeOutputBox.append(
                                 JSaturnBuilders.createCodeField(code).apply(codeField => {
                                     codeField.addEventListener('keypress', function (e) {
-                                        if (e.key === '\n') {
+                                        if ((e.code === "Enter") && e.ctrlKey) {
                                             JSaturnCodeCellUtility.runCell(cell)
                                         }
                                     });
@@ -423,6 +427,9 @@
 
         class JSaturnCodeCellUtility {
             static runCell(cell) {
+                const cf = cell.querySelector('.code-field');
+                const offsetY = cf.offsetTop;
+                const offsetX = cf.offsetLeft;
                 const code = cell.querySelector('.code-field');
                 if (!code) {
                     return;
@@ -446,10 +453,19 @@
                 document['global'] = global;
                 console = consoleBox;
                 cell.querySelector('.code-output-box').setOutput(resultStrings.join("<br>"));
+                const selectionData = {};
+                let targetselection = null;
+                window.getSelection();
+                console.log("LKDjfj");
                 JSaturnCodeCellUtility.highlightCell(cell);
+                console.log("sldkjfds");
+                window.getSelection().setPosition(targetselection);
             }
 
             static highlightCell(cell) {
+                if (JSaturnRoot.runtimeData.highlightDisabled) {
+                    return;
+                }
                 const codeField = cell.querySelector('.code-field');
                 if (!codeField) {
                     JSaturnRoot.log(
@@ -465,7 +481,7 @@
                     ignoreIllegals: true
                 });
                 codeField.innerHTML = highlighted.value.replace(/\n/g, '<br>');
-                window.getSelection().removeAllRanges();
+                // window.getSelection().removeAllRanges();
                 // TODO https://dev.to/saurabh_raj_afaabe1844a4c/mastering-selection-and-ranges-in-javascript-never-to-look-back-again-2mkk
                 // myRange = document.createRange();
                 // window.getSelection().addRange(myRange)
@@ -652,77 +668,79 @@
         const x = document.createElement('div');
         x.innerHTML = "<div>Hello World<br>How are you</div>";
 
-        // class JSaturnPopups {
-        //     static popUpAction(afterElement, ...elements) {
-        //         const popup = document.createElement('div');
-        //         popup.id = crypto.randomUUID();
-        //         popup.className = 'popup-container';
-        //         const popupContent = document.createElement('div');
-        //         popupContent.className = 'popup';
-        //         popupContent.append(...elements);
-        //         popup.append(popupContent)
-        //         afterElement.after(popup);
-        //         return () => popup.classList.toggle('show');
-        //     }
-        //
-        //     static exportImport() {
-        //         console.log("LÖkdjf");
-        //         action();
-        //     }
-        // }
+        class JSaturnPopups {
+            static popUpAction(afterElement, ...elements) {
+                const popup = document.createElement('div');
+                popup.id = crypto.randomUUID();
+                popup.className = 'popup-container';
+                const popupContent = document.createElement('div');
+                popupContent.className = 'popup';
+                popupContent.append(...elements);
+                popup.append(popupContent)
+                afterElement.after(popup);
+                return () => popup.classList.toggle('show');
+            }
+
+            static exportImport() {
+                console.log("LÖkdjf");
+                action();
+            }
+        }
     </script>
 
     <body>
-        <div id="root-container" class="root-container">
-            <h1>> JSaturn</h1>
-            <div id="header" class="cell">
-                <div id="root-container-bar-container" class="control-bar-container">
-                    <div id="root-container-top-bar-left" class="control-bar-left">
-                        <button id="save" onclick="JSaturnStorage.saveState()">💾</button>
-                        <!--                        <button id="export-import" onclick="JSaturnPopups.exportImport()">•••</button>-->
-                    </div>
-                    <div id="root-container-top-bar-center" class="control-bar-center">
-                        <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋</button>
+        <h1>> JSaturn</h1>
+        <div class="cell">
+            <div id="root-container" class="root-container">
+                <div id="header">
+                    <div id="root-container-bar-container" class="control-bar-container">
+                        <div id="root-container-top-bar-left" class="control-bar-left">
+                            <button id="save" onclick="JSaturnStorage.saveState()">💾</button>
+                            <button id="export-import" onclick="JSaturnPopups.exportImport()">•••</button>
+                        </div>
+                        <div id="root-container-top-bar-center" class="control-bar-center">
+                            <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋</button>
 
-                    </div>
-                    <div id="root-container-top-bar-right" class="control-bar-right">
-                        <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥</button>
-                    </div>
-                </div>
-            </div>
-            <div id="header-2" class="cell">
-<!--                undo split and move to popup-->
-                <div id="root-container-bar-container-2" class="control-bar-container">
-                    <div id="root-container-top-bar-left-2" class="control-bar-left">
-                        <button class="remove-all"
-                                onclick="JSaturnRoot.removeAll()">
-                            🗑️
-                        </button>
-                    </div>
-                    <div id="root-container-top-bar-center-2" class="control-bar-center">
-                        <button class="add-cell-below-button"
-                                onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createCodeCell())">
-                            ➕ <>
-                        </button>
-                        <button class="add-text-below-button"
-                                onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createTextCell())">
-                            ➕ T
-                        </button>
-                    </div>
-                    <div id="root-container-top-bar-right-2" class="control-bar-right">
-                        <button id="run-all" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
+                        </div>
+                        <div id="root-container-top-bar-right" class="control-bar-right">
+                            <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥</button>
+                        </div>
                     </div>
                 </div>
+                <div id="header-2">
+                    <!--                undo split and move to popup-->
+                    <div id="root-container-bar-container-2" class="control-bar-container">
+                        <div id="root-container-top-bar-left-2" class="control-bar-left">
+                            <button class="remove-all"
+                                    onclick="JSaturnRoot.removeAll()">
+                                🗑️
+                            </button>
+                        </div>
+                        <div id="root-container-top-bar-center-2" class="control-bar-center">
+                            <button class="add-cell-below-button"
+                                    onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createCodeCell())">
+                                ➕ <>
+                            </button>
+                            <button class="add-text-below-button"
+                                    onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createTextCell())">
+                                ➕ T
+                            </button>
+                        </div>
+                        <div id="root-container-top-bar-right-2" class="control-bar-right">
+                            <button id="run-all" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="cell-container" class="cell-container"></div>
             </div>
-            <div id="cell-container" class="cell-container"></div>
         </div>
         <script>
             JSaturnRoot.init();
-            //
-            // const action = JSaturnPopups.popUpAction(
-            //     document.querySelector('#export-import'),
-            //     x
-            // )
+
+            const action = JSaturnPopups.popUpAction(
+                document.querySelector('#export-import'),
+                x
+            )
         </script>
     </body>
 </html>
