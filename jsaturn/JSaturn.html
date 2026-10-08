@@ -475,14 +475,14 @@
             }
 
             static highlightCell(cell) {
-                if (!JSaturnRoot.getFeature("syntax-highlighting")) {
+                if (!JSaturnFeatures.getFeature("syntax-highlighting")) {
                     return;
                 }
                 const codeField = cell.querySelector('.code-field');
                 if (!codeField) {
                     return;
                 }
-                const codeText = codeField.innerText//.replace(/\n/g, '/*br*/');
+                const codeText = codeField.innerText;
                 const highlighted = hljs.highlight(codeText, {
                     language: 'javascript',
                     ignoreIllegals: true
@@ -496,7 +496,7 @@
                 if (!codeField) {
                     return;
                 }
-                codeField.innerHTML = codeField.innerText;
+                codeField.innerHTML = codeField.innerText.replace(/\n/g, '<br>');
                 window.getSelection().removeAllRanges();
             }
 
@@ -536,8 +536,16 @@
                 if (lastSave) {
                     JSaturnStorage.restoreState();
                 } else {
-                    JSaturnDataModel.deserialize(JSON.parse('{"persistenceKey":"root-container","data":{"children":[{"persistenceKey":"cell-container","data":{"children":[{"persistenceKey":"text-cell","data":"This is a text cell. Default formatting is supported:<br>- <b>CTRL + B</b><br>- <i>CTRL&nbsp; + I</i><br>- <u>CTRL + U</u>"},{"persistenceKey":"code-cell","data":"const greeting = \\"Hello\\";\\nglobal.planet = \\"Saturn\\"; // global is available to all cells\\nconsole.log(\`${greeting} ${global.planet}!\`);"}]}}]}}'))
+                    JSaturnDataModel.deserialize(JSON.parse('{"persistenceKey":"root-serializer","data":{"dataModelVersion":0,"configData":{"features":{"syntax-highlighting":false,"auto-save":true}},"rootContainerData":{"persistenceKey":"root-container","data":{"children":[{"persistenceKey":"cell-container","data":{"children":[{"persistenceKey":"text-cell","data":"This is a text cell. Default formatting is supported:<br>- <b>CTRL + B</b><br>- <i>CTRL&nbsp; + I</i><br>- <u>CTRL + U</u>"},{"persistenceKey":"code-cell","data":"const greeting = \\"Hello\\";<br>global.planet = \\"Saturn\\"; // global is available to all cells <br>console.log(`${greeting} ${global.planet}!`);"}]}}]}}}}\n'))
                 }
+                document.addEventListener("keypress", (e) => {
+                    if (["Enter", "Space"].includes(e.code)) {
+                        JSaturnStorage.triggerAutoSave();
+                    }
+                });
+                document.addEventListener("click", (e) => {
+                    JSaturnStorage.triggerAutoSave();
+                });
             }
 
             static dataModelVersion = 0.0
@@ -567,16 +575,33 @@
             static removeAll() {
                 [...document.querySelector('#cell-container').children].forEach(cell => cell.remove());
             }
+        }
 
-            static toggleFeature(feature, toggleButton) {
-                const newState = !JSaturnRoot.getFeature(feature);
-                JSaturnRoot.setFeature(feature, newState);
-                if (!toggleButton) {
-                    return newState;
+        class JSaturnFeatures {
+            static featureChangeHandlers = {
+                'syntax-highlighting' : (newState) => {
+                    if (newState) {
+                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
+                    } else {
+                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
+                    }
+                },
+                'auto-save' : (newState) => {
+                    JSaturnStorage.saveState();
                 }
-                const textValue = newState ? "On" : "Off"
-                toggleButton.innerText = toggleButton.innerText?.replace(/On|Off/, textValue);
-                JSaturnEventHandlers.featureChange(feature, newState);
+            }
+
+            static toggleFeature(feature) {
+                const newState = !JSaturnFeatures.getFeature(feature);
+                JSaturnFeatures.setFeature(feature, newState);
+                return newState;
+            }
+
+            static handleFeatureToggle(toggleButton) {
+                const feature = toggleButton.id?.replace(/feature-toggle-/, "");
+                const newState = JSaturnFeatures.toggleFeature(feature);
+                JSaturnFeatures.updateFeatureToggleText(feature, newState, toggleButton);
+                JSaturnFeatures.featureChange(feature, newState);
             }
 
             static getFeature(feature) {
@@ -586,21 +611,22 @@
             static setFeature(feature, value) {
                 JSaturnRoot.configData.features[feature] = value;
             }
-        }
-
-        class JSaturnEventHandlers {
-            static featureChangeHandlers = {
-                'syntax-highlighting' : (newState) => {
-                    if (newState) {
-                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
-                    } else {
-                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
-                    }
-                }
-            }
 
             static featureChange(feature, newState) {
-                JSaturnEventHandlers.featureChangeHandlers[feature]?.(newState);
+                JSaturnFeatures.featureChangeHandlers[feature]?.(newState);
+            }
+
+            static updateFeatureToggleText(feature, newState, toggleButton) {
+                const textValue = newState ? "On" : "Off"
+                toggleButton.textContent = toggleButton.textContent?.replace(/On|Off/, textValue);
+            }
+
+            static restoreFeatureToggles() {
+                document.querySelectorAll('.feature-toggle').forEach(toggleButton => {
+                    const feature = toggleButton.id;
+                    const configState = JSaturnFeatures.getFeature(feature);
+                    JSaturnFeatures.updateFeatureToggleText(feature, configState, toggleButton)
+                })
             }
         }
 
@@ -609,14 +635,16 @@
             static dataModelVersion = 0.0;
 
             static 'root-serializer' = {
-                deserialize(persistenceData) {
-                    if (persistenceData.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
+                deserialize: (persistenceData) => {
+                    if (persistenceData.data.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
                         persistenceData = JSaturnDataModel.migratePersistenceData(persistenceData);
                     }
-                    JSaturnRoot.configData = persistenceData.configData;
-                    JSaturnDataModel.deserialize(persistenceData.rootContainerData);
+                    JSaturnRoot.configData = persistenceData.data.configData;
+                    JSaturnDataModel.deserialize(persistenceData.data.rootContainerData);
+                    JSaturnFeatures.restoreFeatureToggles();
+                    return document;
                 },
-                serialize(jSaturnElement) {
+                serialize: (jSaturnElement) => {
                     const rootContainer = document.querySelector('#root-container');
                     return {
                         persistenceKey: 'root-serializer',
@@ -671,7 +699,7 @@
                 serialize: (jSaturnElement) => {
                     return {
                         persistenceKey: 'code-cell',
-                        data: jSaturnElement.querySelector('.code-field').innerText
+                        data: jSaturnElement.querySelector('.code-field')?.innerText?.replace(/\n/g, "<br>")
                     }
                 }
             }
@@ -683,7 +711,8 @@
                 serialize: (jSaturnElement) => {
                     return {
                         persistenceKey: 'text-cell',
-                        data: jSaturnElement.querySelector('.text-field').innerHTML
+                        data: jSaturnElement.querySelector('.text-field')?.innerHTML
+                        // innerText?.replace(/\n/g, "<br>")
                     }
                 }
             }
@@ -714,7 +743,7 @@
             }
 
             static serializeFromRoot() {
-                return JSaturnDataModel["root-serializer"].serialize()
+                return JSaturnDataModel["root-serializer"].serialize();
             }
 
             static migratePersistenceData(persistenceData) {
@@ -761,10 +790,14 @@
                     data: Date.now()
                 })
             }
-        }
 
-        const x = document.createElement('div');
-        x.innerHTML = "<div>Hello World<br>How are you</div>";
+            static triggerAutoSave() {
+                if (!JSaturnFeatures.getFeature('auto-save')) {
+                    return;
+                }
+                JSaturnStorage.saveState();
+            }
+        }
 
         function togglePopUp(id) {
             let popup = document.querySelector(`#${id}`);
@@ -786,8 +819,8 @@
                                     <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋 Copy all to clipboard</button>
                                     <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥 Load all from clipboard</button>
                                     <button id="remove-all" onclick="JSaturnRoot.removeAll()">🗑️ Remove all cells</button>
-                                    <button id="toggle-auto-save" onclick="JSaturnRoot.toggleFeature('auto-save', this)">Autosave: On</button>
-                                    <button id="toggle-syntax-highlighting" onclick="JSaturnRoot.toggleFeature('syntax-highlighting', this)">Highlight: Off</button>
+                                    <button id="auto-save" class="feature-toggle" onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On</button>
+                                    <button id="syntax-highlighting" class="feature-toggle" onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off</button>
                                 </div>
                             </div>
                         </div>
