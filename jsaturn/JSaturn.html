@@ -116,26 +116,28 @@
                 cursor: pointer;
             }
 
-            .popup {
+            .popup-content {
                 visibility: hidden;
                 width: fit-content;
                 text-align: center;
                 position: absolute;
+                margin-top: 0;
+                /*margin-left: var(--gap-small);*/
                 z-index: 1;
-                transition: ease-in-out 1.25s;
                 padding: 1rem;
-                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75)));
+                background-color: color-mix(var(--color-transparency), var(--color-primary-p75));
                 border-radius: 1rem;
                 gap: 1rem;
+                display: flex;
+                flex-direction: column;
                 font-family: system-ui, sans-serif;
                 backdrop-filter: var(--filter-textless);
                 box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-large);
             }
 
-            .popup .show {
+            .popup-container .show {
                 visibility: visible;
-                transition: ease-in-out 1.25s;
             }
 
             .root-container {
@@ -211,6 +213,7 @@
                 padding: var(--padding-smaller);
                 border-radius: var(--border-radius-small);
                 text-align: justify;
+                width: max-content;
                 font-family: system-ui, sans-serif;
                 color: var(--color-text-normal);
                 box-shadow: var(--3d-outwards-small),
@@ -272,7 +275,7 @@
             }
 
             body {
-                padding: 2rem;
+                padding: var(--padding-medium);
                 display: flex;
                 flex-direction: column;
             }
@@ -423,13 +426,28 @@
                         .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = text ?? ""));
                 });
             }
+
+            static createPopupButton(innerHTML, ...elements) {
+                const popup = document.createElement('div');
+                popup.id = crypto.randomUUID();
+                popup.className = 'popup-box';
+                const popupContent = document.createElement('div');
+                popupContent.className = 'popup-content';
+                popupContent.append(...elements);
+                popup.append(popupContent)
+                return JSaturnBuildUtility.createButton(
+                    'popup-button',
+                    (button) => {
+                        button.param.classList.toggle('show')
+                    },
+                    innerHTML,
+                    popup
+                ).apply(button => button.append(popup));
+            }
         }
 
         class JSaturnCodeCellUtility {
             static runCell(cell) {
-                const cf = cell.querySelector('.code-field');
-                const offsetY = cf.offsetTop;
-                const offsetX = cf.offsetLeft;
                 const code = cell.querySelector('.code-field');
                 if (!code) {
                     return;
@@ -453,27 +471,16 @@
                 document['global'] = global;
                 console = consoleBox;
                 cell.querySelector('.code-output-box').setOutput(resultStrings.join("<br>"));
-                const selectionData = {};
-                let targetselection = null;
-                window.getSelection();
-                console.log("LKDjfj");
                 JSaturnCodeCellUtility.highlightCell(cell);
-                console.log("sldkjfds");
-                window.getSelection().setPosition(targetselection);
             }
 
             static highlightCell(cell) {
-                if (JSaturnRoot.runtimeData.highlightDisabled) {
+                if (!JSaturnRoot.getFeature("syntax-highlighting")) {
                     return;
                 }
                 const codeField = cell.querySelector('.code-field');
                 if (!codeField) {
-                    JSaturnRoot.log(
-                        'error',
-                        "No code-field found on cell to highlight",
-                        "62a5a9b2-eaf1-4d79-a441-0e006f6def10",
-                        cell
-                    )
+                    return;
                 }
                 const codeText = codeField.innerText//.replace(/\n/g, '/*br*/');
                 const highlighted = hljs.highlight(codeText, {
@@ -481,11 +488,16 @@
                     ignoreIllegals: true
                 });
                 codeField.innerHTML = highlighted.value.replace(/\n/g, '<br>');
-                // window.getSelection().removeAllRanges();
-                // TODO https://dev.to/saurabh_raj_afaabe1844a4c/mastering-selection-and-ranges-in-javascript-never-to-look-back-again-2mkk
-                // myRange = document.createRange();
-                // window.getSelection().addRange(myRange)
-                // window.setSelection(selectionData);
+                window.getSelection().removeAllRanges();
+            }
+
+            static removeHighlighting(cell) {
+                const codeField = cell.querySelector('.code-field');
+                if (!codeField) {
+                    return;
+                }
+                codeField.innerHTML = codeField.innerText;
+                window.getSelection().removeAllRanges();
             }
 
             static runAll() {
@@ -500,7 +512,26 @@
                 log: [],
             };
 
+            static configData = {
+                features: {
+                    'syntax-highlighting': false,
+                    'auto-save': true
+                },
+            }
+
             static init() {
+                // TODO remove
+                // document.querySelector('#root-container-top-bar-left').append(
+                //     JSaturnBuilders.createPopupButton(
+                //         '...',
+                //         JSaturnBuildUtility.createButton(
+                //             'toggle-syntax-highlighting-button',
+                //             () => console.log("toggle-syntax-highlighting-button"),
+                //             "...",
+                //             null
+                //         )
+                //     )
+                // )
                 const lastSave = JSaturnStorage.load('lastSave');
                 if (lastSave) {
                     JSaturnStorage.restoreState();
@@ -509,6 +540,7 @@
                 }
             }
 
+            static dataModelVersion = 0.0
             static log(type, message, causeId, context) {
                 const logObject = JSON.stringify({
                     type: type,
@@ -535,29 +567,64 @@
             static removeAll() {
                 [...document.querySelector('#cell-container').children].forEach(cell => cell.remove());
             }
+
+            static toggleFeature(feature, toggleButton) {
+                const newState = !JSaturnRoot.getFeature(feature);
+                JSaturnRoot.setFeature(feature, newState);
+                if (!toggleButton) {
+                    return newState;
+                }
+                const textValue = newState ? "On" : "Off"
+                toggleButton.innerText = toggleButton.innerText?.replace(/On|Off/, textValue);
+                JSaturnEventHandlers.featureChange(feature, newState);
+            }
+
+            static getFeature(feature) {
+                return JSaturnRoot.configData.features[feature];
+            }
+
+            static setFeature(feature, value) {
+                JSaturnRoot.configData.features[feature] = value;
+            }
         }
 
-        class JSaturnDataModel {
-            static 'code-cell' = {
-                deserialize: (persistenceData) => {
-                    return JSaturnBuilders.createCodeCell(persistenceData.data).apply(JSaturnCodeCellUtility.highlightCell);
-                },
-                serialize: (jSaturnElement) => {
-                    return {
-                        persistenceKey: 'code-cell',
-                        data: jSaturnElement.querySelector('.code-field').innerText
+        class JSaturnEventHandlers {
+            static featureChangeHandlers = {
+                'syntax-highlighting' : (newState) => {
+                    if (newState) {
+                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
+                    } else {
+                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
                     }
                 }
             }
 
-            static 'text-cell' = {
-                deserialize: (persistenceData) => {
-                    return JSaturnBuilders.createTextCell(persistenceData.data);
+            static featureChange(feature, newState) {
+                JSaturnEventHandlers.featureChangeHandlers[feature]?.(newState);
+            }
+        }
+
+        class JSaturnDataModel {
+            // TODO Update on change and implement migration
+            static dataModelVersion = 0.0;
+
+            static 'root-serializer' = {
+                deserialize(persistenceData) {
+                    if (persistenceData.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
+                        persistenceData = JSaturnDataModel.migratePersistenceData(persistenceData);
+                    }
+                    JSaturnRoot.configData = persistenceData.configData;
+                    JSaturnDataModel.deserialize(persistenceData.rootContainerData);
                 },
-                serialize: (jSaturnElement) => {
+                serialize(jSaturnElement) {
+                    const rootContainer = document.querySelector('#root-container');
                     return {
-                        persistenceKey: 'text-cell',
-                        data: jSaturnElement.querySelector('.text-field').innerHTML
+                        persistenceKey: 'root-serializer',
+                        data: {
+                            dataModelVersion: JSaturnDataModel.dataModelVersion,
+                            configData: JSaturnRoot.configData,
+                            rootContainerData: JSaturnDataModel.serialize(rootContainer)
+                        }
                     }
                 }
             }
@@ -597,6 +664,30 @@
                 }
             }
 
+            static 'code-cell' = {
+                deserialize: (persistenceData) => {
+                    return JSaturnBuilders.createCodeCell(persistenceData.data).apply(JSaturnCodeCellUtility.highlightCell);
+                },
+                serialize: (jSaturnElement) => {
+                    return {
+                        persistenceKey: 'code-cell',
+                        data: jSaturnElement.querySelector('.code-field').innerText
+                    }
+                }
+            }
+
+            static 'text-cell' = {
+                deserialize: (persistenceData) => {
+                    return JSaturnBuilders.createTextCell(persistenceData.data);
+                },
+                serialize: (jSaturnElement) => {
+                    return {
+                        persistenceKey: 'text-cell',
+                        data: jSaturnElement.querySelector('.text-field').innerHTML
+                    }
+                }
+            }
+
             static getModel(object) {
                 return JSaturnDataModel[object['persistenceKey'] ?? object['className'] ?? 'default'] ?? null;
             }
@@ -623,9 +714,17 @@
             }
 
             static serializeFromRoot() {
-                // TODO rename to: root-container
-                const root = document.querySelector('#root-container')
-                return JSaturnDataModel.serialize(root);
+                return JSaturnDataModel["root-serializer"].serialize()
+            }
+
+            static migratePersistenceData(persistenceData) {
+                JSaturnRoot.log(
+                    'error',
+                    "Persisted data is outdated. Migration required but not yet implemented. Data stored in log context (runtime)",
+                    '922be13a-af1d-4c7c-8a47-e124ec9225c8',
+                    persistenceData
+                );
+                return null;
             }
         }
 
@@ -634,7 +733,6 @@
                 const serializedData = JSaturnStorage.load('jSaturnRootData');
                 JSaturnDataModel.deserialize(serializedData);
             }
-
 
             static store(storable) {
                 if (!storable.key) {
@@ -668,23 +766,9 @@
         const x = document.createElement('div');
         x.innerHTML = "<div>Hello World<br>How are you</div>";
 
-        class JSaturnPopups {
-            static popUpAction(afterElement, ...elements) {
-                const popup = document.createElement('div');
-                popup.id = crypto.randomUUID();
-                popup.className = 'popup-container';
-                const popupContent = document.createElement('div');
-                popupContent.className = 'popup';
-                popupContent.append(...elements);
-                popup.append(popupContent)
-                afterElement.after(popup);
-                return () => popup.classList.toggle('show');
-            }
-
-            static exportImport() {
-                console.log("LÖkdjf");
-                action();
-            }
+        function togglePopUp(id) {
+            let popup = document.querySelector(`#${id}`);
+            popup.classList.toggle("show");
         }
     </script>
 
@@ -695,28 +779,19 @@
                 <div id="header">
                     <div id="root-container-bar-container" class="control-bar-container">
                         <div id="root-container-top-bar-left" class="control-bar-left">
-                            <button id="save" onclick="JSaturnStorage.saveState()">💾</button>
-                            <button id="export-import" onclick="JSaturnPopups.exportImport()">•••</button>
+                            <button onclick="togglePopUp('feature-popup')">•••</button>
+                            <div id="feature-popup-container" class="popup-container">
+                                <div class="popup-content" id="feature-popup">
+                                    <button id="save" onclick="JSaturnStorage.saveState()">💾 Save</button>
+                                    <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋 Copy all to clipboard</button>
+                                    <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥 Load all from clipboard</button>
+                                    <button id="remove-all" onclick="JSaturnRoot.removeAll()">🗑️ Remove all cells</button>
+                                    <button id="toggle-auto-save" onclick="JSaturnRoot.toggleFeature('auto-save', this)">Autosave: On</button>
+                                    <button id="toggle-syntax-highlighting" onclick="JSaturnRoot.toggleFeature('syntax-highlighting', this)">Highlight: Off</button>
+                                </div>
+                            </div>
                         </div>
                         <div id="root-container-top-bar-center" class="control-bar-center">
-                            <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋</button>
-
-                        </div>
-                        <div id="root-container-top-bar-right" class="control-bar-right">
-                            <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥</button>
-                        </div>
-                    </div>
-                </div>
-                <div id="header-2">
-                    <!--                undo split and move to popup-->
-                    <div id="root-container-bar-container-2" class="control-bar-container">
-                        <div id="root-container-top-bar-left-2" class="control-bar-left">
-                            <button class="remove-all"
-                                    onclick="JSaturnRoot.removeAll()">
-                                🗑️
-                            </button>
-                        </div>
-                        <div id="root-container-top-bar-center-2" class="control-bar-center">
                             <button class="add-cell-below-button"
                                     onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createCodeCell())">
                                 ➕ <>
@@ -726,7 +801,7 @@
                                 ➕ T
                             </button>
                         </div>
-                        <div id="root-container-top-bar-right-2" class="control-bar-right">
+                        <div id="root-container-top-bar-right" class="control-bar-right">
                             <button id="run-all" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
                         </div>
                     </div>
@@ -736,11 +811,6 @@
         </div>
         <script>
             JSaturnRoot.init();
-
-            const action = JSaturnPopups.popUpAction(
-                document.querySelector('#export-import'),
-                x
-            )
         </script>
     </body>
 </html>
