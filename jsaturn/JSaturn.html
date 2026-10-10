@@ -16,6 +16,7 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 <!DOCTYPE html>
+<!--suppress ALL -->
 <html lang="en" xmlns="http://www.w3.org/1999/html">
     <head>
         <title>JSaturn</title>
@@ -28,81 +29,82 @@
               href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
         <link rel="apple-touch-icon"
               href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
+        <!--suppress CssUnusedSymbol -->
         <style>
             :root {
                 /*region variables*/
-                --color-background: #B36125;
-
-                --filter-textless: blur(.5rem);
-
                 --color-accent-primary: #302824;
-                --color-accent-secondary: #DF792EFF;
-                --color-effect: var(--color-accent-secondary);
-                --color-front: #ffffff;
-                --color-back: #000000;
-                --color-transparency: rgb(0 0 0 / 0);
 
-                --color-shadow-light: hsl(0 0% 100% / 0.47);
-                --color-shadow-dark: hsl(0 0 0 / .25);
+                --color-accent-secondary: #DF792EFF;
+
+                --color-back: #000000;
+                --color-background: #B36125;
+                background-attachment: fixed;
+                background-color: #515151;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='164' height='164' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23454545' fill-opacity='0.31'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.31'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");
+                --shadow-dark-large: -10px 10px 20px var(--color-shadow-dark);
 
                 --shadow-dark-small: -2px 2px 2px var(--color-shadow-dark);
-                --shadow-dark-large: -10px 10px 20px var(--color-shadow-dark);
-                --shadow-inset-light-small: inset -2px 2px .2rem /*.25rem /*2px*/ var(--color-shadow-light);
-                --shadow-inset-light-counter-dark-small: inset 2px -2px .15rem color-mix(var(--color-shadow-dark), color-mix(var(--color-shadow-dark), var(--color-transparency)));
-                --3d-outwards-small: var(--shadow-inset-light-small), var(--shadow-inset-light-counter-dark-small);
+                --color-effect: var(--color-accent-secondary);
+
+                --color-front: #ffffff;
                 --shadow-inset-dark-small: inset -2px 2px 2px var(--color-shadow-dark);
-
-                --border-radius-small: .5rem;
-                --border-radius-big: calc(2 * var(--border-radius-small));
-
-                --gap-small: 1rem;
+                --shadow-inset-light-counter-dark-small: inset 2px -2px .15rem color-mix(var(--color-shadow-dark), color-mix(var(--color-shadow-dark), var(--color-transparency)));
+                --shadow-inset-light-small: inset -2px 2px .2rem /*.25rem /*2px*/ var(--color-shadow-light);
                 --gap-medium: calc(2 * var(--gap-small));
-
-                --padding-smaller: .25rem;
-                --padding-small: .5rem;
                 --padding-medium: calc(2 * var(--padding-small));
+
+                --color-neutral-p12-5: color-mix(in srgb, var(--color-neutral-p25), var(--color-back));
+                --color-neutral-p25: color-mix(in srgb, var(--color-neutral-p50), var(--color-back));
+
+                --color-neutral-p37-5: color-mix(in srgb, var(--color-neutral-p25), var(--color-neutral-p50));
+                --color-neutral-p50: color-mix(var(--color-front), var(--color-back));
+
+                --color-neutral-p62-5: color-mix(in srgb, var(--color-neutral-p50), var(--color-neutral-p75));
+                --color-neutral-p75: color-mix(in srgb, var(--color-front), var(--color-neutral-p50));
+                --color-neutral-p87-5: color-mix(in srgb, var(--color-neutral-p75), var(--color-front));
 
                 /*region color-derivation*/
                 /*primary*/
-                --color-neutral-p50: color-mix(var(--color-front), var(--color-back));
-
-                --color-neutral-p25: color-mix(in srgb, var(--color-neutral-p50), var(--color-back));
-                --color-neutral-p75: color-mix(in srgb, var(--color-front), var(--color-neutral-p50));
-
-                --color-neutral-p12-5: color-mix(in srgb, var(--color-neutral-p25), var(--color-back));
-                --color-neutral-p37-5: color-mix(in srgb, var(--color-neutral-p25), var(--color-neutral-p50));
-                --color-neutral-p62-5: color-mix(in srgb, var(--color-neutral-p50), var(--color-neutral-p75));
-                --color-neutral-p87-5: color-mix(in srgb, var(--color-neutral-p75), var(--color-front));
-
-                /*primary*/
-                --color-primary-p50: var(--color-accent-primary);
-
-                --color-primary-p25: color-mix(in srgb, var(--color-primary-p50), var(--color-back));
-                --color-primary-p75: color-mix(in srgb, var(--color-front), var(--color-primary-p50));
+                --3d-outwards-small: var(--shadow-inset-light-small), var(--shadow-inset-light-counter-dark-small);
 
                 --color-primary-p12-5: color-mix(in srgb, var(--color-primary-p25), var(--color-back));
+                --color-primary-p25: color-mix(in srgb, var(--color-primary-p50), var(--color-back));
+
                 --color-primary-p37-5: color-mix(in srgb, var(--color-primary-p25), var(--color-primary-p50));
+                --color-primary-p50: var(--color-accent-primary);
                 --color-primary-p62-5: color-mix(in srgb, var(--color-primary-p50), var(--color-primary-p75));
+                --color-primary-p75: color-mix(in srgb, var(--color-front), var(--color-primary-p50));
+
+                /*primary*/
                 --color-primary-p87-5: color-mix(in srgb, var(--color-primary-p75), var(--color-front));
 
-                /*secondary*/
-                --color-secondary-p50: var(--color-accent-secondary);
-
-                --color-secondary-p25: color-mix(in srgb, var(--color-secondary-p50), var(--color-back));
-                --color-secondary-p75: color-mix(in srgb, var(--color-front), var(--color-secondary-p50));
+                --border-radius-big: calc(2 * var(--border-radius-small));
+                --border-radius-small: .5rem;
 
                 --color-secondary-p12-5: color-mix(in srgb, var(--color-secondary-p25), var(--color-back));
+                --color-secondary-p25: color-mix(in srgb, var(--color-secondary-p50), var(--color-back));
                 --color-secondary-p37-5: color-mix(in srgb, var(--color-secondary-p25), var(--color-secondary-p50));
+                --color-secondary-p50: var(--color-accent-secondary);
+
+                /*secondary*/
                 --color-secondary-p62-5: color-mix(in srgb, var(--color-secondary-p50), var(--color-secondary-p75));
+
+                --color-secondary-p75: color-mix(in srgb, var(--color-front), var(--color-secondary-p50));
                 --color-secondary-p87-5: color-mix(in srgb, var(--color-secondary-p75), var(--color-front));
+
+                --color-shadow-dark: hsl(0 0 0 / .25);
+                --color-shadow-light: hsl(0 0% 100% / 0.47);
+                --gap-small: 1rem;
+                --padding-small: .5rem;
                 /*endregion color-derivation*/
 
-                --color-text-normal: var(--color-back);
+                --padding-smaller: .25rem;
                 /*endregion variables*/
 
-                background-color: #515151;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='164' height='164' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23454545' fill-opacity='0.31'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.31'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");
-                background-attachment: fixed;
+                --color-text-normal: var(--color-back);
+                --filter-textless: blur(.5rem);
+                --color-transparency: rgb(0 0 0 / 0);
             }
 
             html {
@@ -111,172 +113,175 @@
             }
 
             .popup-content {
-                width: fit-content;
-                text-align: center;
-                position: absolute;
-                offset: bottom;
-                margin-top: 2.5rem;
-                
-                z-index: 1;
-                padding: 1rem;
+                backdrop-filter: var(--filter-textless);
                 background-color: color-mix(var(--color-transparency), var(--color-primary-p75));
                 border-radius: 1rem;
-                gap: 1rem;
-                display: flex;
-                flex-direction: column;
-                font-family: system-ui, sans-serif;
-                backdrop-filter: var(--filter-textless);
                 box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-large);
+                display: flex;
+
+                flex-direction: column;
+                font-family: system-ui, sans-serif;
+                gap: 1rem;
+                margin-top: 2.5rem;
+                offset: bottom;
                 opacity: 0;
+                padding: 1rem;
+                position: absolute;
+                text-align: center;
                 transition: all .1s ease-out;
                 visibility: hidden;
+                width: fit-content;
+                z-index: 1;
             }
 
+            /*noinspection ALL*/
             .popup-content.show {
-                visibility: visible;
-                transition: all .1s ease-out;
                 opacity: 1;
+                transition: all .1s ease-out;
+                visibility: visible;
             }
+
+            /*TODO https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@starting-style*/
 
             .root-container {
-                gap: var(--gap-medium);
                 display: flex;
                 flex-direction: column;
+                gap: var(--gap-medium);
             }
 
             .control-bar-container {
-                gap: 0;
-                display: grid;
                 column-count: 3;
+                display: grid;
+                gap: 0;
             }
 
             .control-bar-left {
-                gap: var(--gap-small);
                 display: flex;
-                /*width: fit-content;*/
                 flex-direction: row;
-                justify-content: left;
-                grid-column-start: 1;
+                /*width: fit-content;*/
+                gap: var(--gap-small);
                 grid-column-end: 1;
+                grid-column-start: 1;
+                justify-content: left;
             }
 
             .control-bar-center {
-                gap: var(--gap-small);
                 display: flex;
-                /*width: fit-content;*/
                 flex-direction: row;
-                justify-content: center;
-                grid-column-start: 2;
+                /*width: fit-content;*/
+                gap: var(--gap-small);
                 grid-column-end: 2;
+                grid-column-start: 2;
+                justify-content: center;
             }
 
             .control-bar-right {
-                gap: var(--gap-small);
                 display: flex;
-                width: stretch;
-                /*width: fit-content;*/
                 flex-direction: row;
-                justify-content: right;
-                grid-column-start: 3;
+                gap: var(--gap-small);
+                /*width: fit-content;*/
                 grid-column-end: 3;
+                grid-column-start: 3;
+                justify-content: right;
+                width: stretch;
             }
 
             h1 {
-                font-family: Consolas, "Courier New", monospace;
-                padding: var(--padding-medium);
                 color: var(--color-secondary-p50);
+                font-family: Consolas, "Courier New", monospace;
                 font-size: xxx-large;
                 font-weight: bolder;
+                padding: var(--padding-medium);
                 text-shadow: var(--shadow-dark-small);
             }
 
             .text-field {
-                border-radius: var(--border-radius-small);
-                inset: 1rem;
                 background-color: color-mix(var(--color-transparency), var(--color-primary-p87-5));
+                border-radius: var(--border-radius-small);
                 color: var(--color-text-normal);
-                padding: var(--padding-small);
-                transition: ease-in-out .25s;
+                inset: 1rem;
                 outline: transparent;
                 overflow-wrap: anywhere;
+                padding: var(--padding-small);
+                transition: ease-in-out .25s;
             }
 
             .text-field:focus, .text-field:active {
-                transition: ease-in-out .25s;
                 outline: var(--color-effect) solid 3px;
+                transition: ease-in-out .25s;
             }
 
             button {
                 background-color: color-mix(var(--color-transparency), var(--color-secondary-p75));
-                padding: var(--padding-smaller);
+                border: none;
                 border-radius: var(--border-radius-small);
-                text-align: justify;
-                width: max-content;
-                font-family: system-ui, sans-serif;
-                color: var(--color-text-normal);
                 box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-small);
-                border: none;
-                transition: ease-in-out 0.25s;
+                color: var(--color-text-normal);
                 cursor: pointer;
+                font-family: system-ui, sans-serif;
                 font-size: large;
+                padding: var(--padding-smaller);
+                text-align: justify;
+                transition: ease-in-out 0.25s;
+                width: max-content;
             }
 
             button:hover {
-                transition: ease-in-out 0.25s;
+                border-radius: 0;
                 box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-small);
-                border-radius: 0;
+                transition: ease-in-out 0.25s;
             }
 
             button:active {
-                transition: ease-in-out 0.25s;
                 background-color: var(--color-primary-p25);
+                transition: ease-in-out 0.25s;
             }
 
             .code-field {
-                font-family: Consolas, "Courier New", monospace;
-                border-radius: var(--border-radius-small);
-                inset: 1rem;
                 background-color: var(--color-neutral-p75);
-                color: var(--color-text-normal);
+                border-radius: var(--border-radius-small);
                 box-shadow: var(--shadow-inset-dark-small);
-                padding: var(--padding-small);
-                transition: ease-in-out .25s;
+                color: var(--color-text-normal);
+                font-family: Consolas, "Courier New", monospace;
+                inset: 1rem;
                 outline: transparent;
                 overflow-wrap: anywhere;
+                padding: var(--padding-small);
+                transition: ease-in-out .25s;
             }
 
             .code-field:focus, .code-field:active {
-                transition: ease-in-out .25s;
                 outline: var(--color-effect) solid 3px;
+                transition: ease-in-out .25s;
             }
 
             .code-output-box {
-                font-family: Consolas, "Courier New", monospace;
                 background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p25)));
                 border-radius: 0.5rem;
+                font-family: Consolas, "Courier New", monospace;
                 inset: 1rem;
-                /*box-shadow: var(--shadow-inset-dark-small);*/
-                transition: ease-in-out .25s;
                 outline: transparent;
+                transition: ease-in-out .25s;
             }
 
             .code-output-field {
-                font-family: Consolas, "Courier New", monospace;
-                color: var(--color-secondary-p62-5);
                 border-radius: 0.5rem;
+                color: var(--color-secondary-p62-5);
+                font-family: Consolas, "Courier New", monospace;
                 inset: 1rem;
+                outline: transparent;
                 padding: var(--padding-small);
                 transition: ease-in-out .25s;
-                outline: transparent;
+                overflow-wrap: anywhere;
             }
 
             body {
-                padding: var(--padding-medium);
                 display: flex;
                 flex-direction: column;
+                padding: var(--padding-medium);
             }
 
             .cell-container {
@@ -286,30 +291,37 @@
             }
 
             .cell {
-                padding: 1rem;
+                backdrop-filter: var(--filter-textless);
                 background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75))));
                 border-radius: 1rem;
-                gap: 1rem;
-                display: grid;
-                font-family: system-ui, sans-serif;
-                backdrop-filter: var(--filter-textless);
                 box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-large);
+                display: grid;
+                font-family: system-ui, sans-serif;
+                gap: 1rem;
                 opacity: 1;
+                padding: 1rem;
                 transition: all .1s ease-out;
                 visibility: visible;
+
+                .code-cell {
+                }
+
+                .text-cell {
+                }
             }
 
-            /*.hide {*/
-            /*    visibility: hidden;*/
-            /*    transition: all .1s ease-out;*/
-            /*    opacity: 0;*/
-            /*}*/
+
         </style>
     </head>
 
     <script>
-        class JSaturnBuildUtility {
+        class JSaturnBuilders {
+            static addUUID(element) {
+                const chars = "abcdefghijklmnopqrstuvwxyz";
+                element.id = (element.className ?? element.tagName) + "-" + "_".repeat(8).split("").map(c => chars[Math.floor((Math.random() * 26))]).join('');
+            }
+
             static applicable(o) {
                 o['apply'] = (f) => {
                     f(o);
@@ -318,86 +330,53 @@
                 return o;
             }
 
-            static addUUID(element) {
-                const chars = "abcdefghijklmnopqrstuvwxyz";
-                element.id = [...chars].map(c => chars[Math.floor((Math.random() * 26))]).join('');
-            }
-
-            static createElement(tag, className) {
-                return JSaturnBuildUtility.applicable(document.createElement(tag))
-                    .apply(element => {
-                        JSaturnBuildUtility.addUUID(element);
-                        element.className = className;
-                    });
-            }
-
-            static createDiv(className) {
-                return JSaturnBuildUtility.createElement('div', className);
-            }
-
             static createButton(className, clickAction, innerHTML, param) {
-                return JSaturnBuildUtility.createElement('button', className).apply(button => {
+                return this.createElement('button', className).apply(button => {
                     button.param = param;
                     button.onclick = () => clickAction(button);
                     button.innerHTML = innerHTML;
                 });
             }
-        }
-
-        class JSaturnBuilders {
-            static createCodeField(code) {
-                return JSaturnBuildUtility.createDiv('code-field').apply(codeField => {
-                        codeField.contentEditable = 'true';
-                        codeField.innerHTML = code ?? "";
-                    }
-                )
-            }
-
-            static createTextField() {
-                return JSaturnBuildUtility.createDiv("text-field").apply(textField => {
-                    textField.contentEditable = 'true';
-                });
-            }
 
             static createCell() {
-                return JSaturnBuildUtility.createDiv("cell").apply(cell => cell.append(
-                    JSaturnBuildUtility.createDiv("control-bar-container").apply(cellControls => {
+                return this.createDiv("cell").apply(cell => cell.append(
+                    this.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
-                            JSaturnBuildUtility.createDiv('control-bar-left').apply(controlBar => {
+                            this.createDiv('control-bar-left').apply(controlBar => {
                                 controlBar.id = 'top-control-bar-left';
-                                controlBar.append(JSaturnBuildUtility.createButton('delete-cell-button', (button) => {
+                                controlBar.append(this.createButton('delete-cell-button', (button) => {
                                     button.param.remove();
                                 }, `❌`, cell));
                             }),
-                            JSaturnBuildUtility.createDiv('control-bar-center').apply(controlBar => {
+                            this.createDiv('control-bar-center').apply(controlBar => {
                                 controlBar.id = 'top-control-bar-center';
                             }),
-                            JSaturnBuildUtility.createDiv('control-bar-right').apply(controlBar => {
+                            this.createDiv('control-bar-right').apply(controlBar => {
                                 controlBar.id = 'top-control-bar-right';
                             })
                         )
                     }),
-                    JSaturnBuildUtility.createDiv("cell-content"),
-                    JSaturnBuildUtility.createDiv("control-bar-container").apply(cellControls => {
+                    this.createDiv("cell-content"),
+                    this.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
-                            JSaturnBuildUtility.createDiv('control-bar-left').apply(controlBar => {
+                            this.createDiv('control-bar-left').apply(controlBar => {
                                 controlBar.id = 'bottom-control-bar-left';
                             }),
-                            JSaturnBuildUtility.createDiv("control-bar-center").apply(controlBar => {
+                            this.createDiv("control-bar-center").apply(controlBar => {
                                 controlBar.id = 'bottom-control-bar-center';
-                                const popupContent = JSaturnBuildUtility.createDiv('popup-content').apply(pc => pc.append(
-                                    JSaturnBuildUtility.createButton('log-stuff-button', (button) => console.log(button.param), 'log', "Hello WOlrd"),
+                                const popupContent = this.createDiv('popup-content').apply(pc => pc.append(
+                                    this.createButton('log-stuff-button', (button) => console.log(button.param), 'log', "Hello WOlrd"),
                                 ));
                                 controlBar.append(
-                                    JSaturnBuildUtility.createButton('add-cell-below-button', (button) => button.param.after(JSaturnBuilders.createCodeCell()), '➕ <>', cell),
+                                    this.createButton('add-cell-below-button', (button) => button.param.after(this.createCodeCell()), '➕ <>', cell),
                                     //     <button onClick="togglePopUp('options-popup')">•••</button>
                                     // <div class="popup-content" id="options-popup">
-                                    JSaturnBuildUtility.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
+                                    this.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
                                     popupContent,
-                                    JSaturnBuildUtility.createButton('add-text-below-button', (button) => button.param.after(JSaturnBuilders.createTextCell()), '➕ T', cell)
+                                    this.createButton('add-text-below-button', (button) => button.param.after(this.createTextCell()), '➕ T', cell)
                                 )
                             }),
-                            JSaturnBuildUtility.createDiv('control-bar-right').apply(controlBar => {
+                            this.createDiv('control-bar-right').apply(controlBar => {
                                 controlBar.id = 'bottom-control-bar-right';
                             })
                         )
@@ -406,12 +385,12 @@
             }
 
             static createCodeCell(code) {
-                return JSaturnBuilders.createCell().apply(cell => {
+                return this.createCell().apply(cell => {
                     cell['persistenceKey'] = 'code-cell';
                     cell.querySelector('.cell-content').append(
-                        JSaturnBuildUtility.createDiv("code-output-box").apply(codeOutputBox => {
+                        this.createDiv("code-output-box").apply(codeOutputBox => {
                             codeOutputBox.append(
-                                JSaturnBuilders.createCodeField(code).apply(codeField => {
+                                this.createCodeField(code).apply(codeField => {
                                     codeField.addEventListener('keypress', function (e) {
                                         if ((e.code === "Enter") && e.ctrlKey) {
                                             JSaturnCodeCellUtility.runCell(cell)
@@ -422,73 +401,56 @@
                             codeOutputBox.setOutput = (output) => {
                                 codeOutputBox.querySelectorAll('.code-output-field').forEach(field => field.remove());
                                 if (output.length > 0) {
-                                    codeOutputBox.append(JSaturnBuildUtility.createDiv("code-output-field")
+                                    codeOutputBox.append(this.createDiv("code-output-field")
                                         .apply(outputField => outputField.innerHTML = output));
                                 }
                             }
                         })
                     )
                     cell.querySelector('#top-control-bar-right').append(
-                        JSaturnBuildUtility.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
+                        this.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
                     )
                 })
             }
 
+            static createCodeField(code) {
+                return this.createDiv('code-field').apply(codeField => {
+                        codeField.contentEditable = 'true';
+                        codeField.innerHTML = code ?? "";
+                    }
+                )
+            }
+
+            static createDiv(className) {
+                return this.createElement('div', className);
+            }
+
+            static createElement(tag, className) {
+                return this.applicable(document.createElement(tag))
+                    .apply(element => {
+                        this.addUUID(element);
+                        if (className) {
+                            element.className = className;
+                        }
+                    });
+            }
+
             static createTextCell(text) {
-                return JSaturnBuilders.createCell().apply(cell => {
+                return this.createCell().apply(cell => {
                     cell['persistenceKey'] = 'text-cell';
                     cell.querySelector('.cell-content')
-                        .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = text ?? ""));
+                        .append(this.createTextField().apply(textField => textField.innerHTML = text ?? ""));
                 });
             }
 
-            static createPopupButton(innerHTML, ...elements) {
-                const popup = document.createElement('div');
-                popup.id = crypto.randomUUID();
-                popup.className = 'popup-box';
-                const popupContent = document.createElement('div');
-                popupContent.className = 'popup-content';
-                popupContent.append(...elements);
-                popup.append(popupContent)
-                return JSaturnBuildUtility.createButton(
-                    'popup-button',
-                    (button) => {
-                        button.param.classList.toggle('show')
-                    },
-                    innerHTML,
-                    popup
-                ).apply(button => button.append(popup));
+            static createTextField() {
+                return this.createDiv("text-field").apply(textField => {
+                    textField.contentEditable = 'true';
+                });
             }
         }
 
         class JSaturnCodeCellUtility {
-            static runCell(cell) {
-                const code = cell.querySelector('.code-field');
-                if (!code) {
-                    return;
-                }
-                const codeText = code.innerText;
-                const resultStrings = [];
-                const logOutput = (args) => resultStrings.push("> " + String(args));
-                const consoleBox = console;
-                const global = document['global'] ?? {}
-                console = {
-                    log: logOutput
-                };
-                try {
-                    const output = eval(codeText);
-                    if (output && output !== 1) {
-                        logOutput(output);
-                    }
-                } catch (e) {
-                    logOutput(e);
-                }
-                document['global'] = global;
-                console = consoleBox;
-                cell.querySelector('.code-output-box').setOutput(resultStrings.join("<br>"));
-                JSaturnCodeCellUtility.highlightCell(cell);
-            }
-
             static highlightCell(cell) {
                 if (!JSaturnFeatures.getFeature("syntax-highlighting")) {
                     return;
@@ -519,6 +481,33 @@
                 document.querySelectorAll(".cell").forEach(cell => {
                     JSaturnCodeCellUtility.runCell(cell);
                 });
+            }
+
+            static runCell(cell) {
+                const code = cell.querySelector('.code-field');
+                if (!code) {
+                    return;
+                }
+                const codeText = code.innerText;
+                const resultStrings = [];
+                const logOutput = (args) => resultStrings.push("> " + String(args));
+                const consoleBox = console;
+                const global = document['global'] ?? {}
+                console = {
+                    log: logOutput
+                };
+                try {
+                    const output = eval(codeText);
+                    if (output && output !== 1) {
+                        logOutput(output);
+                    }
+                } catch (e) {
+                    logOutput(e);
+                }
+                document['global'] = global;
+                console = consoleBox;
+                cell.querySelector('.code-output-box').setOutput(resultStrings.join("<br>"));
+                JSaturnCodeCellUtility.highlightCell(cell);
             }
         }
 
@@ -555,8 +544,6 @@
                 });
             }
 
-            static dataModelVersion = 0.0
-
             static log(type, message, causeId, context) {
                 const logObject = JSON.stringify({
                     type: type,
@@ -570,18 +557,6 @@
 
             static mountDebugger() {
                 console.log("mountDebugger");
-            }
-
-            static exportToClipboard() {
-                window.navigator.clipboard.writeText(JSON.stringify(JSaturnDataModel.serializeFromRoot()));
-            }
-
-            static exportMarkdownToClipboard() {
-                window.navigator.clipboard.writeText(JSaturnDataModel.markdownFromRoot());
-            }
-
-            static importFromClipboard() {
-                window.navigator.clipboard.readText().then(value => JSaturnDataModel.deserialize(JSON.parse(value)));
             }
 
             static removeAll() {
@@ -603,10 +578,12 @@
                 }
             }
 
-            static toggleFeature(feature) {
-                const newState = !JSaturnFeatures.getFeature(feature);
-                JSaturnFeatures.setFeature(feature, newState);
-                return newState;
+            static featureChange(feature, newState) {
+                JSaturnFeatures.featureChangeHandlers[feature]?.(newState);
+            }
+
+            static getFeature(feature) {
+                return JSaturnRoot.configData.features[feature];
             }
 
             static handleFeatureToggle(toggleButton) {
@@ -616,29 +593,62 @@
                 JSaturnFeatures.featureChange(feature, newState);
             }
 
-            static getFeature(feature) {
-                return JSaturnRoot.configData.features[feature];
-            }
-
-            static setFeature(feature, value) {
-                JSaturnRoot.configData.features[feature] = value;
-            }
-
-            static featureChange(feature, newState) {
-                JSaturnFeatures.featureChangeHandlers[feature]?.(newState);
-            }
-
-            static updateFeatureToggleText(feature, newState, toggleButton) {
-                const textValue = newState ? "On" : "Off"
-                toggleButton.textContent = toggleButton.textContent?.replace(/On|Off/, textValue);
-            }
-
             static restoreFeatureToggles() {
                 document.querySelectorAll('.feature-toggle').forEach(toggleButton => {
                     const feature = toggleButton.id;
                     const configState = JSaturnFeatures.getFeature(feature);
                     JSaturnFeatures.updateFeatureToggleText(feature, configState, toggleButton)
                 })
+            }
+
+            static setFeature(feature, value) {
+                JSaturnRoot.configData.features[feature] = value;
+            }
+
+            static toggleFeature(feature) {
+                const newState = !JSaturnFeatures.getFeature(feature);
+                JSaturnFeatures.setFeature(feature, newState);
+                return newState;
+            }
+
+            static updateFeatureToggleText(feature, newState, toggleButton) {
+                const textValue = newState ? "On" : "Off"
+                toggleButton.textContent = toggleButton.textContent?.replace(/On|Off/, textValue);
+            }
+        }
+
+        class JSaturnIO {
+            static downloadFile(data, name, suffix) {
+                const url = `data:text/plain;charset=utf-8,${encodeURIComponent(data)}`
+                const fileName = `${name}.${suffix}`
+                JSaturnBuilders.createElement("a").apply(a => {
+                    a.setAttribute("href", url);
+                    a.setAttribute("download", fileName);
+                    a.click();
+                })
+            }
+
+            static exportToClipboard() {
+                window.navigator.clipboard.writeText(JSON.stringify(JSaturnDataModel.serializeFromRoot()));
+            }
+
+            static exportMarkdownToClipboard() {
+                window.navigator.clipboard.writeText(JSaturnDataModel.markdownFromRoot());
+            }
+
+            // TODO [refactor] @curolith adapt other classes to use this instead of class name
+
+            static exportMarkdownToFile() {
+                const text = JSaturnDataModel.markdownFromRoot();
+                this.downloadFile(
+                    JSaturnDataModel.markdownFromRoot(),
+                    "JSaturn_export_" + (new Date()).toISOString().replace(":","-").replace("T","_").match(/^[^:]+/),
+                    "md"
+                )
+            }
+
+            static importFromClipboard() {
+                window.navigator.clipboard.readText().then(value => JSaturnDataModel.deserialize(JSON.parse(value)));
             }
         }
 
@@ -679,7 +689,7 @@
 
             static 'root-container' = {
                 deserialize: (persistenceData) => {
-                    const rootContainer = JSaturnBuildUtility.applicable(document.querySelector('#root-container'));
+                    const rootContainer = JSaturnBuilders.applicable(document.querySelector('#root-container'));
                     const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
                     rootContainer.append(...children);
                     return rootContainer;
@@ -697,7 +707,7 @@
 
             static 'cell-container' = {
                 deserialize: (persistenceData) => {
-                    const cellContainer = JSaturnBuildUtility.applicable(document.querySelector('#cell-container'));
+                    const cellContainer = JSaturnBuilders.applicable(document.querySelector('#cell-container'));
                     cellContainer.innerHTML = '';
                     const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
                     cellContainer.append(...children);
@@ -875,7 +885,6 @@
                                 </button>
                             </div>
                         </div>
-
                         <div id="root-container-top-bar-center" class="control-bar-center">
                             <button class="add-cell-below-button"
                                     onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createCodeCell())">
@@ -884,19 +893,23 @@
                             <button onclick="togglePopUp('options-popup')">•••</button>
                             <div class="popup-content" id="options-popup">
                                 <button id="save" onclick="JSaturnStorage.saveState()">💾 Manual save</button>
-                                <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋 Export state to
-                                    clipboard
+                                <button id="export-state-to-clipboard-button" onclick="JSaturnIO.exportToClipboard()">
+                                    📤📋 Export state to clipboard
                                 </button>
-                                <button id="copy-markdown-to-clipboard-button" onclick="JSaturnRoot.exportMarkdownToClipboard()">
-                                    📝📋 Export Markdown to clipboard
+                                <button id="import-state-from-clipboard-button"
+                                        onclick="JSaturnIO.importFromClipboard()">📋📥 Load state from clipboard
                                 </button>
-                                <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥 Load state from
-                                    clipboard
+                                <button id="export-markdown-to-clipboard-button"
+                                        onclick="JSaturnIO.exportMarkdownToClipboard()">📝📋 Export Markdown to clipboard
                                 </button>
-                                <button id="remove-all" onclick="JSaturnRoot.removeAll()">🗑️ Remove all cells
+                                <button id="export-markdown-to-clipboard-button"
+                                        onclick="JSaturnIO.exportMarkdownToFile()">📝📂 Export Markdown to file
                                 </button>
-                                <button id="reset-default-button" onclick="JSaturnRoot.resetDefaultState()">⏮️
-                                    Restore demo cells
+                                <button id="remove-all-cells-button" onclick="JSaturnRoot.removeAll()">🗑️ Remove all
+                                    cells
+                                </button>
+                                <button id="reset-default-button" onclick="JSaturnRoot.resetDefaultState()">⏮️ Restore
+                                    demo cells
                                 </button>
                             </div>
                             <button class="add-text-below-button"
@@ -909,10 +922,12 @@
                         </div>
                     </div>
                     <div id="cell-container" class="cell-container"></div>
+<!--                    TODO add bottom data like last saved-->
                 </div>
             </div>
             <script>
                 JSaturnRoot.init();
             </script>
+        </div>
     </body>
 </html>
