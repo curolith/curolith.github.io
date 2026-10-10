@@ -303,15 +303,13 @@
                 padding: 1rem;
                 transition: all .1s ease-out;
                 visibility: visible;
-
-                .code-cell {
-                }
-
-                .text-cell {
-                }
             }
 
+            .code-cell {
+            }
 
+            .text-cell {
+            }
         </style>
     </head>
 
@@ -319,7 +317,7 @@
         class JSaturnBuilders {
             static addUUID(element) {
                 const chars = "abcdefghijklmnopqrstuvwxyz";
-                element.id = (element.className ?? element.tagName) + "-" + "_".repeat(8).split("").map(c => chars[Math.floor((Math.random() * 26))]).join('');
+                element.id = (element.className ?? element.tagName).split(" ").findLast(Boolean) + "-" + "_".repeat(8).split("").map(c => chars[Math.floor((Math.random() * 26))]).join('');
             }
 
             static applicable(o) {
@@ -331,52 +329,52 @@
             }
 
             static createButton(className, clickAction, innerHTML, param) {
-                return this.createElement('button', className).apply(button => {
+                return JSaturnBuilders.createElement('button', className).apply(button => {
                     button.param = param;
                     button.onclick = () => clickAction(button);
                     button.innerHTML = innerHTML;
                 });
             }
 
-            static createCell() {
-                return this.createDiv("cell").apply(cell => cell.append(
-                    this.createDiv("control-bar-container").apply(cellControls => {
+            static createCell(customClass) {
+                return JSaturnBuilders.createDiv(customClass ?? "cell").apply(cell => cell.append(
+                    JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
-                            this.createDiv('control-bar-left').apply(controlBar => {
+                            JSaturnBuilders.createDiv('control-bar-left').apply(controlBar => {
                                 controlBar.id = 'top-control-bar-left';
-                                controlBar.append(this.createButton('delete-cell-button', (button) => {
+                                controlBar.append(JSaturnBuilders.createButton('delete-cell-button', (button) => {
                                     button.param.remove();
                                 }, `❌`, cell));
                             }),
-                            this.createDiv('control-bar-center').apply(controlBar => {
+                            JSaturnBuilders.createDiv('control-bar-center').apply(controlBar => {
                                 controlBar.id = 'top-control-bar-center';
                             }),
-                            this.createDiv('control-bar-right').apply(controlBar => {
+                            JSaturnBuilders.createDiv('control-bar-right').apply(controlBar => {
                                 controlBar.id = 'top-control-bar-right';
                             })
                         )
                     }),
-                    this.createDiv("cell-content"),
-                    this.createDiv("control-bar-container").apply(cellControls => {
+                    JSaturnBuilders.createDiv("cell-content"),
+                    JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
-                            this.createDiv('control-bar-left').apply(controlBar => {
+                            JSaturnBuilders.createDiv('control-bar-left').apply(controlBar => {
                                 controlBar.id = 'bottom-control-bar-left';
                             }),
-                            this.createDiv("control-bar-center").apply(controlBar => {
+                            JSaturnBuilders.createDiv("control-bar-center").apply(controlBar => {
                                 controlBar.id = 'bottom-control-bar-center';
-                                const popupContent = this.createDiv('popup-content').apply(pc => pc.append(
-                                    this.createButton('log-stuff-button', (button) => console.log(button.param), 'log', "Hello WOlrd"),
+                                const popupContent = JSaturnBuilders.createDiv('popup-content').apply(pc => pc.append(
+                                    JSaturnBuilders.createButton('log-stuff-button', (button) => console.log(button.param), 'log', "Hello WOlrd"),
                                 ));
                                 controlBar.append(
-                                    this.createButton('add-cell-below-button', (button) => button.param.after(this.createCodeCell()), '➕ <>', cell),
+                                    JSaturnBuilders.createButton('add-cell-below-button', (button) => button.param.after(JSaturnBuilders.createCodeCell()), '➕ <>', cell),
                                     //     <button onClick="togglePopUp('options-popup')">•••</button>
                                     // <div class="popup-content" id="options-popup">
-                                    this.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
+                                    JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
                                     popupContent,
-                                    this.createButton('add-text-below-button', (button) => button.param.after(this.createTextCell()), '➕ T', cell)
+                                    JSaturnBuilders.createButton('add-text-below-button', (button) => button.param.after(JSaturnBuilders.createTextCell()), '➕ T', cell)
                                 )
                             }),
-                            this.createDiv('control-bar-right').apply(controlBar => {
+                            JSaturnBuilders.createDiv('control-bar-right').apply(controlBar => {
                                 controlBar.id = 'bottom-control-bar-right';
                             })
                         )
@@ -385,12 +383,12 @@
             }
 
             static createCodeCell(code) {
-                return this.createCell().apply(cell => {
-                    cell['persistenceKey'] = 'code-cell';
+                return JSaturnBuilders.createCell("cell code-cell").apply(cell => {
+                    // cell['persistenceKey'] = 'code-cell';
                     cell.querySelector('.cell-content').append(
-                        this.createDiv("code-output-box").apply(codeOutputBox => {
+                        JSaturnBuilders.createDiv("code-output-box").apply(codeOutputBox => {
                             codeOutputBox.append(
-                                this.createCodeField(code).apply(codeField => {
+                                JSaturnBuilders.createCodeField(code).apply(codeField => {
                                     codeField.addEventListener('keypress', function (e) {
                                         if ((e.code === "Enter") && e.ctrlKey) {
                                             JSaturnCodeCellUtility.runCell(cell)
@@ -401,20 +399,20 @@
                             codeOutputBox.setOutput = (output) => {
                                 codeOutputBox.querySelectorAll('.code-output-field').forEach(field => field.remove());
                                 if (output.length > 0) {
-                                    codeOutputBox.append(this.createDiv("code-output-field")
+                                    codeOutputBox.append(JSaturnBuilders.createDiv("code-output-field")
                                         .apply(outputField => outputField.innerHTML = output));
                                 }
                             }
                         })
                     )
                     cell.querySelector('#top-control-bar-right').append(
-                        this.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
+                        JSaturnBuilders.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
                     )
                 })
             }
 
             static createCodeField(code) {
-                return this.createDiv('code-field').apply(codeField => {
+                return JSaturnBuilders.createDiv('code-field').apply(codeField => {
                         codeField.contentEditable = 'true';
                         codeField.innerHTML = code ?? "";
                     }
@@ -422,29 +420,29 @@
             }
 
             static createDiv(className) {
-                return this.createElement('div', className);
+                return JSaturnBuilders.createElement('div', className);
             }
 
             static createElement(tag, className) {
-                return this.applicable(document.createElement(tag))
+                return JSaturnBuilders.applicable(document.createElement(tag))
                     .apply(element => {
-                        this.addUUID(element);
                         if (className) {
                             element.className = className;
                         }
+                        JSaturnBuilders.addUUID(element);
                     });
             }
 
             static createTextCell(text) {
-                return this.createCell().apply(cell => {
-                    cell['persistenceKey'] = 'text-cell';
+                return JSaturnBuilders.createCell("cell text-cell").apply(cell => {
+                    // cell['persistenceKey'] = 'text-cell';
                     cell.querySelector('.cell-content')
-                        .append(this.createTextField().apply(textField => textField.innerHTML = text ?? ""));
+                        .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = text ?? ""));
                 });
             }
 
             static createTextField() {
-                return this.createDiv("text-field").apply(textField => {
+                return JSaturnBuilders.createDiv("text-field").apply(textField => {
                     textField.contentEditable = 'true';
                 });
             }
@@ -524,7 +522,7 @@
             }
 
             static resetDefaultState() {
-                JSaturnDataModel.deserialize(JSON.parse('{"persistenceKey":"root-serializer","data":{"dataModelVersion":0,"configData":{"features":{"syntax-highlighting":false,"auto-save":true}},"rootContainerData":{"persistenceKey":"root-container","data":{"children":[{"persistenceKey":"cell-container","data":{"children":[{"persistenceKey":"text-cell","data":"This is a text cell. Default formatting is supported:<br>- <b>CTRL + B</b><br>- <i>CTRL&nbsp; + I</i><br>- <u>CTRL + U</u>"},{"persistenceKey":"code-cell","data":"const greeting = \\"Hello\\";<br>global.planet = \\"Saturn\\"; // global is available to all cells <br>console.log(`${greeting} ${global.planet}!`);"}]}}]}}}}\n'))
+                JSaturnDataModel.deserialize(JSON.parse('{"persistenceKey":"#document","data":{"dataModelVersion":0,"configData":{"features":{"syntax-highlighting":false,"auto-save":true}},"rootContainerData":{"persistenceKey":"root-container","data":{"children":[{"persistenceKey":"cell-container","data":{"children":[{"persistenceKey":"text-cell","data":"This is a text cell. Default formatting is supported:<br>- <b>CTRL + B</b><br>- <i>CTRL&nbsp; + I</i><br>- <u>CTRL + U</u>"},{"persistenceKey":"code-cell","data":"const greeting = \\"Hello\\";<br>global.planet = \\"Saturn\\"; // global is available to all cells <br>console.log(`${greeting} ${global.planet}!`);"}]}}]}}}}'))
             }
 
             static init() {
@@ -640,9 +638,9 @@
 
             static exportMarkdownToFile() {
                 const text = JSaturnDataModel.markdownFromRoot();
-                this.downloadFile(
+                JSaturnIO.downloadFile(
                     JSaturnDataModel.markdownFromRoot(),
-                    "JSaturn_export_" + (new Date()).toISOString().replace(":","-").replace("T","_").match(/^[^:]+/),
+                    "JSaturn_export_" + (new Date()).toISOString().replace(":", "-").replace("T", "_").match(/^[^:]+/),
                     "md"
                 )
             }
@@ -655,122 +653,150 @@
         class JSaturnDataModel {
             // TODO Update on change and implement migration
             static dataModelVersion = 0.0;
-
-            static 'root-serializer' = {
-                deserialize: (persistenceData) => {
-                    if (persistenceData.data.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
-                        persistenceData = JSaturnDataModel.migratePersistenceData(persistenceData);
-                    }
-                    JSaturnRoot.configData = persistenceData.data.configData;
-                    JSaturnDataModel.deserialize(persistenceData.data.rootContainerData);
-                    JSaturnFeatures.restoreFeatureToggles();
-                    return document;
-                },
-                serialize: (jSaturnElement) => {
-                    const rootContainer = document.querySelector('#root-container');
-                    return {
-                        persistenceKey: 'root-serializer',
-                        data: {
-                            dataModelVersion: JSaturnDataModel.dataModelVersion,
-                            configData: JSaturnRoot.configData,
-                            rootContainerData: JSaturnDataModel.serialize(rootContainer, 'serialize')
+            static transformers = {
+                serialize: "serialize",
+                deserialize: "deserialize",
+                markdown: "markdown"
+            }
+            static models = {
+                "#document": {
+                    deserialize: (persistenceData) => {
+                        if (persistenceData.data.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
+                            persistenceData = JSaturnDataModel.migratePersistenceData(persistenceData);
                         }
-                    }
-                },
-                markdown: (jSaturnElement) => [
-                    "# JSaturn",
-                    (new Date()).toString().match(/^[^:]+:[^:]+/),
-                    "<br>",
-                    "",
-                    "---",
-                    JSaturnDataModel.serialize(document.querySelector('#root-container'), 'markdown')
-                ].flat(100).join("\n")
-            }
-
-            static 'root-container' = {
-                deserialize: (persistenceData) => {
-                    const rootContainer = JSaturnBuilders.applicable(document.querySelector('#root-container'));
-                    const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
-                    rootContainer.append(...children);
-                    return rootContainer;
-                },
-                serialize: (jSaturnElement) => {
-                    return {
-                        persistenceKey: 'root-container',
-                        data: {
-                            children: JSaturnDataModel.serializeChildren(jSaturnElement)
+                        JSaturnRoot.configData = persistenceData.data.configData;
+                        JSaturnDataModel.deserialize(persistenceData.data.rootContainerData);
+                        JSaturnFeatures.restoreFeatureToggles();
+                        return document;
+                    },
+                    serialize: (jSaturnElement) => {
+                        const rootContainer = document.querySelector('#root-container');
+                        return {
+                            persistenceKey: '#document',
+                            data: {
+                                dataModelVersion: JSaturnDataModel.dataModelVersion,
+                                configData: JSaturnRoot.configData,
+                                rootContainerData: JSaturnDataModel.transformData(rootContainer, JSaturnDataModel.transformers.serialize)
+                            }
                         }
-                    }
-                },
-                markdown: (jSaturnElement) => JSaturnDataModel.markdownChildren(jSaturnElement)
-            }
-
-            static 'cell-container' = {
-                deserialize: (persistenceData) => {
-                    const cellContainer = JSaturnBuilders.applicable(document.querySelector('#cell-container'));
-                    cellContainer.innerHTML = '';
-                    const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
-                    cellContainer.append(...children);
-                    return cellContainer;
-                },
-                serialize: (jSaturnElement) => {
-                    return {
-                        persistenceKey: 'cell-container',
-                        data: {
-                            children: JSaturnDataModel.serializeChildren(jSaturnElement)
-                        }
-                    }
-                },
-                markdown: (jSaturnElement) => JSaturnDataModel.markdownChildren(jSaturnElement)
-            }
-
-            static 'code-cell' = {
-                deserialize: (persistenceData) => {
-                    return JSaturnBuilders.createCodeCell(persistenceData.data).apply(JSaturnCodeCellUtility.highlightCell);
-                },
-                serialize: (jSaturnElement) => {
-                    return {
-                        persistenceKey: 'code-cell',
-                        data: jSaturnElement.querySelector('.code-field')?.innerText?.replace(/\n/g, "<br>")
-                    }
-                },
-                markdown: (jSaturnElement) => [
-                    "```javascript",
-                    jSaturnElement.querySelector('.code-field')?.innerText,
-                    "```",
-                    jSaturnElement.querySelector('.code-output-field')?.outerHTML,
-                    "",
-                    "---",
-                ]
-            }
-
-            static 'text-cell' = {
-                deserialize: (persistenceData) => {
-                    return JSaturnBuilders.createTextCell(persistenceData.data);
-                },
-                serialize: (jSaturnElement) => {
-                    return {
-                        persistenceKey: 'text-cell',
-                        data: jSaturnElement.querySelector('.text-field')?.innerHTML
-                        // innerText?.replace(/\n/g, "<br>")
-                    }
-                },
-                markdown: (jSaturnElement) => {
-                    return [
+                    },
+                    markdown: (jSaturnElement) => [
+                        "# JSaturn",
+                        (new Date()).toString().match(/^[^:]+:[^:]+/),
+                        "<br>",
                         "",
-                        jSaturnElement.querySelector('.text-field')?.innerHTML,
+                        "---",
+                        JSaturnDataModel.transformData(document.querySelector('#root-container'), JSaturnDataModel.transformers.markdown)
+                    ].flat(100).join("\n")
+                }
+
+                ,
+                "root-container": {
+                    deserialize: (persistenceData) => {
+                        const rootContainer = JSaturnBuilders.applicable(document.querySelector('#root-container'));
+                        const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
+                        rootContainer.append(...children);
+                        return rootContainer;
+                    },
+                    serialize: (jSaturnElement) => {
+                        return {
+                            persistenceKey: 'root-container',
+                            data: {
+                                children: JSaturnDataModel.serializeChildren(jSaturnElement)
+                            }
+                        }
+                    },
+                    markdown: (jSaturnElement) => JSaturnDataModel.markdownChildren(jSaturnElement)
+                }
+
+                ,
+                "cell-container": {
+                    deserialize: (persistenceData) => {
+                        const cellContainer = JSaturnBuilders.applicable(document.querySelector('#cell-container'));
+                        cellContainer.innerHTML = '';
+                        const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
+                        cellContainer.append(...children);
+                        return cellContainer;
+                    },
+                    serialize: (jSaturnElement) => {
+                        return {
+                            persistenceKey: 'cell-container',
+                            data: {
+                                children: JSaturnDataModel.serializeChildren(jSaturnElement)
+                            }
+                        }
+                    },
+                    markdown: (jSaturnElement) => JSaturnDataModel.markdownChildren(jSaturnElement)
+                }
+
+                ,
+                "code-cell": {
+                    deserialize: (persistenceData) => {
+                        return JSaturnBuilders.createCodeCell(persistenceData.data).apply(JSaturnCodeCellUtility.highlightCell);
+                    },
+                    serialize: (jSaturnElement) => {
+                        return {
+                            persistenceKey: 'code-cell',
+                            data: jSaturnElement.querySelector('.code-field')?.innerText?.replace(/\n/g, "<br>")
+                        }
+                    },
+                    markdown: (jSaturnElement) => [
+                        "```javascript",
+                        jSaturnElement.querySelector('.code-field')?.innerText,
+                        "```",
+                        jSaturnElement.querySelector('.code-output-field')?.outerHTML,
                         "",
-                        "---"
-                    ];
+                        "---",
+                    ]
+                }
+
+                ,
+                "text-cell": {
+                    deserialize: (persistenceData) => {
+                        return JSaturnBuilders.createTextCell(persistenceData.data);
+                    },
+                    serialize: (jSaturnElement) => {
+                        return {
+                            persistenceKey: 'text-cell',
+                            data: jSaturnElement.querySelector('.text-field')?.innerHTML
+                            // innerText?.replace(/\n/g, "<br>")
+                        }
+                    },
+                    markdown: (jSaturnElement) => {
+                        return [
+                            "",
+                            jSaturnElement.querySelector('.text-field')?.innerHTML,
+                            "",
+                            "---"
+                        ];
+                    }
                 }
             }
 
-            static getModel(object) {
-                return JSaturnDataModel[object['persistenceKey'] ?? object['className'] ?? 'default'] ?? null;
+            static getModelForData(data) {
+                if (!data) {
+                    return null;
+                }
+                return ["default", data["nodeName"]]
+                    .concat(data["className"]?.split(" "))
+                    .concat([data["persistenceKey"]])
+                    .map(key => JSaturnDataModel.models[key])
+                    .findLast(Boolean);
+            }
+
+            static transformData(data, transformation) {
+                return JSaturnDataModel.getModelForData(data)?.[transformation]?.(data);
+            }
+
+            static serialize(data) {
+                return JSaturnDataModel.transformData(data, JSaturnDataModel.transformers.serialize)
             }
 
             static deserialize(persistenceData) {
-                const element = JSaturnDataModel.getModel(persistenceData)?.deserialize(persistenceData);
+                if (!persistenceData) {
+                    return null;
+                }
+                const element = JSaturnDataModel.transformData(persistenceData, JSaturnDataModel.transformers.deserialize);
                 if (element) {
                     return element;
                 }
@@ -782,16 +808,12 @@
                 )
             }
 
-            static serialize(persistenceElement, serializer) {
-                return JSaturnDataModel.getModel(persistenceElement)?.[serializer]?.(persistenceElement);
-            }
-
             static serializeChildren(persistenceElement) {
-                return [...persistenceElement.children].map(child => JSaturnDataModel.serialize(child, 'serialize')).filter(Boolean);
+                return [...persistenceElement.children].map(x => JSaturnDataModel.serialize(x)).filter(Boolean);
             }
 
             static markdownChildren(persistenceElement) {
-                return [...persistenceElement.children].map(child => JSaturnDataModel.serialize(child, 'markdown')).filter(Boolean)
+                return [...persistenceElement.children].map(child => JSaturnDataModel.transformData(child, JSaturnDataModel.transformers.markdown)).filter(Boolean)
                     ?.map(arr => {
                         if (arr["push"]) {
                             arr.push("");
@@ -802,11 +824,11 @@
             }
 
             static serializeFromRoot() {
-                return JSaturnDataModel["root-serializer"].serialize();
+                return JSaturnDataModel.serialize(document);
             }
 
             static markdownFromRoot() {
-                return JSaturnDataModel["root-serializer"].markdown();
+                return JSaturnDataModel.transformData(document, JSaturnDataModel.transformers.markdown);
             }
 
             static migratePersistenceData(persistenceData) {
@@ -839,6 +861,17 @@
             }
 
             static load(key) {
+                const storedData = localStorage.getItem(key);
+                if (!storedData) {
+                    JSaturnRoot.log(
+                        "error",
+                        "A save has been recorded, but contents are undefined. Check for serialization issues.",
+                        "332803b9-6d83-41f3-bf19-8d711eb81c29",
+                        {
+                            lastSave: load("lastSave"),
+                        }
+                    );
+                }
                 return JSON.parse(localStorage.getItem(key));
             }
 
@@ -921,9 +954,9 @@
                             <button id="run-all" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
                         </div>
                     </div>
-                    <div id="cell-container" class="cell-container"></div>
-<!--                    TODO add bottom data like last saved-->
                 </div>
+                <div id="cell-container" class="cell-container"></div>
+                <!--                    TODO add bottom data like last saved-->
             </div>
             <script>
                 JSaturnRoot.init();
