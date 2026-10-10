@@ -619,17 +619,17 @@
             static downloadFile(fileContent, name, suffix) {
                 const dataURL = new Blob([fileContent], {type: 'text/plain'});
 
-                if (JSaturnRoot.runtimeData.textFile) {
-                    window.URL.revokeObjectURL(textFile);
-                }
+                // if (JSaturnRoot.runtimeData.textFile) {
+                //     window.URL.revokeObjectURL(textFile);
+                // }
 
                 const link = document.createElement("a");
                 const fileName = `${name}.${suffix}`
-                JSaturnRoot.runtimeData.textFile = window.URL.createObjectURL(dataURL);
+                blobUrl = window.URL.createObjectURL(dataURL);
                 link.download = fileName;
-                link.href = JSaturnRoot.runtimeData.textFile;
+                link.href = blobUrl;
                 link.click();
-                // window.URL.revokeObjectURL(blobData);
+                window.URL.revokeObjectURL(blobUrl);
             }
 
             static exportToClipboard() {
