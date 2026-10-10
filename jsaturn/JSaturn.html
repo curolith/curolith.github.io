@@ -616,18 +616,18 @@
         }
 
         class JSaturnIO {
-            static downloadFile(data, name, suffix) {
+            static downloadFile(fileContent, name, suffix) {
                 const dataURL = new Blob([fileContent], {type: 'text/plain'});
 
-                if (textFile !== null) {
+                if (JSaturnRoot.runtimeData.textFile) {
                     window.URL.revokeObjectURL(textFile);
                 }
 
                 const link = document.createElement("a");
                 const fileName = `${name}.${suffix}`
-                textFile = window.URL.createObjectURL(dataURL);
+                JSaturnRoot.runtimeData.textFile = window.URL.createObjectURL(dataURL);
                 link.download = fileName;
-                link.href = textFile;
+                link.href = JSaturnRoot.runtimeData.textFile;
                 link.click();
                 // window.URL.revokeObjectURL(blobData);
             }
