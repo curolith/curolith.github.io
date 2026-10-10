@@ -617,13 +617,19 @@
 
         class JSaturnIO {
             static downloadFile(data, name, suffix) {
-                const url = `data:text/plain;charset=utf-8,${encodeURIComponent(data)}`
+                const dataURL = new Blob([fileContent], {type: 'text/plain'});
+
+                if (textFile !== null) {
+                    window.URL.revokeObjectURL(textFile);
+                }
+
+                const link = document.createElement("a");
                 const fileName = `${name}.${suffix}`
-                JSaturnBuilders.createElement("a").apply(a => {
-                    a.setAttribute("href", url);
-                    a.setAttribute("download", fileName);
-                    a.click();
-                })
+                textFile = window.URL.createObjectURL(dataURL);
+                link.download = fileName;
+                link.href = textFile;
+                link.click();
+                // window.URL.revokeObjectURL(blobData);
             }
 
             static exportToClipboard() {
@@ -640,7 +646,7 @@
                 const text = JSaturnDataModel.markdownFromRoot();
                 JSaturnIO.downloadFile(
                     JSaturnDataModel.markdownFromRoot(),
-                    "JSaturn_export_" + (new Date()).toISOString().replace(":", "-").replace("T", "_").match(/^[^:]+/),
+                    "JSaturn-export_" + (new Date()).toISOString().replace(":", "-").replace("T", "_").match(/^[^:]+/),
                     "md"
                 )
             }
