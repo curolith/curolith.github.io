@@ -16,7 +16,7 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
     <head>
         <title>JSaturn</title>
 
@@ -103,7 +103,6 @@
                 background-color: #515151;
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='164' height='164' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23454545' fill-opacity='0.31'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.31'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");
                 background-attachment: fixed;
-                background
             }
 
             html {
@@ -111,19 +110,13 @@
                 width: stretch;
             }
 
-            .popup-container {
-                position: relative;
-                display: inline-block;
-                cursor: pointer;
-            }
-
             .popup-content {
-                visibility: hidden;
                 width: fit-content;
                 text-align: center;
                 position: absolute;
-                margin-top: 0;
-                /*margin-left: var(--gap-small);*/
+                offset: bottom;
+                margin-top: 2.5rem;
+                
                 z-index: 1;
                 padding: 1rem;
                 background-color: color-mix(var(--color-transparency), var(--color-primary-p75));
@@ -135,10 +128,15 @@
                 backdrop-filter: var(--filter-textless);
                 box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-large);
+                opacity: 0;
+                transition: all .1s ease-out;
+                visibility: hidden;
             }
 
-            .popup-container .show {
+            .popup-content.show {
                 visibility: visible;
+                transition: all .1s ease-out;
+                opacity: 1;
             }
 
             .root-container {
@@ -288,7 +286,6 @@
             }
 
             .cell {
-                transition: ease-in-out 1.25s;
                 padding: 1rem;
                 background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75))));
                 border-radius: 1rem;
@@ -298,7 +295,16 @@
                 backdrop-filter: var(--filter-textless);
                 box-shadow: var(--3d-outwards-small),
                 var(--shadow-dark-large);
+                opacity: 1;
+                transition: all .1s ease-out;
+                visibility: visible;
             }
+
+            /*.hide {*/
+            /*    visibility: hidden;*/
+            /*    transition: all .1s ease-out;*/
+            /*    opacity: 0;*/
+            /*}*/
         </style>
     </head>
 
@@ -313,7 +319,8 @@
             }
 
             static addUUID(element) {
-                element.id = crypto.randomUUID();
+                const chars = "abcdefghijklmnopqrstuvwxyz";
+                element.id = [...chars].map(c => chars[Math.floor((Math.random() * 26))]).join('');
             }
 
             static createElement(tag, className) {
@@ -378,8 +385,15 @@
                             }),
                             JSaturnBuildUtility.createDiv("control-bar-center").apply(controlBar => {
                                 controlBar.id = 'bottom-control-bar-center';
+                                const popupContent = JSaturnBuildUtility.createDiv('popup-content').apply(pc => pc.append(
+                                    JSaturnBuildUtility.createButton('log-stuff-button', (button) => console.log(button.param), 'log', "Hello WOlrd"),
+                                ));
                                 controlBar.append(
                                     JSaturnBuildUtility.createButton('add-cell-below-button', (button) => button.param.after(JSaturnBuilders.createCodeCell()), '➕ <>', cell),
+                                    //     <button onClick="togglePopUp('options-popup')">•••</button>
+                                    // <div class="popup-content" id="options-popup">
+                                    JSaturnBuildUtility.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
+                                    popupContent,
                                     JSaturnBuildUtility.createButton('add-text-below-button', (button) => button.param.after(JSaturnBuilders.createTextCell()), '➕ T', cell)
                                 )
                             }),
@@ -525,18 +539,6 @@
             }
 
             static init() {
-                // TODO remove
-                // document.querySelector('#root-container-top-bar-left').append(
-                //     JSaturnBuilders.createPopupButton(
-                //         '...',
-                //         JSaturnBuildUtility.createButton(
-                //             'toggle-syntax-highlighting-button',
-                //             () => console.log("toggle-syntax-highlighting-button"),
-                //             "...",
-                //             null
-                //         )
-                //     )
-                // )
                 const lastSave = JSaturnStorage.load('lastSave');
                 if (lastSave) {
                     JSaturnStorage.restoreState();
@@ -554,6 +556,7 @@
             }
 
             static dataModelVersion = 0.0
+
             static log(type, message, causeId, context) {
                 const logObject = JSON.stringify({
                     type: type,
@@ -573,6 +576,10 @@
                 window.navigator.clipboard.writeText(JSON.stringify(JSaturnDataModel.serializeFromRoot()));
             }
 
+            static exportMarkdownToClipboard() {
+                window.navigator.clipboard.writeText(JSaturnDataModel.markdownFromRoot());
+            }
+
             static importFromClipboard() {
                 window.navigator.clipboard.readText().then(value => JSaturnDataModel.deserialize(JSON.parse(value)));
             }
@@ -584,14 +591,14 @@
 
         class JSaturnFeatures {
             static featureChangeHandlers = {
-                'syntax-highlighting' : (newState) => {
+                'syntax-highlighting': (newState) => {
                     if (newState) {
                         document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
                     } else {
                         document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
                     }
                 },
-                'auto-save' : (newState) => {
+                'auto-save': (newState) => {
                     JSaturnStorage.saveState();
                 }
             }
@@ -656,10 +663,18 @@
                         data: {
                             dataModelVersion: JSaturnDataModel.dataModelVersion,
                             configData: JSaturnRoot.configData,
-                            rootContainerData: JSaturnDataModel.serialize(rootContainer)
+                            rootContainerData: JSaturnDataModel.serialize(rootContainer, 'serialize')
                         }
                     }
-                }
+                },
+                markdown: (jSaturnElement) => [
+                    "# JSaturn",
+                    (new Date()).toString().match(/^[^:]+:[^:]+/),
+                    "<br>",
+                    "",
+                    "---",
+                    JSaturnDataModel.serialize(document.querySelector('#root-container'), 'markdown')
+                ].flat(100).join("\n")
             }
 
             static 'root-container' = {
@@ -676,7 +691,8 @@
                             children: JSaturnDataModel.serializeChildren(jSaturnElement)
                         }
                     }
-                }
+                },
+                markdown: (jSaturnElement) => JSaturnDataModel.markdownChildren(jSaturnElement)
             }
 
             static 'cell-container' = {
@@ -694,7 +710,8 @@
                             children: JSaturnDataModel.serializeChildren(jSaturnElement)
                         }
                     }
-                }
+                },
+                markdown: (jSaturnElement) => JSaturnDataModel.markdownChildren(jSaturnElement)
             }
 
             static 'code-cell' = {
@@ -706,7 +723,15 @@
                         persistenceKey: 'code-cell',
                         data: jSaturnElement.querySelector('.code-field')?.innerText?.replace(/\n/g, "<br>")
                     }
-                }
+                },
+                markdown: (jSaturnElement) => [
+                    "```javascript",
+                    jSaturnElement.querySelector('.code-field')?.innerText,
+                    "```",
+                    jSaturnElement.querySelector('.code-output-field')?.outerHTML,
+                    "",
+                    "---",
+                ]
             }
 
             static 'text-cell' = {
@@ -719,6 +744,14 @@
                         data: jSaturnElement.querySelector('.text-field')?.innerHTML
                         // innerText?.replace(/\n/g, "<br>")
                     }
+                },
+                markdown: (jSaturnElement) => {
+                    return [
+                        "",
+                        jSaturnElement.querySelector('.text-field')?.innerHTML,
+                        "",
+                        "---"
+                    ];
                 }
             }
 
@@ -739,16 +772,31 @@
                 )
             }
 
-            static serialize(persistenceElement) {
-                return JSaturnDataModel.getModel(persistenceElement)?.serialize(persistenceElement);
+            static serialize(persistenceElement, serializer) {
+                return JSaturnDataModel.getModel(persistenceElement)?.[serializer]?.(persistenceElement);
             }
 
             static serializeChildren(persistenceElement) {
-                return [...persistenceElement.children].map(JSaturnDataModel.serialize).filter(Boolean);
+                return [...persistenceElement.children].map(child => JSaturnDataModel.serialize(child, 'serialize')).filter(Boolean);
+            }
+
+            static markdownChildren(persistenceElement) {
+                return [...persistenceElement.children].map(child => JSaturnDataModel.serialize(child, 'markdown')).filter(Boolean)
+                    ?.map(arr => {
+                        if (arr["push"]) {
+                            arr.push("");
+                            return arr
+                        }
+                        return arr;
+                    });
             }
 
             static serializeFromRoot() {
                 return JSaturnDataModel["root-serializer"].serialize();
+            }
+
+            static markdownFromRoot() {
+                return JSaturnDataModel["root-serializer"].markdown();
             }
 
             static migratePersistenceData(persistenceData) {
@@ -817,24 +865,40 @@
                 <div id="header">
                     <div id="root-container-bar-container" class="control-bar-container">
                         <div id="root-container-top-bar-left" class="control-bar-left">
-                            <button onclick="togglePopUp('feature-popup')">•••</button>
-                            <div id="feature-popup-container" class="popup-container">
-                                <div class="popup-content" id="feature-popup">
-                                    <button id="save" onclick="JSaturnStorage.saveState()">💾 Save</button>
-                                    <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋 Copy all to clipboard</button>
-                                    <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥 Load all from clipboard</button>
-                                    <button id="remove-all" onclick="JSaturnRoot.removeAll()">🗑️ Remove all cells</button>
-                                    <button id="auto-save" class="feature-toggle" onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On</button>
-                                    <button id="syntax-highlighting" class="feature-toggle" onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off</button>
-                                    <button id="reset-default-button" onclick="JSaturnRoot.resetDefaultState()">⏮️ Restore demo cells</button>
-                                </div>
+                            <button onclick="togglePopUp('feature-popup')">❎✅</button>
+                            <div class="popup-content" id="feature-popup">
+                                <button id="auto-save" class="feature-toggle"
+                                        onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On
+                                </button>
+                                <button id="syntax-highlighting" class="feature-toggle"
+                                        onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off
+                                </button>
                             </div>
                         </div>
+
                         <div id="root-container-top-bar-center" class="control-bar-center">
                             <button class="add-cell-below-button"
                                     onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createCodeCell())">
                                 ➕ <>
                             </button>
+                            <button onclick="togglePopUp('options-popup')">•••</button>
+                            <div class="popup-content" id="options-popup">
+                                <button id="save" onclick="JSaturnStorage.saveState()">💾 Manual save</button>
+                                <button id="export" onclick="JSaturnRoot.exportToClipboard()">📤📋 Export state to
+                                    clipboard
+                                </button>
+                                <button id="copy-markdown-to-clipboard-button" onclick="JSaturnRoot.exportMarkdownToClipboard()">
+                                    📝📋 Export Markdown to clipboard
+                                </button>
+                                <button id="import" onclick="JSaturnRoot.importFromClipboard()">📋📥 Load state from
+                                    clipboard
+                                </button>
+                                <button id="remove-all" onclick="JSaturnRoot.removeAll()">🗑️ Remove all cells
+                                </button>
+                                <button id="reset-default-button" onclick="JSaturnRoot.resetDefaultState()">⏮️
+                                    Restore demo cells
+                                </button>
+                            </div>
                             <button class="add-text-below-button"
                                     onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createTextCell())">
                                 ➕ T
@@ -844,12 +908,11 @@
                             <button id="run-all" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
                         </div>
                     </div>
+                    <div id="cell-container" class="cell-container"></div>
                 </div>
-                <div id="cell-container" class="cell-container"></div>
             </div>
-        </div>
-        <script>
-            JSaturnRoot.init();
-        </script>
+            <script>
+                JSaturnRoot.init();
+            </script>
     </body>
 </html>
