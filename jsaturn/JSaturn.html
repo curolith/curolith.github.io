@@ -616,6 +616,10 @@
         }
 
         class JSaturnIO {
+            static getFileDateTimeString() {
+                return (new Date()).toISOString().replace(":", "-").replace("T", "_").match(/^[^:]+/);
+            }
+
             static downloadFile(fileContent, name, suffix) {
                 if (JSaturnRoot.runtimeData.downloadURL) {
                     window.URL.revokeObjectURL(JSaturnRoot.runtimeData.downloadURL);
@@ -628,8 +632,34 @@
                 JSaturnRoot.runtimeData.downloadURL = blobUrl;
             }
 
-            static exportToClipboard() {
+            static pickFile(onInput, ...fileTypes) {
+                const fileInput = document.createElement("input")
+                fileInput.type = "file";
+                fileInput.multiple = false;
+                fileInput.accept = (fileTypes ?? ["txt", "json"]).join(",");
+                fileInput.addEventListener("input", () => onInput(fileInput))
+                fileInput.click();
+            }
+
+            static exportStateToClipboard() {
                 window.navigator.clipboard.writeText(JSON.stringify(JSaturnDataModel.serializeFromRoot()));
+            }
+
+            static exportStateToFile() {
+                JSaturnIO.downloadFile(
+                    JSON.stringify(JSaturnDataModel.serializeFromRoot()),
+                    "JSaturn-export_" + JSaturnIO.getFileDateTimeString(),
+                    "json"
+                )
+            }
+
+            static importStateFromFile(fileName, fileType, text) {
+                JSaturnIO.pickFile(fileInput => {
+                    const file = fileInput.files[0];
+                    file.text().then((text) => {
+                        JSaturnDataModel.deserialize(JSON.parse(text))
+                    });
+                }, "txt", "json")
             }
 
             static exportMarkdownToClipboard() {
@@ -639,10 +669,9 @@
             // TODO [refactor] @curolith adapt other classes to use this instead of class name
 
             static exportMarkdownToFile() {
-                const text = JSaturnDataModel.markdownFromRoot();
                 JSaturnIO.downloadFile(
                     JSaturnDataModel.markdownFromRoot(),
-                    "JSaturn-export_" + (new Date()).toISOString().replace(":", "-").replace("T", "_").match(/^[^:]+/),
+                    "JSaturn-export_" + JSaturnIO.getFileDateTimeString(),
                     "md"
                 )
             }
@@ -928,16 +957,23 @@
                             <button onclick="togglePopUp('options-popup')">•••</button>
                             <div class="popup-content" id="options-popup">
                                 <button id="save" onclick="JSaturnStorage.saveState()">💾 Manual save</button>
-                                <button id="export-state-to-clipboard-button" onclick="JSaturnIO.exportToClipboard()">
+                                <button id="export-state-to-clipboard-button"
+                                        onclick="JSaturnIO.exportStateToClipboard()">
                                     📤📋 Export state to clipboard
                                 </button>
                                 <button id="import-state-from-clipboard-button"
                                         onclick="JSaturnIO.importFromClipboard()">📋📥 Load state from clipboard
                                 </button>
+                                <button id="export-state-to-file-button"
+                                        onclick="JSaturnIO.exportStateToFile()">📤📂 Export state to file
+                                </button>
+                                <button id="export-state-to-file-button"
+                                        onclick="JSaturnIO.importStateFromFile()">📂📥 Import state from file
+                                </button>
                                 <button id="export-markdown-to-clipboard-button"
                                         onclick="JSaturnIO.exportMarkdownToClipboard()">📝📋 Export Markdown to clipboard
                                 </button>
-                                <button id="export-markdown-to-clipboard-button"
+                                <button id="export-markdown-to-file-button"
                                         onclick="JSaturnIO.exportMarkdownToFile()">📝📂 Export Markdown to file
                                 </button>
                                 <button id="remove-all-cells-button" onclick="JSaturnRoot.removeAll()">🗑️ Remove all
