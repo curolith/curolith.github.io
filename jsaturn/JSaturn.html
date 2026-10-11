@@ -255,17 +255,17 @@
                 border-radius: .8rem;
                 box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large),
                 var(--shadow-dark-small);
-                transition: ease-in 0.15s;
-                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-secondary-p75)));
+                transition: ease-in 0.1s;
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-secondary-p87-5)));
                 position: relative;
-                scale: 1.2;
+                scale: 1.1;
                 color-adjust: economy;
             }
 
             button:active {
                 background-color: var(--color-transparency);
                 scale: 1.25;
-                box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large);
+                box-shadow: var(--3d-outwards-small), var(--shadow-dark-large);
                 transition: ease-in-out 0.15s;
             }
 
@@ -347,6 +347,58 @@
 
             .text-cell {
             }
+
+
+            .cell-name {
+                align-self: center;
+                border-radius: var(--border-radius-small);
+                border: none;
+                /*box-shadow: var(--3d-outwards-small);*/
+                color: var(--color-text-normal);
+                /*cursor: pointer;*/
+                display: flex;
+                /*font-family: monospace;*/
+                font-family: Consolas, "Courier New", monospace;;
+                font-size: large;
+                justify-content: left;
+                margin: 0;
+                /*padding: 0;*/
+                padding: var(--padding-smaller);
+                text-align: justify;
+                /*text-shadow: var(--shadow-dark-small);*/
+                transition: ease-in 0.15s;
+            var(--shadow-dark-small);
+                text-wrap: wrap;
+                outline: none;
+                width: fit-content;
+                /*width: stretch;*/
+            }
+
+            .cell-name:hover {
+                box-shadow: var(--3d-outwards-small);
+                /*border-radius: .8rem;*/
+                /*box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large);*/
+                /*var(--shadow-dark-small);*/
+                transition: ease-in 0.15s;
+                /*position: relative;*/
+                scale: 1.1;
+                /*color-adjust: economy;*/
+            }
+
+            .cell-name:focus {
+                border-radius: .8rem;
+                box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large),
+                var(--shadow-dark-small);
+                transition: ease-in 0.15s;
+                /*position: relative;*/
+                scale: 1.2;
+                /*background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-secondary-p75)));*/
+                background-color: var(--color-secondary-p50);;
+                scale: 1.2;
+                box-shadow: var(--3d-outwards-small), var(--shadow-dark-large);
+                transition: ease-in 0.25s;
+            }
+
         </style>
     </head>
 
@@ -373,7 +425,14 @@
                 });
             }
 
-            static createCell(customClass) {
+            static createNameField(cellName) {
+                return JSaturnBuilders.createElement("h2", "cell-name").apply(cname => {
+                    cname.contentEditable = "true";
+                    cname.innerHTML = cellName ?? "Cell of the " + String.fromCodePoint(128000 + Math.floor(Math.random() * 63));
+                })
+            }
+
+            static createCell(customClass, cellName) {
                 return JSaturnBuilders.createDiv(customClass ?? "cell").apply(cell => cell.append(
                     JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
@@ -382,6 +441,7 @@
                                 controlBar.append(JSaturnBuilders.createButton('delete-cell-button', (button) => {
                                     button.param.remove();
                                 }, `❌`, cell));
+                                controlBar.append(JSaturnBuilders.createNameField(cellName))
                             }),
                             JSaturnBuilders.createDiv('control-bar-center').apply(controlBar => {
                                 controlBar.id = 'top-control-bar-center';
@@ -419,8 +479,8 @@
                 ));
             }
 
-            static createCodeCell(code) {
-                return JSaturnBuilders.createCell("cell code-cell").apply(cell => {
+            static createCodeCell(code, cellName) {
+                return JSaturnBuilders.createCell("cell code-cell", cellName).apply(cell => {
                     // cell['persistenceKey'] = 'code-cell';
                     cell.querySelector('.cell-content').append(
                         JSaturnBuilders.createDiv("code-output-box").apply(codeOutputBox => {
@@ -473,11 +533,23 @@
                     });
             }
 
-            static createTextCell(text) {
-                return JSaturnBuilders.createCell("cell text-cell").apply(cell => {
+
+            static createTextCell(text, cellName) {
+                return JSaturnBuilders.createCell("cell text-cell", cellName).apply(cell => {
                     // cell['persistenceKey'] = 'text-cell';
                     cell.querySelector('.cell-content')
                         .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = text ?? ""));
+                    cell.querySelector('.popup-content').append(
+                        JSaturnBuilders.createButton(
+                            "button",
+                            (button) => window.navigator.clipboard.readText().then((text) => {
+                                const textField = button.param.querySelector('.text-field');
+                                textField.innerHTML = textField.innerHTML + text;
+                            }),
+                            "📋 Paste HTML from clipboard",
+                            cell
+                        )
+                    )
                 });
             }
 
@@ -501,7 +573,7 @@
                     language: 'javascript',
                     ignoreIllegals: true
                 }).value
-                codeField.innerHTML  = highlightResult.replace(/\n/g, "<br>")
+                codeField.innerHTML = highlightResult.replace(/\n/g, "<br>")
                 window.getSelection().removeAllRanges();
             }
 
@@ -512,7 +584,7 @@
                     language: 'plaintext',
                     ignoreIllegals: true
                 }).value
-                codeField.innerHTML  = data.replace(/\n/g, "<br>")
+                codeField.innerHTML = data.replace(/\n/g, "<br>")
                 window.getSelection().removeAllRanges();
             }
 
@@ -607,11 +679,11 @@
             static featureChangeHandlers = {
                 'syntax-highlighting': (newState) => {
                     // TODO [feature] @curolith Highlighting disabled until functional
-                    // if (newState) {
-                    //     document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
-                    // } else {
-                    //     document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
-                    // }
+                    if (newState) {
+                        // document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
+                    } else {
+                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
+                    }
                 },
                 'auto-save': (newState) => {
                     JSaturnStorage.saveState();
@@ -740,6 +812,9 @@
                         JSaturnRoot.configData = persistenceData.data.configData;
                         JSaturnDataModel.deserialize(persistenceData.data.rootContainerData);
                         JSaturnFeatures.restoreFeatureToggles();
+                        if (JSaturnFeatures.getFeature('syntax-highlighting')) {
+                            JSaturnFeatures.toggleFeature('sytax-highlighting');
+                        }
                         return document;
                     },
                     serialize: (jSaturnElement) => {
@@ -800,20 +875,23 @@
                         }
                     },
                     markdown: (jSaturnElement) => JSaturnDataModel.markdownChildren(jSaturnElement)
-                }
+                },
 
-                ,
                 "code-cell": {
                     deserialize: (persistenceData) => {
-                        return JSaturnBuilders.createCodeCell(persistenceData.data);
+                        return JSaturnBuilders.createCodeCell(persistenceData.data?.codeField, persistenceData.data?.cellName);
                     },
                     serialize: (jSaturnElement) => {
                         return {
                             persistenceKey: 'code-cell',
-                            data: jSaturnElement.querySelector('.code-field')?.innerText
+                            data: {
+                                cellName: jSaturnElement.querySelector('.cell-name')?.innerHTML,
+                                codeField: jSaturnElement.querySelector('.code-field')?.innerText,
+                            }
                         }
                     },
                     markdown: (jSaturnElement) => [
+                        "## " + jSaturnElement.querySelector('.cell-name')?.innerHTML,
                         "```javascript",
                         jSaturnElement.querySelector('.code-field')?.innerText,
                         "```",
@@ -826,17 +904,21 @@
                 ,
                 "text-cell": {
                     deserialize: (persistenceData) => {
-                        return JSaturnBuilders.createTextCell(persistenceData.data);
+                        return JSaturnBuilders.createTextCell(persistenceData.data?.textField, persistenceData.data?.cellName);
                     },
                     serialize: (jSaturnElement) => {
                         return {
                             persistenceKey: 'text-cell',
-                            data: jSaturnElement.querySelector('.text-field')?.innerHTML
+                            data: {
+                                cellName: jSaturnElement.querySelector('.cell-name')?.innerHTML,
+                                textField: jSaturnElement.querySelector('.text-field')?.innerHTML
+                            }
                         }
                     },
                     markdown: (jSaturnElement) => {
                         return [
                             "",
+                            "## " + jSaturnElement.querySelector('.cell-name')?.innerHTML,
                             jSaturnElement.querySelector('.text-field')?.innerHTML,
                             "",
                             "---"
@@ -985,7 +1067,7 @@
                                 <button id="auto-save" class="feature-toggle"
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On
                                 </button>
-<!--                                TODO [feature] @curolith Highlighting disabled until functional-->
+                                <!--                                TODO [feature] @curolith Highlighting disabled until functional-->
                                 <button id="syntax-highlighting" class="feature-toggle" disabled
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off
                                 </button>
