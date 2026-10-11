@@ -240,6 +240,11 @@
                 transition: ease-in-out 0.25s;
             }
 
+            button:disabled {
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-neutral-p75))));
+                color: color-mix(var(--color-transparency), var(--color-text-normal))
+            }
+
             .code-field {
                 background-color: var(--color-neutral-p75);
                 border-radius: var(--border-radius-small);
@@ -251,6 +256,7 @@
                 overflow-wrap: anywhere;
                 padding: var(--padding-small);
                 transition: ease-in-out .25s;
+                text-wrap: wrap;
             }
 
             .code-field:focus, .code-field:active {
@@ -408,13 +414,16 @@
                     cell.querySelector('#top-control-bar-right').append(
                         JSaturnBuilders.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
                     )
+                    if (JSaturnFeatures.getFeature('syntax-highlighting')) {
+                        JSaturnCodeCellUtility.highlightCell(cell);
+                    }
                 })
             }
 
             static createCodeField(code) {
                 return JSaturnBuilders.createDiv('code-field').apply(codeField => {
                         codeField.contentEditable = 'true';
-                        codeField.innerHTML = code ?? "";
+                        codeField.innerText = code ?? "";
                     }
                 )
             }
@@ -450,28 +459,29 @@
 
         class JSaturnCodeCellUtility {
             static highlightCell(cell) {
+                // TODO [feature] @curolith highlighting disabled until functional
+                return;
                 if (!JSaturnFeatures.getFeature("syntax-highlighting")) {
                     return;
                 }
                 const codeField = cell.querySelector('.code-field');
-                if (!codeField) {
-                    return;
-                }
-                const codeText = codeField.innerText;
-                const highlighted = hljs.highlight(codeText, {
+                const code = codeField.innerText;
+                const highlightResult = hljs.highlight(code, {
                     language: 'javascript',
                     ignoreIllegals: true
-                });
-                codeField.innerHTML = highlighted.value.replace(/\n/g, '<br>');
+                }).value
+                codeField.innerHTML  = highlightResult.replace(/\n/g, "<br>")
                 window.getSelection().removeAllRanges();
             }
 
             static removeHighlighting(cell) {
-                const codeField = cell.querySelector('.code-field');
-                if (!codeField) {
-                    return;
-                }
-                codeField.innerHTML = codeField.innerText.replace(/\n/g, '<br>');
+                const codeField = cell.querySelector(".code-field");
+                const code = codeField.innerText;
+                const data = hljs.highlight(code, {
+                    language: 'plaintext',
+                    ignoreIllegals: true
+                }).value
+                codeField.innerHTML  = data.replace(/\n/g, "<br>")
                 window.getSelection().removeAllRanges();
             }
 
@@ -482,11 +492,11 @@
             }
 
             static runCell(cell) {
-                const code = cell.querySelector('.code-field');
-                if (!code) {
+                const codeField = cell.querySelector('.code-field');
+                if (!codeField) {
                     return;
                 }
-                const codeText = code.innerText;
+                const code = codeField.innerText;
                 const resultStrings = [];
                 const logOutput = (args) => resultStrings.push("> " + String(args));
                 const consoleBox = console;
@@ -495,7 +505,7 @@
                     log: logOutput
                 };
                 try {
-                    const output = eval(codeText);
+                    const output = eval(code);
                     if (output && output !== 1) {
                         logOutput(output);
                     }
@@ -553,8 +563,8 @@
                 JSaturnRoot.runtimeData.log.push(logObject);
             }
 
-            static mountDebugger() {
-                console.log("mountDebugger");
+            static triggerBreakPoint() {
+                debugger;
             }
 
             static removeAll() {
@@ -565,11 +575,12 @@
         class JSaturnFeatures {
             static featureChangeHandlers = {
                 'syntax-highlighting': (newState) => {
-                    if (newState) {
-                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
-                    } else {
-                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
-                    }
+                    // TODO [feature] @curolith Highlighting disabled until functional
+                    // if (newState) {
+                    //     document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
+                    // } else {
+                    //     document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
+                    // }
                 },
                 'auto-save': (newState) => {
                     JSaturnStorage.saveState();
@@ -763,12 +774,12 @@
                 ,
                 "code-cell": {
                     deserialize: (persistenceData) => {
-                        return JSaturnBuilders.createCodeCell(persistenceData.data).apply(JSaturnCodeCellUtility.highlightCell);
+                        return JSaturnBuilders.createCodeCell(persistenceData.data);
                     },
                     serialize: (jSaturnElement) => {
                         return {
                             persistenceKey: 'code-cell',
-                            data: jSaturnElement.querySelector('.code-field')?.innerText?.replace(/\n/g, "<br>")
+                            data: jSaturnElement.querySelector('.code-field')?.innerText
                         }
                     },
                     markdown: (jSaturnElement) => [
@@ -790,7 +801,6 @@
                         return {
                             persistenceKey: 'text-cell',
                             data: jSaturnElement.querySelector('.text-field')?.innerHTML
-                            // innerText?.replace(/\n/g, "<br>")
                         }
                     },
                     markdown: (jSaturnElement) => {
@@ -944,7 +954,8 @@
                                 <button id="auto-save" class="feature-toggle"
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On
                                 </button>
-                                <button id="syntax-highlighting" class="feature-toggle"
+<!--                                TODO [feature] @curolith Highlighting disabled until functional-->
+                                <button id="syntax-highlighting" class="feature-toggle" disabled
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off
                                 </button>
                             </div>
