@@ -133,7 +133,7 @@
                 transition: all .1s ease-out;
                 visibility: hidden;
                 width: fit-content;
-                z-index: 999;
+                z-index: front;
             }
 
             @starting-style {
@@ -321,7 +321,7 @@
 
             .cell-container {
                 display: flex;
-                flex-direction: column;
+                flex-direction: column-reverse;
                 gap: var(--gap-medium);
             }
 
@@ -338,7 +338,7 @@
                 padding: 1rem;
                 transition: all .1s ease-out;
                 visibility: visible;
-                z-index: 1;
+
                 position: relative;
             }
 
@@ -403,12 +403,12 @@
                                     JSaturnBuilders.createButton('log-stuff-button', (button) => console.log(button.param), 'log', "Hello WOlrd"),
                                 ));
                                 controlBar.append(
-                                    JSaturnBuilders.createButton('add-cell-below-button', (button) => button.param.after(JSaturnBuilders.createCodeCell()), '➕ <>', cell),
+                                    JSaturnBuilders.createButton('add-cell-below-button', (button) => button.param.before(JSaturnBuilders.createCodeCell()), '➕ <>', cell),
                                     //     <button onClick="togglePopUp('options-popup')">•••</button>
                                     // <div class="popup-content" id="options-popup">
                                     JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
                                     popupContent,
-                                    JSaturnBuilders.createButton('add-text-below-button', (button) => button.param.after(JSaturnBuilders.createTextCell()), '➕ T', cell)
+                                    JSaturnBuilders.createButton('add-text-below-button', (button) => button.param.before(JSaturnBuilders.createTextCell()), '➕ T', cell)
                                 )
                             }),
                             JSaturnBuilders.createDiv('control-bar-right').apply(controlBar => {
@@ -993,7 +993,7 @@
                         </div>
                         <div id="root-container-top-bar-center" class="control-bar-center">
                             <button class="add-cell-below-button"
-                                    onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createCodeCell())">
+                                    onclick="document.querySelector('#cell-container').append(JSaturnBuilders.createCodeCell())">
                                 ➕ <>
                             </button>
                             <button onclick="togglePopUp('options-popup')">•••</button>
@@ -1026,7 +1026,7 @@
                                 </button>
                             </div>
                             <button class="add-text-below-button"
-                                    onclick="document.querySelector('#cell-container').prepend(JSaturnBuilders.createTextCell())">
+                                    onclick="document.querySelector('#cell-container').append(JSaturnBuilders.createTextCell())">
                                 ➕ T
                             </button>
                         </div>
