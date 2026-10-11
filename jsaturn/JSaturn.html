@@ -136,20 +136,33 @@
                 z-index: 999;
             }
 
+            @starting-style {
+                scale: 0;
+                opacity: 0;
+                transition: all .2s ease-out;
+                animation: all .2s ease;
+            }
+
+
             /*noinspection ALL*/
             .popup-content.show {
                 opacity: 1;
                 transition: all .1s ease-out;
                 visibility: visible;
                 z-index: 999;
-                }
+            }
 
             /*TODO https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@starting-style*/
 
             .root-container {
+                opacity: 1;
+                scale: 1;
                 display: flex;
                 flex-direction: column;
                 gap: var(--gap-medium);
+                transition: .3s linear;
+                transition: all .2s ease-out;
+                animation: all .2s ease;
             }
 
             .control-bar-container {
@@ -166,6 +179,8 @@
                 grid-column-end: 1;
                 grid-column-start: 1;
                 justify-content: left;
+                column-span: none;
+
             }
 
             .control-bar-center {
@@ -176,6 +191,9 @@
                 grid-column-end: 2;
                 grid-column-start: 2;
                 justify-content: center;
+                flex: contain;
+                column-span: none;
+
             }
 
             .control-bar-right {
@@ -187,6 +205,9 @@
                 grid-column-start: 3;
                 justify-content: right;
                 width: stretch;
+                flex: contain;
+                column-span: none;
+
             }
 
             h1 {
@@ -302,7 +323,6 @@
                 display: flex;
                 flex-direction: column;
                 gap: var(--gap-medium);
-
             }
 
             .cell {
