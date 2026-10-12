@@ -623,8 +623,20 @@
         class JSaturnRoot {
             static runtimeData = {
                 log: [],
-                global: {}
+                global: {},
+                status: {
+                    statusKey: "healthy",
+                    originId: "3ea39581-6e18-469b-90e5-8351da64d2fa",
+                }
             };
+
+            static updateStatus(statusObject) {
+                // TODO [feature] @curolith Add listeners in future
+                JSaturnRoot.ensureDatas();
+                const previous = JSaturnRoot.runtimeData.status;
+                JSaturnRoot.runtimeData.status = statusObject;
+                return previous;
+            }
 
             static configData = {
                 features: {
@@ -638,7 +650,38 @@
                 lastSave: 0
             }
 
+            static ensureDatas() {
+                if (!JSaturnRoot.runtimeData) {
+                    JSaturnRoot.runtimeData = {
+                        log: [],
+                        global: {},
+                        status: {
+                            statusKey: "healthy",
+                            rootId: "3ea39581-6e18-469b-90e5-8351da64d2fa",
+                        }
+                    };
+                }
+                if (!JSaturnRoot.configData) {
+                    JSaturnRoot.configData = {
+                        features: {
+                            'syntax-highlighting': false,
+                            'auto-save': true
+                        },
+                    }
+                }
+                if (!JSaturnRoot.longtermData) {
+                    JSaturnRoot.longtermData = {
+                        username: "",
+                        lastSave: 0
+                    }
+                }
+            }
+
             static init() {
+                JSaturnRoot.longtermData = {
+                    username: "",
+                    lastSave: 0
+                };
                 const lastSave = JSaturnStorage.load('lastSave');
                 if (lastSave) {
                     JSaturnStorage.restoreState();
@@ -1004,13 +1047,53 @@
                 return JSaturnDataModel.transformData(document, JSaturnDataModel.transformers.markdown);
             }
 
+
             static migratePersistenceData(persistenceData) {
                 JSaturnRoot.log(
                     'error',
-                    "Persisted data is outdated. Migration required but not yet implemented. Data stored in log context (runtime)",
+                    "Persisted data is outdated. Migration required but not yet implemented. Dumping storage to prevent Data loss and restoring defaults",
                     '922be13a-af1d-4c7c-8a47-e124ec9225c8',
                     persistenceData
                 );
+                JSaturnIO.downloadFile(
+                    JSON.stringify(JSaturnStorage.getStorageDump()),
+                    "jstn_old-model_data_" + JSaturnIO.getFileDateTimeString(),
+                    "json"
+                )
+
+                const migrationRecoveryStatus = {
+                    statusKey = "recovery",
+                    originId = "0d49165c-d2b1-4837-a288-6d0b4f7c4420"
+                }
+
+                const storageResetStatus = {
+                    statusKey = "reset",
+                    originId = "ab8f92f4-380e-4583-b5b0-4614598dbf0c"
+                }
+
+                const previous = JSaturnRoot.updateStatus(migrationRecoveryStatus);
+                if (previous.originId === migrationRecoveryStatus.originId) {
+                    JSaturnRoot.log(
+                        'error',
+                        "Failed to recover from outdated model. Resetting storage...",
+                        '819fb404-5824-42c5-84a6-aa447915fa32',
+                        persistenceData
+                    );
+
+
+
+                    const previous = JSaturnRoot.updateStatus(migrationRecoveryStatus);
+
+                    localStorage.clear();
+                    JSaturnRoot.ensureDatas();
+                    init();
+                    return ;
+                }
+                if (previous.originId === storageResetStatus.originId) {
+                    throw new Error("Outdated data model in local storage. Migration recovery and reset failed. Application health could not be restored.");
+                }
+                JSaturnRoot.init();
+                JSaturnSnippetUtility.deserializeDemoData();
                 return null;
             }
         }
@@ -1031,6 +1114,10 @@
                     )
                 }
                 localStorage.setItem(storable.key, JSON.stringify(storable.data));
+            }
+
+            static getStorageDump() {
+                return Object.fromEntries([...Array(localStorage.length).keys()].map(i => localStorage.key(i)).map(key => [key, localStorage.getItem(key)]));
             }
 
             static load(key) {
@@ -1129,7 +1216,8 @@
                                 <button id="remove-all-cells-button" onclick="JSaturnRoot.removeAll()">🗑️ Remove all
                                     cells
                                 </button>
-                                <button id="reset-default-button" onclick="JSaturnSnippetUtility.deserializeDemoData()">⏮️ Restore
+                                <button id="reset-default-button" onclick="JSaturnSnippetUtility.deserializeDemoData()">
+                                    ⏮️ Restore
                                     demo cells
                                 </button>
                             </div>
