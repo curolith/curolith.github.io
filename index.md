@@ -6,6 +6,9 @@
 
 JSaturn is a hobby-project and my first front-end endeavor. Should you use JSaturn, be aware, that I am not
 experienced in writing secure front-end applications. Furthermore, this project is still in its development stage.
+
+**The storage model is still in rudimentary development. Save important data via markdown export to assure future access - updates don’t include data migration yet.**
+
 JSaturn runs client-sided, in particular it consists of a
 singular HTML file (not counting libraries - credit for the syntax highlighting to <a href="https://highlightjs.org/">
 highlight.js</a>). <br>
