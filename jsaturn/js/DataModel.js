@@ -17,8 +17,7 @@ function register(classObject) {
 class RuntimeData {
     static dataTypeKey = register(this);
     static children;
-    static dataPrototype = {
-    }
+    static dataPrototype = {}
 }
 
 class TemplateData {
@@ -28,15 +27,20 @@ class TemplateData {
         children: [],
         // defines all keys with default values / value setters
     }
+
     static dataToHtml(data) {
+        data = Object.assign(data ?? {}, this.dataPrototype);
+        data.key = data.key ?? newKey();
         // visible data -> html
         // invisible data -> element.dataset.xyz = ...
         // mind the children
     }
-    static htmlToData() {
+
+    static htmlToData(htmlElement) {
         // inverse of data To Html
     }
-    static HtmlToMarkdown() {
+
+    static htmlToMarkdown(htmlElement) {
         // html ->  data -> markdown
     }
 }
@@ -49,15 +53,20 @@ class RootData {
         configData: ConfigData.dataPrototype,
         bookData: BookData.dataPrototype
     }
+
     static dataToHtml(data) {
+        data = Object.assign(data ?? {}, this.dataPrototype);
+        data.key = data.key ?? newKey();
         // visible data -> html
         // invisible data -> element.dataset.xyz = ...
         // mind the children
     }
-    static htmlToData() {
+
+    static htmlToData(htmlElement) {
         // inverse of data To Html
     }
-    static HtmlToMarkdown() {
+
+    static htmlToMarkdown(htmlElement) {
         // html ->  data -> markdown
     }
 }
@@ -69,15 +78,20 @@ class ConfigData {
         children: [],
         features: FeatureData.dataPrototype
     }
+
     static dataToHtml(data) {
+        data = Object.assign(data ?? {}, this.dataPrototype);
+        data.key = data.key ?? newKey();
         // visible data -> html
         // invisible data -> element.dataset.xyz = ...
         // mind the children
     }
-    static htmlToData() {
+
+    static htmlToData(htmlElement) {
         // inverse of data To Html
     }
-    static HtmlToMarkdown() {
+
+    static htmlToMarkdown(htmlElement) {
         // html ->  data -> markdown
     }
 }
@@ -89,15 +103,20 @@ class FeatureData {
         syntaxHighlighting: false,
         autoSave: true
     }
+
     static dataToHtml(data) {
+        data = Object.assign(data ?? {}, this.dataPrototype);
+        data.key = data.key ?? newKey();
         // visible data -> html
         // invisible data -> element.dataset.xyz = ...
         // mind the children
     }
-    static htmlToData() {
+
+    static htmlToData(htmlElement) {
         // inverse of data To Html
     }
-    static HtmlToMarkdown() {
+
+    static htmlToMarkdown(htmlElement) {
         // html ->  data -> markdown
     }
 }
@@ -108,53 +127,69 @@ class BookData {
         dataType: BookData.dataTypeKey,
         children: [],
     }
+
     static dataToHtml(data) {
+        data = Object.assign(data ?? {}, this.dataPrototype);
+        data.key = data.key ?? newKey();
         // visible data -> html
         // invisible data -> element.dataset.xyz = ...
         // mind the children
     }
-    static htmlToData() {
+
+    static htmlToData(htmlElement) {
         // inverse of data To Html
     }
-    static HtmlToMarkdown() {
+
+    static htmlToMarkdown(htmlElement) {
         // html ->  data -> markdown
     }
 }
 
-class CodeContentData {
+class CodeCellData {
     static dataTypeKey = register(this);
     static dataPrototype = {
-        dataType: CodeContentData.dataTypeKey,
+        dataType: CodeCellData.dataTypeKey,
     }
+
     static dataToHtml(data) {
+        data = Object.assign(data ?? {}, this.dataPrototype);
+        data.key = data.key ?? newKey();
         // visible data -> html
         // invisible data -> element.dataset.xyz = ...
         // mind the children
     }
-    static htmlToData() {
+
+    static htmlToData(htmlElement) {
         // inverse of data To Html
     }
-    static HtmlToMarkdown() {
+
+    static htmlToMarkdown(htmlElement) {
         // html ->  data -> markdown
     }
 }
 
-class TextContentData {
+class TextCellData {
     static dataTypeKey = register(this);
     static children;
     static dataPrototype = {
-        dataType: TextContentData.dataTypeKey,
+        dataType: TextCellData.dataTypeKey,
         htmlContent: "",
+        cellName: "",
     }
+
     static dataToHtml(data) {
+        data = Object.assign(data ?? {}, this.dataPrototype);
+        data.key = data.key ?? newKey();
         // visible data -> html
         // invisible data -> element.dataset.xyz = ...
         // mind the children
     }
-    static htmlToData() {
+
+    static htmlToData(htmlElement) {
         // inverse of data To Html
     }
-    static HtmlToMarkdown() {
+
+    static htmlToMarkdown(htmlElement) {
         // html ->  data -> markdown
     }
 }
