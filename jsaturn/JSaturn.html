@@ -857,45 +857,45 @@
                 // },
 
                 RootData: {
-                            dataType: "RootData",
-                            children: [],
-                            configData: ConfigData.dataPrototype,
-                            bookData: BookData.dataPrototype,
+                    dataType: "RootData",
+                    children: [],
+                    configData: ConfigData.dataPrototype,
+                    bookData: BookData.dataPrototype,
                 },
 
-                ConfigData:  {
-                            dataType: "ConfigData",
-                            children: [],
-                            features: FeatureData.dataPrototype
+                ConfigData: {
+                    dataType: "ConfigData",
+                    children: [],
+                    features: FeatureData.dataPrototype
                 },
 
                 FeatureData: {
-                            dataType: "FeatureData",
-                            syntaxHighlighting: false,
-                            autoSave: true
+                    dataType: "FeatureData",
+                    syntaxHighlighting: false,
+                    autoSave: true
 
                 },
 
                 BookData: {
 
-                            dataType: "BookData",
-                            children: [],
+                    dataType: "BookData",
+                    children: [],
                 },
 
                 CodeCellData: {
-                            dataType: "CodeCellData",
+                    dataType: "CodeCellData",
                 },
 
                 TextCellData: {
 
-                            dataType: "TextCellData",
-                            htmlContent: "",
-                            cellName: "",
+                    dataType: "TextCellData",
+                    htmlContent: "",
+                    cellName: "",
                 },
             }
 
             static Tranformers = {
-// Not persisted or rendered
+                // Not persisted or rendered
                 RuntimeData: {
                     children,
                     dataPrototype: {},
@@ -922,7 +922,7 @@
                 //         // inverse of data To Html
                 //         data.key = data.key ?? JSaturnDataModel.newKey();
                 //     },
-                //     htmlToMarkdown: (htmlElement) => {
+                //     dataToMarkdown: (data) => {
                 //         // html ->  data -> markdown
                 //     },
                 // },
@@ -944,8 +944,9 @@
                         // inverse of data To Html
                         data.key = data.key ?? JSaturnDataModel.newKey();
                     },
-                    htmlToMarkdown: (htmlElement) => {
+                    dataToMarkdown: (data) => {
                         // html ->  data -> markdown
+                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.RootData);
 
                         // TODO [refactor] @curolith
 
@@ -972,8 +973,9 @@
                         // TODO [refactor] @curolith
 
                     },
-                    htmlToMarkdown: (htmlElement) => {
+                    dataToMarkdown: (data) => {
                         // html ->  data -> markdown
+                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.ConfigData);
 
                         // TODO [refactor] @curolith
 
@@ -982,11 +984,7 @@
 
                 FeatureData: {
                     dataToHtml: (data) => {
-                        data = Object.assign(data ?? {}, {
-                            dataType: "FeatureData",
-                            syntaxHighlighting: false,
-                            autoSave: true
-                        });
+                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.FeatureData);
                         data.key = data.key ?? JSaturnDataModel.newKey();
                         // visible data -> html
                         // invisible data -> element.dataset.xyz = ...
@@ -996,7 +994,7 @@
 
                     },
                     htmlToData: (htmlElement) => {
-                        const data = htmlElement.dataset
+                        const data = hObject.assign(htmlElement.dataset ?? {}, JSaturnDataModel.Prototypes.FeatureData);
 
                         // inverse of data To Html
                         data.key = data.key ?? JSaturnDataModel.newKey();
@@ -1004,8 +1002,9 @@
                         // TODO [refactor] @curolith
 
                     },
-                    htmlToMarkdown: (htmlElement) => {
+                    dataToMarkdown: (data) => {
                         // html ->  data -> markdown
+                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.FeatureData);
 
                         // TODO [refactor] @curolith
 
@@ -1022,11 +1021,11 @@
 
                         // TODO [refactor] @curolith
                         JSaturnRoot.longtermData = JSaturnStorage.load('jSaturnLongtermData');
-                        if (persistenceData.data.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
-                            persistenceData = JSaturnDataModel.migratePersistenceData(persistenceData);
+                        if (data.data.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
+                            data = JSaturnDataModel.migratedata(data);
                         }
-                        JSaturnRoot.configData = persistenceData.data.configData;
-                        JSaturnDataModel.deserialize(persistenceData.data.rootContainerData);
+                        JSaturnRoot.configData = data.data.configData;
+                        JSaturnDataModel.deserialize(data.data.rootContainerData);
                         JSaturnFeatures.restoreFeatureToggles();
                         if (JSaturnFeatures.getFeature('syntax-highlighting')) {
                             JSaturnFeatures.toggleFeature('sytax-highlighting');
@@ -1034,13 +1033,13 @@
                         return document;
 
                         const rootContainer = JSaturnBuilders.applicable(document.querySelector('#root-container'));
-                        const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
+                        const children = [...data.data?.children]?.map(JSaturnDataModel.deserialize);
                         rootContainer.append(...children);
                         return rootContainer;
 
                         const cellContainer = JSaturnBuilders.applicable(document.querySelector('#cell-container'));
                         cellContainer.innerHTML = '';
-                        const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
+                        const children = [...data.data?.children]?.map(JSaturnDataModel.deserialize);
                         cellContainer.append(...children);
                         return cellContainer;
                     },
@@ -1067,30 +1066,31 @@
                         return {
                             persistenceKey: 'root-container',
                             data: {
-                                children: JSaturnDataModel.serializeChildren(jSaturnElement)
+                                children: JSaturnDataModel.serializeChildren(htmlElement)
                             }
                         }
                         return {
                             persistenceKey: 'cell-container',
                             data: {
-                                children: JSaturnDataModel.serializeChildren(jSaturnElement)
+                                children: JSaturnDataModel.serializeChildren(htmlElement)
                             }
                         }
                     },
-                    htmlToMarkdown: (htmlElement) => {
+                    dataToMarkdown: (data) => {
                         // html ->  data -> markdown
+                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.BookData);
 
                         // TODO [refactor] @curolith
                         [
                             "# JSaturn" + (JSaturnRoot.longtermData.username ? "\n" + JSaturnRoot.longtermData.username : ""),
-                            (new Date()).toString().match(/^[^:]+:[^:]+/),
+                            (new Date().toLocaleString()).toString().match(/^[^:]+:[^:]+/),
                             "<br>",
                             "",
                             "---",
                             JSaturnDataModel.transformData(document.querySelector('#root-container'), JSaturnDataModel.transformers.markdown)
                         ].flat(100).join("\n")
-                        JSaturnDataModel.markdownChildren(jSaturnElement)
-                        JSaturnDataModel.markdownChildren(jSaturnElement).reverse()
+                        JSaturnDataModel.markdownChildren(htmlElement)
+                        JSaturnDataModel.markdownChildren(htmlElement).reverse()
                     },
                 },
 
@@ -1103,7 +1103,7 @@
                         // mind the children
 
                         // TODO [refactor] @curolith
-                        return JSaturnBuilders.createCodeCell(persistenceData.data?.codeField, persistenceData.data?.cellName);
+                        return JSaturnBuilders.createCodeCell(data.data?.codeField, data.data?.cellName);
                     },
                     htmlToData: (htmlElement) => {
                         const data = Object.assign(htmlElement.dataset ?? {}, JSaturnDataModel.Prototypes.CodeCellData);
@@ -1115,21 +1115,22 @@
                         return {
                             persistenceKey: 'code-cell',
                             data: {
-                                cellName: jSaturnElement.querySelector('.cell-name')?.innerHTML,
-                                codeField: jSaturnElement.querySelector('.code-field')?.innerText,
+                                cellName: htmlElement.querySelector('.cell-name')?.innerHTML,
+                                codeField: htmlElement.querySelector('.code-field')?.innerText,
                             }
                         }
                     },
-                    htmlToMarkdown: (htmlElement) => {
+                    dataToMarkdown: (data) => {
                         // html ->  data -> markdown
+                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.CodeCellData);
 
                         // TODO [refactor] @curolith
                         return [
-                            "## " + jSaturnElement.querySelector('.cell-name')?.innerHTML,
+                            "## " + htmlElement.querySelector('.cell-name')?.innerHTML,
                             "```javascript",
-                            jSaturnElement.querySelector('.code-field')?.innerText,
+                            htmlElement.querySelector('.code-field')?.innerText,
                             "```",
-                            jSaturnElement.querySelector('.code-output-field')?.outerHTML,
+                            htmlElement.querySelector('.code-output-field')?.outerHTML,
                             "",
                             "---",
                         ]
@@ -1145,7 +1146,7 @@
                         // mind the children
 
                         // TODO [refactor] @curolith
-                        return JSaturnBuilders.createTextCell(persistenceData.data?.textField, persistenceData.data?.cellName);
+                        return JSaturnBuilders.createTextCell(data.data?.textField, data.data?.cellName);
                     },
                     htmlToData: (htmlElement) => {
                         const data = Object.assign(htmlElement.dataset ?? {}, JSaturnDataModel.Prototypes.TextCellData);
@@ -1157,19 +1158,20 @@
                         return {
                             persistenceKey: 'text-cell',
                             data: {
-                                cellName: jSaturnElement.querySelector('.cell-name')?.innerHTML,
-                                textField: jSaturnElement.querySelector('.text-field')?.innerHTML
+                                cellName: htmlElement.querySelector('.cell-name')?.innerHTML,
+                                textField: htmlElement.querySelector('.text-field')?.innerHTML
                             }
                         }
                     },
-                    htmlToMarkdown: (htmlElement) => {
+                    dataToMarkdown: (data) => {
                         // html ->  data -> markdown
+                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.TextCellData);
 
                         // TODO [refactor] @curolith make with ` and vars`
                         return [
                             "",
-                            "## " + jSaturnElement.querySelector('.cell-name')?.innerHTML,
-                            jSaturnElement.querySelector('.text-field')?.innerHTML,
+                            "## " + htmlElement.querySelector('.cell-name')?.innerHTML,
+                            htmlElement.querySelector('.text-field')?.innerHTML,
                             "",
                             "---"
                         ];
