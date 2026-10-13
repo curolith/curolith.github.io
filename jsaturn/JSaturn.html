@@ -832,29 +832,29 @@
                     dataPrototype: {},
                 },
 
-                TemplateData: {
-                    dataToHtml: (data) => {
-                        data = Object.assign(data ?? {}, {
-                            // defines all keys with default values / value setters
-                            dataType: "TemplateData",
-                            children: [],
-                            dataTypeKey: "TemplateData"
-                        });
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-                        // visible data -> html
-                        // invisible data -> element.dataset.xyz = ...
-                        // mind the children
-                    },
-                    htmlToData: (htmlElement) => {
-                        const data = htmlElement.dataset
-
-                        // inverse of data To Html
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-                    },
-                    htmlToMarkdown: (htmlElement) => {
-                        // html ->  data -> markdown
-                    },
-                },
+                // TemplateData: {
+                //     dataToHtml: (data) => {
+                //         data = Object.assign(data ?? {}, {
+                //             // defines all keys with default values / value setters
+                //             dataType: "TemplateData",
+                //             children: [],
+                //             dataTypeKey: "TemplateData"
+                //         });
+                //         data.key = data.key ?? JSaturnDataModel.newKey();
+                //         // visible data -> html
+                //         // invisible data -> element.dataset.xyz = ...
+                //         // mind the children
+                //     },
+                //     htmlToData: (htmlElement) => {
+                //         const data = htmlElement.dataset
+                //
+                //         // inverse of data To Html
+                //         data.key = data.key ?? JSaturnDataModel.newKey();
+                //     },
+                //     htmlToMarkdown: (htmlElement) => {
+                //         // html ->  data -> markdown
+                //     },
+                // },
 
                 RootData: {
                     dataToHtml: (data) => {
@@ -869,6 +869,9 @@
                         // visible data -> html
                         // invisible data -> element.dataset.xyz = ...
                         // mind the children
+
+                        // TODO [refactor] @curolith
+
                     },
                     htmlToData: (htmlElement) => {
                         const data = htmlElement.dataset
@@ -878,6 +881,9 @@
                     },
                     htmlToMarkdown: (htmlElement) => {
                         // html ->  data -> markdown
+
+                        // TODO [refactor] @curolith
+
                     },
                 },
 
@@ -892,15 +898,24 @@
                         // visible data -> html
                         // invisible data -> element.dataset.xyz = ...
                         // mind the children
+
+                        // TODO [refactor] @curolith
+
                     },
                     htmlToData: (htmlElement) => {
                         const data = htmlElement.dataset
 
                         // inverse of data To Html
                         data.key = data.key ?? JSaturnDataModel.newKey();
+
+                        // TODO [refactor] @curolith
+
                     },
                     htmlToMarkdown: (htmlElement) => {
                         // html ->  data -> markdown
+
+                        // TODO [refactor] @curolith
+
                     },
                 },
 
@@ -915,15 +930,24 @@
                         // visible data -> html
                         // invisible data -> element.dataset.xyz = ...
                         // mind the children
+
+                        // TODO [refactor] @curolith
+
                     },
                     htmlToData: (htmlElement) => {
                         const data = htmlElement.dataset
 
                         // inverse of data To Html
                         data.key = data.key ?? JSaturnDataModel.newKey();
+
+                        // TODO [refactor] @curolith
+
                     },
                     htmlToMarkdown: (htmlElement) => {
                         // html ->  data -> markdown
+
+                        // TODO [refactor] @curolith
+
                     },
                 },
 
@@ -937,15 +961,78 @@
                         // visible data -> html
                         // invisible data -> element.dataset.xyz = ...
                         // mind the children
+
+                        // TODO [refactor] @curolith
+                        JSaturnRoot.longtermData = JSaturnStorage.load('jSaturnLongtermData');
+                        if (persistenceData.data.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
+                            persistenceData = JSaturnDataModel.migratePersistenceData(persistenceData);
+                        }
+                        JSaturnRoot.configData = persistenceData.data.configData;
+                        JSaturnDataModel.deserialize(persistenceData.data.rootContainerData);
+                        JSaturnFeatures.restoreFeatureToggles();
+                        if (JSaturnFeatures.getFeature('syntax-highlighting')) {
+                            JSaturnFeatures.toggleFeature('sytax-highlighting');
+                        }
+                        return document;
+
+                        const rootContainer = JSaturnBuilders.applicable(document.querySelector('#root-container'));
+                        const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
+                        rootContainer.append(...children);
+                        return rootContainer;
+
+                        const cellContainer = JSaturnBuilders.applicable(document.querySelector('#cell-container'));
+                        cellContainer.innerHTML = '';
+                        const children = [...persistenceData.data?.children]?.map(JSaturnDataModel.deserialize);
+                        cellContainer.append(...children);
+                        return cellContainer;
                     },
                     htmlToData: (htmlElement) => {
                         const data = htmlElement.dataset
 
                         // inverse of data To Html
                         data.key = data.key ?? JSaturnDataModel.newKey();
+
+                        // TODO [refactor] @curolith
+                        const rootContainer = document.querySelector('#root-container');
+                        JSaturnStorage.store({
+                            key: 'jSaturnLongtermData',
+                            data: JSaturnRoot.longtermData
+                        });
+                        return {
+                            persistenceKey: '#document',
+                            data: {
+                                dataModelVersion: JSaturnDataModel.dataModelVersion,
+                                configData: JSaturnRoot.configData,
+                                rootContainerData: JSaturnDataModel.transformData(rootContainer, JSaturnDataModel.transformers.serialize)
+                            }
+                        }
+                        return {
+                            persistenceKey: 'root-container',
+                            data: {
+                                children: JSaturnDataModel.serializeChildren(jSaturnElement)
+                            }
+                        }
+                        return {
+                            persistenceKey: 'cell-container',
+                            data: {
+                                children: JSaturnDataModel.serializeChildren(jSaturnElement)
+                            }
+                        }
                     },
                     htmlToMarkdown: (htmlElement) => {
                         // html ->  data -> markdown
+
+                        // TODO [refactor] @curolith
+                        [
+                            "# JSaturn" + (JSaturnRoot.longtermData.username ? "\n" + JSaturnRoot.longtermData.username : ""),
+                            (new Date()).toString().match(/^[^:]+:[^:]+/),
+                            "<br>",
+                            "",
+                            "---",
+                            JSaturnDataModel.transformData(document.querySelector('#root-container'), JSaturnDataModel.transformers.markdown)
+                        ].flat(100).join("\n")
+                        JSaturnDataModel.markdownChildren(jSaturnElement)
+                        JSaturnDataModel.markdownChildren(jSaturnElement).reverse()
                     },
                 },
 
@@ -958,18 +1045,41 @@
                         // visible data -> html
                         // invisible data -> element.dataset.xyz = ...
                         // mind the children
+
+                        // TODO [refactor] @curolith
+                        return JSaturnBuilders.createCodeCell(persistenceData.data?.codeField, persistenceData.data?.cellName);
                     },
                     htmlToData: (htmlElement) => {
                         const data = htmlElement.dataset
 
                         // inverse of data To Html
                         data.key = data.key ?? JSaturnDataModel.newKey();
+
+                        // TODO [refactor] @curolith
+                        return {
+                            persistenceKey: 'code-cell',
+                            data: {
+                                cellName: jSaturnElement.querySelector('.cell-name')?.innerHTML,
+                                codeField: jSaturnElement.querySelector('.code-field')?.innerText,
+                            }
+                        }
                     },
                     htmlToMarkdown: (htmlElement) => {
                         // html ->  data -> markdown
+
+                        // TODO [refactor] @curolith
+                        return [
+                            "## " + jSaturnElement.querySelector('.cell-name')?.innerHTML,
+                            "```javascript",
+                            jSaturnElement.querySelector('.code-field')?.innerText,
+                            "```",
+                            jSaturnElement.querySelector('.code-output-field')?.outerHTML,
+                            "",
+                            "---",
+                        ]
                     },
                 },
-                
+
                 TextCellData: {
                     dataToHtml: (data) => {
                         data = Object.assign(data ?? {}, {
@@ -981,15 +1091,36 @@
                         // visible data -> html
                         // invisible data -> element.dataset.xyz = ...
                         // mind the children
+
+                        // TODO [refactor] @curolith
+                        return JSaturnBuilders.createTextCell(persistenceData.data?.textField, persistenceData.data?.cellName);
                     },
                     htmlToData: (htmlElement) => {
                         const data = htmlElement.dataset
 
                         // inverse of data To Html
                         data.key = data.key ?? JSaturnDataModel.newKey();
+
+                        // TODO [refactor] @curolith
+                        return {
+                            persistenceKey: 'text-cell',
+                            data: {
+                                cellName: jSaturnElement.querySelector('.cell-name')?.innerHTML,
+                                textField: jSaturnElement.querySelector('.text-field')?.innerHTML
+                            }
+                        }
                     },
                     htmlToMarkdown: (htmlElement) => {
                         // html ->  data -> markdown
+
+                        // TODO [refactor] @curolith make with ` and vars`
+                        return [
+                            "",
+                            "## " + jSaturnElement.querySelector('.cell-name')?.innerHTML,
+                            jSaturnElement.querySelector('.text-field')?.innerHTML,
+                            "",
+                            "---"
+                        ];
                     },
                 },
             }
