@@ -1,10 +1,1203 @@
+<!--
+  ~ JSaturn editor
+  ~ Copyright (c) 2026.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
 <!DOCTYPE html>
-<html lang="en">
+<!--suppress ALL -->
+<html lang="en" xmlns="http://www.w3.org/1999/html">
     <head>
-        <meta charset="UTF-8">
-        <title>Title</title>
-    </head>
-    <body>
+        <title>JSaturn</title>
 
+        <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/styles/default.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/highlight.min.js"></script>
+        <link rel="icon"
+              href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
+        <link rel="apple-touch-icon"
+              href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪐</text></svg>">
+        <!--suppress CssUnusedSymbol -->
+        <style>
+            :root {
+                /*region variables*/
+                --color-accent-primary: #302824;
+
+                --color-accent-secondary: #DF792EFF;
+
+                --color-back: #000000;
+                --color-background: #B36125;
+                background-attachment: fixed;
+                background-color: #515151;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='164' height='164' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23454545' fill-opacity='0.31'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.31'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");
+                --shadow-dark-large: -10px 10px 20px var(--color-shadow-dark);
+
+                --shadow-dark-small: -2px 2px 2px var(--color-shadow-dark);
+                --shadow-light-small: -2px 2px 2px var(--color-shadow-light);
+                --color-effect: var(--color-accent-secondary);
+
+                --color-front: #ffffff;
+                --shadow-inset-dark-small: inset -2px 2px 2px var(--color-shadow-dark);
+                --shadow-inset-light-counter-dark-small: inset 2px -2px .15rem color-mix(var(--color-shadow-dark), color-mix(var(--color-shadow-dark), var(--color-transparency)));
+                --shadow-inset-light-small: inset -2px 2px .2rem /*.25rem /*2px*/ var(--color-shadow-light);
+                --gap-medium: calc(2 * var(--gap-small));
+                --padding-medium: calc(2 * var(--padding-small));
+
+                --color-neutral-p12-5: color-mix(in srgb, var(--color-neutral-p25), var(--color-back));
+                --color-neutral-p25: color-mix(in srgb, var(--color-neutral-p50), var(--color-back));
+
+                --color-neutral-p37-5: color-mix(in srgb, var(--color-neutral-p25), var(--color-neutral-p50));
+                --color-neutral-p50: color-mix(var(--color-front), var(--color-back));
+
+                --color-neutral-p62-5: color-mix(in srgb, var(--color-neutral-p50), var(--color-neutral-p75));
+                --color-neutral-p75: color-mix(in srgb, var(--color-front), var(--color-neutral-p50));
+                --color-neutral-p87-5: color-mix(in srgb, var(--color-neutral-p75), var(--color-front));
+
+                /*region color-derivation*/
+                /*primary*/
+                --3d-outwards-small: var(--shadow-inset-light-small), var(--shadow-inset-light-counter-dark-small);
+
+                --color-primary-p12-5: color-mix(in srgb, var(--color-primary-p25), var(--color-back));
+                --color-primary-p25: color-mix(in srgb, var(--color-primary-p50), var(--color-back));
+
+                --color-primary-p37-5: color-mix(in srgb, var(--color-primary-p25), var(--color-primary-p50));
+                --color-primary-p50: var(--color-accent-primary);
+                --color-primary-p62-5: color-mix(in srgb, var(--color-primary-p50), var(--color-primary-p75));
+                --color-primary-p75: color-mix(in srgb, var(--color-front), var(--color-primary-p50));
+
+                /*primary*/
+                --color-primary-p87-5: color-mix(in srgb, var(--color-primary-p75), var(--color-front));
+
+                --border-radius-big: calc(2 * var(--border-radius-small));
+                --border-radius-small: .5rem;
+
+                --color-secondary-p12-5: color-mix(in srgb, var(--color-secondary-p25), var(--color-back));
+                --color-secondary-p25: color-mix(in srgb, var(--color-secondary-p50), var(--color-back));
+                --color-secondary-p37-5: color-mix(in srgb, var(--color-secondary-p25), var(--color-secondary-p50));
+                --color-secondary-p50: var(--color-accent-secondary);
+
+                /*secondary*/
+                --color-secondary-p62-5: color-mix(in srgb, var(--color-secondary-p50), var(--color-secondary-p75));
+
+                --color-secondary-p75: color-mix(in srgb, var(--color-front), var(--color-secondary-p50));
+                --color-secondary-p87-5: color-mix(in srgb, var(--color-secondary-p75), var(--color-front));
+
+                --color-shadow-dark: hsl(0 0 0 / .25);
+                --color-shadow-light: hsl(0 0% 100% / 0.47);
+                --gap-small: 1rem;
+                --padding-small: .5rem;
+                /*endregion color-derivation*/
+
+                --padding-smaller: .25rem;
+                /*endregion variables*/
+
+                --color-text-normal: var(--color-back);
+                --filter-textless: blur(.5rem);
+                --color-transparency: rgb(0 0 0 / 0);
+            }
+
+            html {
+                height: 100%;
+                width: stretch;
+            }
+
+            .popup-content {
+                backdrop-filter: var(--filter-textless);
+                background-color: color-mix(var(--color-transparency), var(--color-primary-p75));
+                border-radius: 1rem;
+                box-shadow: var(--3d-outwards-small),
+                var(--shadow-dark-large);
+                display: flex;
+
+                flex-direction: column;
+                font-family: system-ui, sans-serif;
+                gap: 1rem;
+                margin-top: 2.5rem;
+                offset: bottom;
+                opacity: 0;
+                padding: 1rem;
+                position: absolute;
+                text-align: center;
+                transition: all .1s ease-out;
+                visibility: hidden;
+                width: fit-content;
+                z-index: front;
+            }
+
+            @starting-style {
+                scale: 0;
+                opacity: 0;
+                transition: all .2s ease-out;
+                animation: all .2s ease;
+            }
+
+
+            /*noinspection ALL*/
+            .popup-content.show {
+                opacity: 1;
+                transition: all .1s ease-out;
+                visibility: visible;
+                z-index: 999;
+            }
+
+            /*TODO https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@starting-style*/
+
+            .root-container {
+                opacity: 1;
+                scale: 1;
+                display: flex;
+                flex-direction: column;
+                gap: var(--gap-medium);
+                transition: .3s linear;
+                transition: all .2s ease-out;
+                animation: all .2s ease;
+            }
+
+            .control-bar-container {
+                column-count: 3;
+                display: grid;
+                gap: 0;
+            }
+
+            .control-bar-left {
+                display: flex;
+                flex-direction: row;
+                /*width: fit-content;*/
+                gap: var(--gap-small);
+                grid-column-end: 1;
+                grid-column-start: 1;
+                justify-content: left;
+                column-span: none;
+
+            }
+
+            .control-bar-center {
+                display: flex;
+                flex-direction: row;
+                /*width: fit-content;*/
+                gap: var(--gap-small);
+                grid-column-end: 2;
+                grid-column-start: 2;
+                justify-content: center;
+                flex: contain;
+                column-span: none;
+
+            }
+
+            .control-bar-right {
+                display: flex;
+                flex-direction: row;
+                gap: var(--gap-small);
+                /*width: fit-content;*/
+                grid-column-end: 3;
+                grid-column-start: 3;
+                justify-content: right;
+                width: stretch;
+                flex: contain;
+                column-span: none;
+
+            }
+
+            h1 {
+                color: var(--color-secondary-p50);
+                font-family: Consolas, "Courier New", monospace;
+                font-size: xxx-large;
+                font-weight: bolder;
+                padding: var(--padding-medium);
+                text-shadow: var(--shadow-dark-small);
+            }
+
+            .text-field {
+                background-color: color-mix(var(--color-transparency), var(--color-primary-p87-5));
+                border-radius: var(--border-radius-small);
+                color: var(--color-text-normal);
+                inset: 1rem;
+                outline: transparent;
+                overflow-wrap: anywhere;
+                padding: var(--padding-small);
+                transition: ease-in-out .25s;
+            }
+
+            .text-field:focus, .text-field:active {
+                outline: var(--color-effect) solid 3px;
+                transition: ease-in-out .25s;
+            }
+
+            button {
+                background-color: color-mix(var(--color-transparency), var(--color-secondary-p75));
+                border: none;
+                border-radius: var(--border-radius-small);
+                box-shadow: var(--3d-outwards-small),
+                var(--shadow-dark-small);
+                color: var(--color-text-normal);
+                cursor: pointer;
+                font-family: system-ui, sans-serif;
+                font-size: large;
+                padding: var(--padding-smaller);
+                text-align: justify;
+                transition: ease-in 0.15s;
+                width: max-content;
+            }
+
+            button:hover {
+                border-radius: .8rem;
+                box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large),
+                var(--shadow-dark-small);
+                transition: ease-in 0.1s;
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-secondary-p87-5)));
+                position: relative;
+                scale: 1.1;
+                color-adjust: economy;
+            }
+
+            button:active {
+                background-color: var(--color-transparency);
+                scale: 1.25;
+                box-shadow: var(--3d-outwards-small), var(--shadow-dark-large);
+                transition: ease-in-out 0.15s;
+            }
+
+            button:disabled {
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-neutral-p75))));
+                color: color-mix(var(--color-transparency), var(--color-text-normal))
+            }
+
+            .code-field {
+                background-color: var(--color-neutral-p75);
+                border-radius: var(--border-radius-small);
+                box-shadow: var(--shadow-inset-dark-small);
+                color: var(--color-text-normal);
+                font-family: Consolas, "Courier New", monospace;
+                inset: 1rem;
+                outline: transparent;
+                overflow-wrap: anywhere;
+                padding: var(--padding-small);
+                transition: ease-in-out .25s;
+                text-wrap: wrap;
+            }
+
+            .code-field:focus, .code-field:active {
+                outline: var(--color-effect) solid 3px;
+                transition: ease-in-out .25s;
+            }
+
+            .code-output-box {
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p25)));
+                border-radius: 0.5rem;
+                font-family: Consolas, "Courier New", monospace;
+                inset: 1rem;
+                outline: transparent;
+                transition: ease-in-out .25s;
+            }
+
+            .code-output-field {
+                border-radius: 0.5rem;
+                color: var(--color-secondary-p62-5);
+                font-family: Consolas, "Courier New", monospace;
+                inset: 1rem;
+                outline: transparent;
+                padding: var(--padding-small);
+                transition: ease-in-out .25s;
+                overflow-wrap: anywhere;
+            }
+
+            body {
+                display: flex;
+                flex-direction: column;
+                padding: var(--padding-medium);
+            }
+
+            .cell-container {
+                display: flex;
+                flex-direction: column-reverse;
+                gap: var(--gap-medium);
+            }
+
+            .cell {
+                backdrop-filter: var(--filter-textless);
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75))));
+                border-radius: 1rem;
+                box-shadow: var(--3d-outwards-small),
+                var(--shadow-dark-large);
+                display: grid;
+                font-family: system-ui, sans-serif;
+                gap: 1rem;
+                opacity: 1;
+                padding: 1rem;
+                transition: all .1s ease-out;
+                visibility: visible;
+
+                position: relative;
+            }
+
+            .code-cell {
+            }
+
+            .text-cell {
+            }
+
+
+            .cell-name {
+                align-self: center;
+                border-radius: var(--border-radius-small);
+                border: none;
+                /*box-shadow: var(--3d-outwards-small);*/
+                color: var(--color-text-normal);
+                /*cursor: pointer;*/
+                display: flex;
+                /*font-family: monospace;*/
+                font-family: Consolas, "Courier New", monospace;;
+                font-size: large;
+                justify-content: left;
+                margin: 0;
+                /*padding: 0;*/
+                padding: var(--padding-smaller);
+                text-align: justify;
+                /*text-shadow: var(--shadow-dark-small);*/
+                transition: ease-in 0.15s;
+            var(--shadow-dark-small);
+                text-wrap: wrap;
+                outline: none;
+                width: fit-content;
+                /*width: stretch;*/
+            }
+
+            .cell-name:hover {
+                box-shadow: var(--3d-outwards-small);
+                /*border-radius: .8rem;*/
+                /*box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large);*/
+                /*var(--shadow-dark-small);*/
+                transition: ease-in 0.15s;
+                /*position: relative;*/
+                scale: 1.1;
+                /*color-adjust: economy;*/
+            }
+
+            .cell-name:focus {
+                border-radius: .8rem;
+                box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large),
+                var(--shadow-dark-small);
+                transition: ease-in 0.15s;
+                /*position: relative;*/
+                scale: 1.2;
+                /*background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-secondary-p75)));*/
+                background-color: var(--color-secondary-p50);;
+                scale: 1.2;
+                box-shadow: var(--3d-outwards-small), var(--shadow-dark-large);
+                transition: ease-in 0.25s;
+            }
+
+        </style>
+    </head>
+
+    <script>
+        class JSaturnBuilders {
+            static addUUID(element) {
+                const chars = "abcdefghijklmnopqrstuvwxyz";
+                element.id = (element.className ?? element.tagName).split(" ").findLast(Boolean) + "-" + "_".repeat(8).split("").map(c => chars[Math.floor((Math.random() * 26))]).join('');
+            }
+
+            static applicable(o) {
+                o['apply'] = (f) => {
+                    f(o);
+                    return o;
+                }
+                return o;
+            }
+
+            static createButton(className, clickAction, innerHTML, param) {
+                return JSaturnBuilders.createElement('button', className).apply(button => {
+                    button.param = param;
+                    button.onclick = () => clickAction(button);
+                    button.innerHTML = innerHTML;
+                });
+            }
+
+            static createNameField(cellName) {
+                return JSaturnBuilders.createElement("h2", "cell-name").apply(cname => {
+                    cname.contentEditable = "true";
+                    cname.innerHTML = cellName ?? "Cell of the " + String.fromCodePoint(128000 + Math.floor(Math.random() * 63));
+                })
+            }
+
+            static createCell(customClass, cellName) {
+                return JSaturnBuilders.createDiv(customClass ?? "cell").apply(cell => cell.append(
+                    JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
+                        cellControls.append(
+                            JSaturnBuilders.createDiv('control-bar-left').apply(controlBar => {
+                                controlBar.id = 'top-control-bar-left';
+                                controlBar.append(JSaturnBuilders.createButton('delete-cell-button', (button) => {
+                                    button.param.remove();
+                                }, `❌`, cell));
+                                controlBar.append(JSaturnBuilders.createNameField(cellName))
+                            }),
+                            JSaturnBuilders.createDiv('control-bar-center').apply(controlBar => {
+                                controlBar.id = 'top-control-bar-center';
+                            }),
+                            JSaturnBuilders.createDiv('control-bar-right').apply(controlBar => {
+                                controlBar.id = 'top-control-bar-right';
+                            })
+                        )
+                    }),
+                    JSaturnBuilders.createDiv("cell-content"),
+                    JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
+                        cellControls.append(
+                            JSaturnBuilders.createDiv('control-bar-left').apply(controlBar => {
+                                controlBar.id = 'bottom-control-bar-left';
+                            }),
+                            JSaturnBuilders.createDiv("control-bar-center").apply(controlBar => {
+                                controlBar.id = 'bottom-control-bar-center';
+                                const popupContent = JSaturnBuilders.createDiv('popup-content');
+                                controlBar.append(
+                                    JSaturnBuilders.createButton('add-cell-below-button', (button) => button.param.before(JSaturnBuilders.createCodeCell()), '➕ <>', cell),
+                                    //     <button onClick="togglePopUp('options-popup')">•••</button>
+                                    // <div class="popup-content" id="options-popup">
+                                    JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
+                                    popupContent,
+                                    JSaturnBuilders.createButton('add-text-below-button', (button) => button.param.before(JSaturnBuilders.createTextCell()), '➕ T', cell)
+                                )
+                            }),
+                            JSaturnBuilders.createDiv('control-bar-right').apply(controlBar => {
+                                controlBar.id = 'bottom-control-bar-right';
+                            })
+                        )
+                    })
+                ));
+            }
+
+            static createCodeCell(code, cellName) {
+                return JSaturnBuilders.createCell("cell code-cell", cellName).apply(cell => {
+                    // cell['persistenceKey'] = 'code-cell';
+                    cell.querySelector('.cell-content').append(
+                        JSaturnBuilders.createDiv("code-output-box").apply(codeOutputBox => {
+                            codeOutputBox.append(
+                                JSaturnBuilders.createCodeField(code).apply(codeField => {
+                                    codeField.addEventListener('keypress', function (e) {
+                                        if ((e.code === "Enter") && e.ctrlKey) {
+                                            JSaturnCodeCellUtility.runCell(cell)
+                                        }
+                                    });
+                                }),
+                            )
+                            codeOutputBox.setOutput = (output) => {
+                                codeOutputBox.querySelectorAll('.code-output-field').forEach(field => field.remove());
+                                if (output.length > 0) {
+                                    codeOutputBox.append(JSaturnBuilders.createDiv("code-output-field")
+                                        .apply(outputField => outputField.innerHTML = output));
+                                }
+                            }
+                        })
+                    )
+                    cell.querySelector('#top-control-bar-right').append(
+                        JSaturnBuilders.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
+                    )
+                    if (JSaturnFeatures.getFeature('syntax-highlighting')) {
+                        JSaturnCodeCellUtility.highlightCell(cell);
+                    }
+                })
+            }
+
+            static createCodeField(code) {
+                return JSaturnBuilders.createDiv('code-field').apply(codeField => {
+                        codeField.contentEditable = 'true';
+                        codeField.innerText = code ?? "";
+                    }
+                )
+            }
+
+            static createDiv(className) {
+                return JSaturnBuilders.createElement('div', className);
+            }
+
+            static createElement(tag, className) {
+                return JSaturnBuilders.applicable(document.createElement(tag))
+                    .apply(element => {
+                        if (className) {
+                            element.className = className;
+                        }
+                        JSaturnBuilders.addUUID(element);
+                    });
+            }
+
+
+            static createTextCell(text, cellName) {
+                return JSaturnBuilders.createCell("cell text-cell", cellName).apply(cell => {
+                    // cell['persistenceKey'] = 'text-cell';
+                    cell.querySelector('.cell-content')
+                        .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = text ?? ""));
+                    cell.querySelector('.popup-content').append(
+                        JSaturnBuilders.createButton(
+                            "button",
+                            (button) => window.navigator.clipboard.readText().then((text) => {
+                                const textField = button.param.querySelector('.text-field');
+                                textField.innerHTML = textField.innerHTML + text;
+                            }),
+                            "📋 Paste HTML from clipboard",
+                            cell
+                        )
+                    )
+                });
+            }
+
+            static createTextField() {
+                return JSaturnBuilders.createDiv("text-field").apply(textField => {
+                    textField.contentEditable = 'true';
+                });
+            }
+        }
+
+        class JSaturnCodeCellUtility {
+            static highlightCell(cell) {
+                // TODO [feature] @curolith highlighting disabled until functional
+                return;
+                if (!JSaturnFeatures.getFeature("syntax-highlighting")) {
+                    return;
+                }
+                const codeField = cell.querySelector('.code-field');
+                const code = codeField.innerText;
+                const highlightResult = hljs.highlight(code, {
+                    language: 'javascript',
+                    ignoreIllegals: true
+                }).value
+                codeField.innerHTML = highlightResult.replace(/\n/g, "<br>")
+                window.getSelection().removeAllRanges();
+            }
+
+            static removeHighlighting(cell) {
+                const codeField = cell.querySelector(".code-field");
+                const code = codeField.innerText;
+                const data = hljs.highlight(code, {
+                    language: 'plaintext',
+                    ignoreIllegals: true
+                }).value
+                codeField.innerHTML = data.replace(/\n/g, "<br>")
+                window.getSelection().removeAllRanges();
+            }
+
+            static runAll() {
+                document.querySelectorAll(".cell").forEach(cell => {
+                    JSaturnCodeCellUtility.runCell(cell);
+                });
+            }
+
+            static runCell(cell) {
+                const codeField = cell.querySelector('.code-field');
+                if (!codeField) {
+                    return;
+                }
+                const code = codeField.innerText;
+                const resultStrings = [];
+                const logOutput = (args) => resultStrings.push("> " + String(args));
+                const consoleBox = console;
+                const global = JSaturnRoot.runtimeData.global
+                console = {
+                    log: logOutput
+                };
+                try {
+                    const output = eval(code);
+                    if (output && output !== 1) {
+                        logOutput(output);
+                    }
+                } catch (e) {
+                    logOutput(e);
+                }
+                JSaturnRoot.runtimeData.global = global;
+                console = consoleBox;
+                cell.querySelector('.code-output-box').setOutput(resultStrings.join("<br>"));
+                JSaturnCodeCellUtility.highlightCell(cell);
+            }
+        }
+
+        class JSaturnRoot {
+            static runtimeData = {
+                log: [],
+                global: {}
+            };
+
+            static configData = {
+                features: {
+                    'syntax-highlighting': false,
+                    'auto-save': true
+                },
+            }
+
+            static longtermData = {
+                username: "",
+                lastSave: 0
+            }
+
+            static init() {
+                const lastSave = JSaturnStorage.load('lastSave');
+                if (lastSave) {
+                    JSaturnStorage.restoreState();
+                } else {
+                    JSaturnSnippetUtility.deserializeDemoData();
+                }
+                document.addEventListener("keypress", (e) => {
+                    if (["Enter", "Space"].includes(e.code)) {
+                        JSaturnStorage.triggerAutoSave();
+                    }
+                });
+                document.addEventListener("click", (e) => {
+                    JSaturnStorage.triggerAutoSave();
+                });
+            }
+
+            static log(type, message, causeId, context) {
+                const logObject = JSON.stringify({
+                    type: type,
+                    message: message,
+                    causeId: causeId,
+                    context: context,
+                });
+                console.log(logObject);
+                JSaturnRoot.runtimeData.log.push(logObject);
+            }
+
+            static triggerBreakPoint() {
+                debugger;
+            }
+
+            static removeAll() {
+                [...document.querySelector('#cell-container').children].forEach(cell => cell.remove());
+            }
+        }
+
+        function setUserName(s) {
+            const swap = JSaturnRoot.longtermData.username;
+            JSaturnRoot.longtermData.username = s;
+        }
+
+        class JSaturnFeatures {
+            static featureChangeHandlers = {
+                'syntax-highlighting': (newState) => {
+                    // TODO [feature] @curolith Highlighting disabled until functional
+                    if (newState) {
+                        // document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
+                    } else {
+                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
+                    }
+                },
+                'auto-save': (newState) => {
+                    JSaturnStorage.saveState();
+                }
+            }
+
+            static featureChange(feature, newState) {
+                JSaturnFeatures.featureChangeHandlers[feature]?.(newState);
+            }
+
+            static getFeature(feature) {
+                return JSaturnRoot.configData.features[feature];
+            }
+
+            static handleFeatureToggle(toggleButton) {
+                const feature = toggleButton.id?.replace(/feature-toggle-/, "");
+                const newState = JSaturnFeatures.toggleFeature(feature);
+                JSaturnFeatures.updateFeatureToggleText(feature, newState, toggleButton);
+                JSaturnFeatures.featureChange(feature, newState);
+            }
+
+            static restoreFeatureToggles() {
+                document.querySelectorAll('.feature-toggle').forEach(toggleButton => {
+                    const feature = toggleButton.id;
+                    const configState = JSaturnFeatures.getFeature(feature);
+                    JSaturnFeatures.updateFeatureToggleText(feature, configState, toggleButton)
+                })
+            }
+
+            static setFeature(feature, value) {
+                JSaturnRoot.configData.features[feature] = value;
+            }
+
+            static toggleFeature(feature) {
+                const newState = !JSaturnFeatures.getFeature(feature);
+                JSaturnFeatures.setFeature(feature, newState);
+                return newState;
+            }
+
+            static updateFeatureToggleText(feature, newState, toggleButton) {
+                const textValue = newState ? "On" : "Off"
+                toggleButton.textContent = toggleButton.textContent?.replace(/On|Off/, textValue);
+            }
+        }
+
+        class JSaturnIO {
+            static getFileDateTimeString() {
+                return (new Date()).toISOString().replace(":", "-").replace("T", "_").match(/^[^:]+/);
+            }
+
+            static downloadFile(fileContent, name, suffix) {
+                if (JSaturnRoot.runtimeData.downloadURL) {
+                    window.URL.revokeObjectURL(JSaturnRoot.runtimeData.downloadURL);
+                }
+                const link = document.createElement("a");
+                const blobUrl = window.URL.createObjectURL(new Blob([fileContent], {type: 'text/plain'}));
+                link.download = `${name}.${suffix}`;
+                link.href = blobUrl;
+                link.click();
+                JSaturnRoot.runtimeData.downloadURL = blobUrl;
+            }
+
+            static pickFile(onInput, ...fileTypes) {
+                const fileInput = document.createElement("input")
+                fileInput.type = "file";
+                fileInput.multiple = false;
+                fileInput.accept = (fileTypes ?? ["txt", "json"]).join(",");
+                fileInput.addEventListener("input", () => onInput(fileInput))
+                fileInput.click();
+            }
+
+            static serializeAndEscape() {
+                return escape(JSON.stringify(JSaturnDataModel.serializeFromRoot()))
+            }
+
+            static exportStateToClipboard() {
+                window.navigator.clipboard.writeText(JSaturnIO.serializeAndEscape());
+            }
+
+            static exportStateToFile() {
+                JSaturnIO.downloadFile(
+                    JSON.stringify(JSaturnDataModel.serializeFromRoot()),
+                    "JSaturn-export_" + JSaturnIO.getFileDateTimeString(),
+                    "json"
+                )
+            }
+
+            static importStateFromFile(fileName, fileType, text) {
+                JSaturnIO.pickFile(fileInput => {
+                    const file = fileInput.files[0];
+                    file.text().then((text) => {
+                        JSaturnDataModel.deserialize(JSON.parse(text))
+                    });
+                }, "txt", "json")
+            }
+
+            static exportMarkdownToClipboard() {
+                window.navigator.clipboard.writeText(JSaturnDataModel.markdownFromRoot());
+            }
+
+            // TODO [refactor] @curolith adapt other classes to use this instead of class name
+
+            static exportMarkdownToFile() {
+                JSaturnIO.downloadFile(
+                    JSaturnDataModel.markdownFromRoot(),
+                    "JSaturn-export_" + JSaturnIO.getFileDateTimeString(),
+                    "md"
+                )
+            }
+
+            static unescapeAndDeserialize(value) {
+                JSaturnDataModel.deserialize(JSON.parse(unescape(value)))
+            }
+
+            static importFromClipboard() {
+                window.navigator.clipboard.readText().then(value => JSaturnIO.unescapeAndDeserialize(value));
+            }
+        }
+
+        class JSaturnDataModel {
+            // TODO Update on change and implement migration
+            static dataModelVersion = 0.0;
+            static transformers = {
+                htmlToData: "htmlToData",
+                dataToHtml: "dataToHtml",
+                htmlToMarkdown: "htmlToMarkdown"
+            };
+
+            static newKey() {
+                return Array(4).keys()
+                    .map(() => Array(4).keys()
+                        .map(Math.random).map(x => (x * 26) + 97).map(Math.floor)
+                        .map(x => String.fromCharCode(x)).toArray().join(""))
+                    .toArray().join("-")
+            };
+
+            static Models = {
+// Not persisted or rendered
+                RuntimeData: {
+                    children,
+                    dataPrototype: {},
+                },
+
+                TemplateData: {
+                    dataToHtml: (data) => {
+                        data = Object.assign(data ?? {}, {
+                            // defines all keys with default values / value setters
+                            dataType: "TemplateData",
+                            children: [],
+                            dataTypeKey: "TemplateData"
+                        });
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                        // visible data -> html
+                        // invisible data -> element.dataset.xyz = ...
+                        // mind the children
+                    },
+                    htmlToData: (htmlElement) => {
+                        const data = htmlElement.dataset
+
+                        // inverse of data To Html
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                    },
+                    htmlToMarkdown: (htmlElement) => {
+                        // html ->  data -> markdown
+                    },
+                },
+
+                RootData: {
+                    dataToHtml: (data) => {
+                        data = Object.assign(data ?? {}, {
+                            dataType: "RootData",
+                            children: [],
+                            configData: ConfigData.dataPrototype,
+                            bookData: BookData.dataPrototype,
+
+                        });
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                        // visible data -> html
+                        // invisible data -> element.dataset.xyz = ...
+                        // mind the children
+                    },
+                    htmlToData: (htmlElement) => {
+                        const data = htmlElement.dataset
+
+                        // inverse of data To Html
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                    },
+                    htmlToMarkdown: (htmlElement) => {
+                        // html ->  data -> markdown
+                    },
+                },
+
+                ConfigData: {
+                    dataToHtml: (data) => {
+                        data = Object.assign(data ?? {}, {
+                            dataType: "ConfigData",
+                            children: [],
+                            features: FeatureData.dataPrototype
+                        });
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                        // visible data -> html
+                        // invisible data -> element.dataset.xyz = ...
+                        // mind the children
+                    },
+                    htmlToData: (htmlElement) => {
+                        const data = htmlElement.dataset
+
+                        // inverse of data To Html
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                    },
+                    htmlToMarkdown: (htmlElement) => {
+                        // html ->  data -> markdown
+                    },
+                },
+
+                FeatureData: {
+                    dataToHtml: (data) => {
+                        data = Object.assign(data ?? {}, {
+                            dataType: "FeatureData",
+                            syntaxHighlighting: false,
+                            autoSave: true
+                        });
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                        // visible data -> html
+                        // invisible data -> element.dataset.xyz = ...
+                        // mind the children
+                    },
+                    htmlToData: (htmlElement) => {
+                        const data = htmlElement.dataset
+
+                        // inverse of data To Html
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                    },
+                    htmlToMarkdown: (htmlElement) => {
+                        // html ->  data -> markdown
+                    },
+                },
+
+                BookData: {
+                    dataToHtml: (data) => {
+                        data = Object.assign(data ?? {}, {
+                            dataType: "BookData",
+                            children: [],
+                        });
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                        // visible data -> html
+                        // invisible data -> element.dataset.xyz = ...
+                        // mind the children
+                    },
+                    htmlToData: (htmlElement) => {
+                        const data = htmlElement.dataset
+
+                        // inverse of data To Html
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                    },
+                    htmlToMarkdown: (htmlElement) => {
+                        // html ->  data -> markdown
+                    },
+                },
+
+                CodeCellData: {
+                    dataToHtml: (data) => {
+                        data = Object.assign(data ?? {}, {
+                            dataType: "CodeCellData",
+                        });
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                        // visible data -> html
+                        // invisible data -> element.dataset.xyz = ...
+                        // mind the children
+                    },
+                    htmlToData: (htmlElement) => {
+                        const data = htmlElement.dataset
+
+                        // inverse of data To Html
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                    },
+                    htmlToMarkdown: (htmlElement) => {
+                        // html ->  data -> markdown
+                    },
+                },
+                
+                TextCellData: {
+                    dataToHtml: (data) => {
+                        data = Object.assign(data ?? {}, {
+                            dataType: "TextCellData",
+                            htmlContent: "",
+                            cellName: "",
+                        });
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                        // visible data -> html
+                        // invisible data -> element.dataset.xyz = ...
+                        // mind the children
+                    },
+                    htmlToData: (htmlElement) => {
+                        const data = htmlElement.dataset
+
+                        // inverse of data To Html
+                        data.key = data.key ?? JSaturnDataModel.newKey();
+                    },
+                    htmlToMarkdown: (htmlElement) => {
+                        // html ->  data -> markdown
+                    },
+                },
+            }
+
+            static getModelForData(data) {
+                if (!data) {
+                    return null;
+                }
+                return ["default", data["nodeName"]]
+                    .concat(data["className"]?.split(" "))
+                    .concat([data["persistenceKey"]])
+                    .map(key => JSaturnDataModel.Models[key])
+                    .findLast(Boolean);
+            }
+
+            static transformData(data, transformation) {
+                return JSaturnDataModel.getModelForData(data)?.[transformation]?.(data);
+            }
+
+            static serialize(data) {
+                return JSaturnDataModel.transformData(data, JSaturnDataModel.transformers.htmlToData)
+            }
+
+            static deserialize(persistenceData) {
+                if (!persistenceData) {
+                    return null;
+                }
+                const element = JSaturnDataModel.transformData(persistenceData, JSaturnDataModel.transformers.dataToHtml);
+                if (element) {
+                    return element;
+                }
+                JSaturnRoot.log(
+                    'error',
+                    'No deserialization implementation found',
+                    '8ae76dbf-fd43-4ffd-84f1-a4a40619d440',
+                    persistenceData
+                )
+            }
+
+            static serializeChildren(persistenceElement) {
+                return [...persistenceElement.children].map(x => JSaturnDataModel.serialize(x)).filter(Boolean);
+            }
+
+            static markdownChildren(persistenceElement) {
+                return [...persistenceElement.children].map(child => JSaturnDataModel.transformData(child, JSaturnDataModel.transformers.htmlToMarkdown)).filter(Boolean)
+                    ?.map(arr => {
+                        if (arr["push"]) {
+                            arr.push("");
+                            return arr
+                        }
+                        return arr;
+                    });
+            }
+
+            static serializeFromRoot() {
+                return JSaturnDataModel.serialize(document);
+            }
+
+            static markdownFromRoot() {
+                return JSaturnDataModel.transformData(document, JSaturnDataModel.transformers.htmlToMarkdown);
+            }
+
+            static migratePersistenceData(persistenceData) {
+                JSaturnRoot.log(
+                    'error',
+                    "Persisted data is outdated. Migration required but not yet implemented. Data stored in log context (runtime)",
+                    '922be13a-af1d-4c7c-8a47-e124ec9225c8',
+                    persistenceData
+                );
+                return null;
+            }
+        }
+
+        class JSaturnStorage {
+            static restoreState() {
+                const serializedData = JSaturnStorage.load('jSaturnRootData');
+                JSaturnDataModel.deserialize(serializedData);
+            }
+
+            static store(storable) {
+                if (!storable.key) {
+                    JSaturnRoot.log(
+                        'error',
+                        'No key provided for storable',
+                        '06afa351-f87c-4c3f-ad4a-7e90afac5281',
+                        storable
+                    )
+                }
+                localStorage.setItem(storable.key, JSON.stringify(storable.data));
+            }
+
+            static load(key) {
+                const storedData = localStorage.getItem(key);
+                if (!storedData) {
+                    JSaturnRoot.log(
+                        "error",
+                        "A save has been recorded, but contents are undefined. Check for serialization issues.",
+                        "332803b9-6d83-41f3-bf19-8d711eb81c29",
+                    );
+                }
+                return JSON.parse(localStorage.getItem(key));
+            }
+
+            static saveState() {
+                const serializedData = JSaturnDataModel.serializeFromRoot();
+                JSaturnStorage.store({
+                    key: 'jSaturnRootData',
+                    data: serializedData
+                });
+                if (!JSaturnRoot.longtermData) {
+                    JSaturnRoot.longtermData = {
+                        username: "",
+                        lastSave: 0
+                    }
+                }
+                JSaturnRoot.longtermData.lastSave = Date.now();
+            }
+
+            static triggerAutoSave() {
+                if (!JSaturnFeatures.getFeature('auto-save')) {
+                    return;
+                }
+                JSaturnStorage.saveState();
+            }
+        }
+
+        function togglePopUp(id) {
+            let popup = document.querySelector(`#${id}`);
+            popup.classList.toggle("show");
+        }
+
+        class JSaturnSnippetUtility {
+            static deserializeDemoData() {
+                const demoData = '%7B%22persistenceKey%22%3A%22%23document%22%2C%22data%22%3A%7B%22dataModelVersion%22%3A0%2C%22configData%22%3A%7B%22features%22%3A%7B%22syntax-highlighting%22%3Afalse%2C%22auto-save%22%3Atrue%7D%7D%2C%22rootContainerData%22%3A%7B%22persistenceKey%22%3A%22root-container%22%2C%22data%22%3A%7B%22children%22%3A%5B%7B%22persistenceKey%22%3A%22cell-container%22%2C%22data%22%3A%7B%22children%22%3A%5B%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Credit%20for%20the%20gif%3A%22%2C%22textField%22%3A%22By%20%3Ca%20href%3D%5C%22//commons.wikimedia.org/wiki/User%3ALucasVB%5C%22%20title%3D%5C%22User%3ALucasVB%5C%22%3ELucas%20Vieira%3C/a%3E%20-%20%3Cspan%20class%3D%5C%22int-own-work%5C%22%20lang%3D%5C%22en%5C%22%3EOwn%20work%3C/span%3E%2C%20%3Ca%20href%3D%5C%22http%3A//creativecommons.org/licenses/by-sa/3.0/%5C%22%20title%3D%5C%22Creative%20Commons%20Attribution-Share%20Alike%203.0%5C%22%3ECC%20BY-SA%203.0%3C/a%3E%2C%20%3Ca%20href%3D%5C%22https%3A//commons.wikimedia.org/w/index.php%3Fcurid%3D101736%5C%22%3ELink%3C/a%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22code-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22HTML%20Output%22%2C%22codeField%22%3A%22//%20HTML%20Strings%20are%20rendered%20in%20the%20ouput%3A%5Cn%5Cnconst%20imageUrl%20%3D%20%5C%22https%3A//upload.wikimedia.org/wikipedia/commons/e/e5/Gospers_glider_gun.gif%3Futm_source%3Den.wikipedia.org%26utm_campaign%3Dimageinfo%26utm_content%3Dthumbnail_unscaled%5C%22%3B%5Cn%5Cnconst%20htmlSnippet%20%3D%A0%60%3Cimg%20src%3D%5C%22%24%7BimageUrl%7D%5C%22%3E%60%3B%5Cn%5Cn%5Cnconsole.log%28htmlSnippet%29%3B%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Technical%20Details%22%2C%22textField%22%3A%22Cell%20code%20is%20executed%20in%20a%20%3Ca%20jsname%3D%5C%22UWckNb%5C%22%20class%3D%5C%22zReHs%5C%22%20href%3D%5C%22https%3A//en.wikipedia.org/wiki/Closure_%28computer_programming%29%5C%22%20data-ved%3D%5C%222ahUKEwjopYG5mLGXAxUSSPEDHTGZGDMQFnoECB0QAQ%5C%22%3E%3Ch3%20class%3D%5C%22LC20lb%20MBeuO%20DKV0Md%5C%22%20id%3D%5C%22_DxnLaqjiDJKQxc8PsbLimAM_67%5C%22%20style%3D%5C%22display%3A%20inline%20%21important%3B%5C%22%3E%3Cspan%20style%3D%5C%22font-weight%3A%20normal%3B%5C%22%3Eclosure%3C/span%3E%3C/h3%3E%3C/a%3E%2C%20this%20means%20that%20variables%20created%20in%20the%20cell%20are%20not%20available%20to%20other%20cells.%20For%20this%20purpose%20the%20%5C%22global%5C%22%20object%20is%20available%20to%20each%20cell.%20So%20too%20is%20the%20document%20and%20all%20variables%20of%20outer%20closures%2C%20global%20is%20used%20exclusively%20as%20inter-cell%20storage%20though%20variables%20stored%20in%20global%20are%20runtime%20dependent.%3Cbr%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22The%20UI%22%2C%22textField%22%3A%22%3Cdiv%3EUntil%20tooltips%20are%20added%2C%20consider%20this%20overview%3A%3C/div%3E%3Cdiv%3E%3Cbr%3E%3Cbutton%3E%u274E%u2705%3C/button%3E%26nbsp%3B%20-%20%3Cb%3EFeature-toggles%2C%3C/b%3E%26nbsp%3Bcurrently%20the%20syntax-highlighting%20is%20disabled%20because%20of%20serialization%20issues.%3Cdiv%3E%3Cbr%3E%3C/div%3E%3C/div%3E%3Cbutton%3E%u2795%20%26lt%3B%26gt%3B%3C/button%3E%20-%20%3Cb%3EAdd%20code-cell%3C/b%3E%26nbsp%3B%28below%20the%20button%29%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u2022%u2022%u2022%3C/button%3E%20-%26nbsp%3B%3Cb%3E%26nbsp%3BOptions%3C/b%3E%2C%20those%20at%20the%20top%20of%20the%20document%20are%20general%20options%2C%20those%20on%20cell%20are%20cell-specific%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u2795%20T%3C/button%3E%20-%20%3Cb%3EAdd%20text%20cell%20%3C/b%3E%28below%20the%20button%29%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u23E9%3C/button%3E%20-%20%3Cb%3ERun%20all%20code%20cells%3C/b%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22About%20JSaturn%22%2C%22textField%22%3A%22JSaturn%20in%20it%27s%20core%20is%20a%20JavaScript%20console%20interface.%20There%20are%20two%20types%20of%20cells%20/%20blocks%2C%20text-cells%20like%20this%20one%2C%20and%20Code%20cells.%26nbsp%3B%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cu%3EText-cells%26nbsp%3B%3C/u%3Econtain%20rendered%20HTML%20via%20the%20three%20dots%20you%20can%20access%20the%20options%20for%20a%20cell%2C%20such%20as%20appending%20html%20code%20from%20Clipboard.%20This%20way%20i%20can%20put%20the%20Youtube%20embed%20of%20some%20jolly%20Video%20directly%20into%20the%20text%20cell%3A%3Cdiv%3E%3Cbr%3E%3C/div%3E%3C/div%3E%3Cbr%3E%3Ciframe%20width%3D%5C%22280%5C%22%20height%3D%5C%22157%5C%22%20src%3D%5C%22https%3A//www.youtube-nocookie.com/embed/r6Rp-uo6HmI%3Fsi%3DCl0aZfaIOtpSPCX3%5C%22%20title%3D%5C%22YouTube%20video%20player%5C%22%20frameborder%3D%5C%220%5C%22%20allow%3D%5C%22accelerometer%3B%20autoplay%3B%20clipboard-write%3B%20encrypted-media%3B%20gyroscope%3B%20picture-in-picture%3B%20web-share%5C%22%20referrerpolicy%3D%5C%22strict-origin-when-cross-origin%5C%22%20allowfullscreen%3D%5C%22%5C%22%3E%3C/iframe%3E%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cdiv%3EThe%20great%20thing%20is%20that%20%3Cb%3Eall%20types%20of%20exports%20and%20imports%20support%20HTML%20content%20in%20cells%3C/b%3E.%20You%20can%20also%20use%20default%20browser%20keybinds%20such%20as%3A%20%3Cb%3ECtrl%20+%20B%2C%20%3C/b%3E%3Ci%3ECtrl%20+%20I%2C%20%3C/i%3E%3Cu%3ECtrl%20+%20U%3C/u%3E%3C/div%3E%3Cdiv%3E%3Cu%3E%3Cbr%3E%3C/u%3E%3C/div%3E%3Cdiv%3E%3Cbr%3E%3Cu%3ECode-cells%3C/u%3E%20%28those%20with%20a%20play-button%29%20can%20execute%20JavaScript%20Code.%20The%20three%20dots%20above%20this%20cell%20are%20the%20options%20for%20the%20entire%20document.%20This%20includes%20for%20example%20the%20option%20to%20generate%20a%20markdown%20file%20representing%20the%20current%20state%20of%20the%20cells%20-%20including%20the%20current%20output%20of%20code%20cells.%26nbsp%3B%3C/div%3E%3C/div%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22code-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Hello%20World%21%20Welcome%20to%20JSaturn%22%2C%22codeField%22%3A%22const%20username%20%3D%20%5C%22Jane%20Doe%5C%22%3B%20//%20Replace%20Jane%20Doe%20with%20your%20name%20to%20run%20your%20first%20Code%20%3AD%5Cn%5Cn%5Cn//%20Personalization%5CnsetUserName%28username%29%3B%5Cn%5Cn%5Cnconsole.log%28%5C%22Nice%20to%20meet%20You%2C%20%5C%22%20+%20username%29%3B%22%7D%7D%5D%7D%7D%5D%7D%7D%7D%7D'
+                JSaturnIO.unescapeAndDeserialize(demoData);
+            }
+        }
+    </script>
+
+    <body>
+        <h1>> JSaturn</h1>
+        <div class="cell">
+            <div id="root-container" class="root-container">
+                <div id="header">
+                    <div id="root-container-bar-container" class="control-bar-container">
+                        <div id="root-container-top-bar-left" class="control-bar-left">
+                            <button onclick="togglePopUp('feature-popup')">❎✅</button>
+                            <div class="popup-content" id="feature-popup">
+                                <button id="auto-save" class="feature-toggle"
+                                        onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On
+                                </button>
+                                <!--                                TODO [feature] @curolith Highlighting disabled until functional-->
+                                <button id="syntax-highlighting" class="feature-toggle" disabled
+                                        onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off
+                                </button>
+                            </div>
+                        </div>
+                        <div id="root-container-top-bar-center" class="control-bar-center">
+                            <button class="add-cell-below-button"
+                                    onclick="document.querySelector('#cell-container').append(JSaturnBuilders.createCodeCell())">
+                                ➕ <>
+                            </button>
+                            <button onclick="togglePopUp('options-popup')">•••</button>
+                            <div class="popup-content" id="options-popup">
+                                <button id="save" onclick="JSaturnStorage.saveState()">💾 Manual save</button>
+                                <button id="export-state-to-clipboard-button"
+                                        onclick="JSaturnIO.exportStateToClipboard()">
+                                    📤📋 Export state to clipboard
+                                </button>
+                                <button id="import-state-from-clipboard-button"
+                                        onclick="JSaturnIO.importFromClipboard()">📋📥 Load state from clipboard
+                                </button>
+                                <button id="export-state-to-file-button"
+                                        onclick="JSaturnIO.exportStateToFile()">📤📂 Export state to file
+                                </button>
+                                <button id="export-state-to-file-button"
+                                        onclick="JSaturnIO.importStateFromFile()">📂📥 Import state from file
+                                </button>
+                                <button id="export-markdown-to-clipboard-button"
+                                        onclick="JSaturnIO.exportMarkdownToClipboard()">📝📋 Export Markdown to clipboard
+                                </button>
+                                <button id="export-markdown-to-file-button"
+                                        onclick="JSaturnIO.exportMarkdownToFile()">📝📂 Export Markdown to file
+                                </button>
+                                <button id="remove-all-cells-button" onclick="JSaturnRoot.removeAll()">🗑️ Remove all
+                                    cells
+                                </button>
+                                <button id="reset-default-button" onclick="JSaturnSnippetUtility.deserializeDemoData()">
+                                    ⏮️ Restore
+                                    demo cells
+                                </button>
+                            </div>
+                            <button class="add-text-below-button"
+                                    onclick="document.querySelector('#cell-container').append(JSaturnBuilders.createTextCell())">
+                                ➕ T
+                            </button>
+                        </div>
+                        <div id="root-container-top-bar-right" class="control-bar-right">
+                            <button id="run-all" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="cell-container" class="cell-container"></div>
+                <!--                    TODO add bottom data like last saved-->
+            </div>
+            <script>
+                JSaturnRoot.init();
+            </script>
+        </div>
     </body>
 </html>
