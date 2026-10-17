@@ -978,7 +978,6 @@
 
         class JSaturnDataEngine {
             // TODO Update on change and implement migration
-            static dataModelVersion = 0.0;
             static transformers = {
                 htmlToData: "htmlToData",
                 dataToHtml: "dataToHtml",
@@ -994,25 +993,6 @@
             };
 
             static Tranformers = {
-
-                // TemplateData: {
-                //     dataToHtml: (data) => {
-                //         data = JSaturnDataEngine.ensureDeep(JSaturnDataModel.TemplateData, data ?? {});
-                //         data.key = data.key ?? JSaturnDataEngine.newKey();
-                //         // visible data -> html
-                //         // invisible data -> element.dataset.xyz = ...
-                //         // mind the children
-                //     },
-                //     htmlToData: (htmlElement) => {
-                //         const data = htmlElement.dataset
-                //
-                //         // inverse of data To Html
-                //         data.key = data.key ?? JSaturnDataEngine.newKey();
-                //     },
-                //     dataToMarkdown: (data) => {
-                //
-                //     },
-                // },
 
                 RootData: {
                     dataToHtml: (data) => {
@@ -1049,7 +1029,7 @@
 
                         data.key = data.key ?? JSaturnDataEngine.newKey();
 
-                        if (data.dataModelVersion !== JSaturnDataModel.RootData.dataModelVersion) {
+                        if (data.dataset.dataModelVersion !== JSaturnDataModel.RootData.dataset.dataModelVersion) {
                             data = JSaturnDataEngine.handleOutdatedModelData(data);
                         }
 
@@ -1266,7 +1246,7 @@
                     '922be13a-af1d-4c7c-8a47-e124ec9225c8',
                     data,
                 ));
-                window.alert("JSaturn ran into a problem during initialization and will now try to backup the stored state to a file before attempting recovery.");
+                window.alert("JSaturn detected stored data from an outdated model and will now backup the stored state to a file before attempting recovery.");
                 JSaturnIO.exportStateToFile();
                 data.dataset.dataModelVersion = JSaturnDataModel.RootData.dataset.dataModelVersion;
                 return data;
