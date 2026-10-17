@@ -403,12 +403,20 @@
     </head>
 
     <script>
-        class JSaturnDataModel {
+        function Log(message, causeId, context, userLogLevel, userLogMessage) {
+            return JSON.stringify({
+                message: message,
+                causeId: causeId,
+                context: context,
+                userLogLevel: userLogLevel,
+                userLogMessage: userLogMessage,
+            });
+        }
 
+        class JSaturnDataModel {
             static StorageKeys = {
                 rootData: "jSaturnRootData",
                 lastSave: "lastSave",
-
             }
 
             // static TemplateData = {
@@ -419,7 +427,7 @@
             //
             // };
 
-            static RootData = {
+            static RootData = Object.freeze({
                 dataset: {
                     dataModelVersion: 0.2,
                     datatype: "RootData",
@@ -446,18 +454,18 @@
                 visible: {
                     bookData: JSaturnDataModel.BookData,
                 }
-            };
+            });
 
-            static BookData = {
+            static BookData = Object.freeze({
                 dataset: {
                     datatype: "BookData",
                 },
                 visible: {
                     cells: [],
                 }
-            };
+            });
 
-            static CodeCellData = {
+            static CodeCellData = Object.freeze({
                 dataset: {
                     datatype: "CodeCellData",
                 },
@@ -465,9 +473,9 @@
                     codeText: "",
                     codeOutput: "",
                 }
-            };
+            });
 
-            static TextCellData = {
+            static TextCellData = Object.freeze({
                 dataset: {
                     datatype: "TextCellData",
                 },
@@ -475,7 +483,7 @@
                     htmlContent: "",
                     cellName: "",
                 },
-            }
+            });
         }
 
         class JSaturnBuilders {
@@ -733,9 +741,60 @@
             }
         }
 
+        class JSaturnMonitor {
+            static eventRecords = {}
+
+            static offerEvent(id, maxCount, coolDown) {
+                const currenRecord = JSaturnMonitor.eventRecords[id] ?? {count: 0, last: 0}
+
+                const isAccept = (
+                    (currenRecord.count < maxCount)
+                    && ((Date.now() - currenRecord.last) > coolDown)
+                );
+
+                return {
+                    accepted: isAccept,
+                    rejectionCause: null, // Implement if needed
+                }
+            }
+
+            static abortExecution(alertMessage) {
+                window.alert(alertMessage);
+                let errorData = {
+                    alertMessage: alertMessage
+                };
+                try {
+                    errorData.rootDataSet = JSaturnRoot.rootDataSet;
+                    errorData.runtimeData = JSaturnRoot.runtimeData;
+                    errorData.storageDump = errorPageDataJSaturnStorage.getStorageDump();
+                } catch (e) {
+                    errorData.abortionDataCollectionError = e;
+                }
+                const errorPageContent = `<h1>Something went wrong :(</h1><div class="cell"><div class="text-field">This is most likely due to the early development stage. Feel free to <a href="https://github.com/curolith/curolith.github.io/issues/new?${
+                    "title=Execution+abort+report"
+                    + "&labels=error-report"
+                    + "&assignees=curolith"
+                    + "&body=" + encodeURIComponent("Abort data:\n\n" + JSON.stringify(errorData))
+                }">submit a rebort on github</a>.<br>Below is a JSON dump that might help to restore lost data.</div>.<br><div class="text-field">${
+                    JSON.stringify(errorData)
+                }</div></div>`;
+
+                document.body.innerHTML = errorPageContent;
+
+                throw new Error(Log(
+                    "Aborting execution...",
+                    "f77bac2f-20c1-4435-aa91-e591cb85698a",
+                    errorData,
+                    "error",
+                    alertMessage
+                ));
+            }
+        }
+
         class JSaturnRoot {
             static rootDataSet = structuredClone(JSaturnDataModel.RootData.dataset);
             static runtimeData = structuredClone(JSaturnDataModel.RootData.runtimeData);
+
 
             static init() {
                 Object.entries(console).forEach(([key, value]) => {
@@ -746,7 +805,7 @@
                         })
                     }
                     ;
-                })
+                });
                 const lastSave = JSaturnStorage.load(JSaturnDataModel.StorageKeys.lastSave);
                 if (lastSave) {
                     JSaturnStorage.restoreState();
@@ -761,17 +820,7 @@
                 document.addEventListener("click", (e) => {
                     JSaturnStorage.offerAutoSave();
                 });
-            }
 
-            static log(type, message, causeId, context) {
-                const logObject = JSON.stringify({
-                    type: type,
-                    message: message,
-                    causeId: causeId,
-                    context: context,
-                });
-                console.log(logObject);
-                JSaturnRoot.runtimeData.log.push(logObject);
             }
 
             static triggerBreakPoint() {
@@ -823,7 +872,7 @@
 
             static restoreFeatureToggles() {
                 document.querySelectorAll('.feature-toggle').forEach(toggleButton => {
-                    const feature = toggleButton.id;
+                    const feature = toggleButton.dataset.feature;
                     const configState = JSaturnFeatures.get(feature);
                     JSaturnFeatures.featureChangeHandlers[feature]?.(configState, JSaturnDataModel.RootData.dataset.configData.featureData[feature]);
                     JSaturnFeatures.updateFeatureToggleText(feature, configState, toggleButton)
@@ -1011,7 +1060,6 @@
                             data = JSaturnDataEngine.handleOutdatedModelData(data);
                         }
 
-                        const rootContainer = document.getElementById('root-container');
                         JSaturnRoot.rootDataSet = data.dataset;
 
                         JSaturnDataEngine.deserialize(data.visible.bookData);
@@ -1020,6 +1068,7 @@
                         if (JSaturnFeatures.get('syntax-highlighting')) {
                             JSaturnFeatures.toggle('sytax-highlighting');
                         }
+                        const rootContainer = document.getElementById('root-container');
                         return rootContainer;
                     },
                     htmlToData: (htmlElement) => {
@@ -1027,11 +1076,14 @@
                             dataset: JSaturnRoot.rootDataSet,
                             visible: {
                                 bookData: JSaturnDataEngine.serialize(htmlElement.querySelector(".cell-container"))
+                            },
+                            meta: {
+                                serializationDate: new Date().toISOString()
                             }
                         }
                     },
                     htmlToMarkdown: (htmlElement) => {
-                        JSaturnRoot.log("error", `Root does not support markdown. Use BookData instead`, "16b74906-5c9e-4d6c-855e-d52d8b31aeab", JSaturnDataModel.RootData);
+                        console.error(Log(`Root does not support markdown. Use BookData instead`, "16b74906-5c9e-4d6c-855e-d52d8b31aeab", JSaturnDataModel.RootData));
                     },
                 },
 
@@ -1052,19 +1104,19 @@
                                 }
                             }
                         };
-                        
+
                         data.key = data.key ?? JSaturnDataEngine.newKey();
 
                         const cellContainer = document.querySelector('#cell-container');
                         cellContainer.innerHTML = '';
-                        cellContainer.append(data.cells.map(JSaturnDataEngine.deserialize));
+                        cellContainer.append(...data.visible.cells.map(JSaturnDataEngine.deserialize));
                         return cellContainer;
                     },
                     htmlToData: (htmlElement) => {
                         return {
                             dataset: htmlElement.dataset,
                             visible: {
-                                cells: htmlElement.querySelectorAll(".cell").toArray?.().map(JSaturnDataEngine.serialize),
+                                cells: htmlElement.querySelectorAll(".cell").values().map(JSaturnDataEngine.serialize).toArray(),
                             }
                         }
                     },
@@ -1072,7 +1124,8 @@
                         return `# JSaturn\n\n${
                             JSaturnRoot.longtermData.username ? JSaturnRoot.longtermData.username + "\n\n" : ""
                         }${
-                            document.querySelector('#cell-container')?.querySelectorAll('.cell').toArray?.().resverse().map(cell => JSaturnDataEngine.transformers.markdown).reverse().join("\n")
+                            document.querySelector('#cell-container')?.querySelectorAll('.cell').values()
+                                .map(cell => JSaturnDataEngine.transformers.markdown).reverse().join("\n")
                         }`
                     },
                 },
@@ -1097,7 +1150,7 @@
 
                         data.key = data.key ?? JSaturnDataEngine.newKey();
 
-                        return JSaturnBuilders.createCodeCell(data).withDataset(data.dataset);
+                        return JSaturnBuilders.createCodeCell(data.visible).withDataset(data.dataset);
                     },
                     htmlToData: (htmlElement) => {
                         return {
@@ -1139,7 +1192,7 @@
 
                         data.key = data.key ?? JSaturnDataEngine.newKey();
 
-                        return JSaturnBuilders.createTextCell(data).withDataset(data.dataset);
+                        return JSaturnBuilders.createTextCell(data.visible).withDataset(data.dataset);
                     },
                     htmlToData: (htmlElement) => {
                         return {
@@ -1168,7 +1221,8 @@
             }
 
             static transformData(data, transformation) {
-                return JSaturnDataEngine.getTransformer(data)?.[transformation]?.(data);
+                const transformer = JSaturnDataEngine.getTransformer(data);
+                return transformer[transformation]?.(data);
             }
 
             static serialize(data) {
@@ -1190,14 +1244,12 @@
                 if (element) {
                     return element;
                 }
-                JSaturnRoot.log(
-                    'error',
-                    'No deserialization implementation found. Dumping and initilializing empty.',
+                console.error(Log(
+                    'Deserialization failed. Dumping and initilializing empty.',
                     '8ae76dbf-fd43-4ffd-84f1-a4a40619d440',
                     persistenceData
-                )
-                JSaturnIO.exportStateToFile();
-                JSaturnDataEngine.initElement(JSaturnDataModel.RootData);
+                ));
+                return {};
             }
 
             static initElement(model) {
@@ -1213,12 +1265,16 @@
             }
 
             static handleOutdatedModelData(data) {
-                JSaturnRoot.log(
-                    'warn',
+                if (!JSaturnMonitor.offerEvent("a1e77e4d-a173-4b85-9eef-65e2e5535096", 1, 0).accepted) {
+                    JSaturnMonitor.abortExecution("JSaturn could not recover to a healthy state.")
+                }
+                ;
+                console.warn(Log(
                     "Stored data was created with outdated model. Downloading backup...",
                     '922be13a-af1d-4c7c-8a47-e124ec9225c8',
-                    data
-                );
+                    data,
+                ));
+                window.alert("JSaturn ran into a problem during initialization and will now try to backup the stored state to a file before attempting recovery.");
                 JSaturnIO.exportStateToFile();
                 data.dataset.dataModelVersion = JSaturnDataModel.RootData.dataset.dataModelVersion;
                 return data;
@@ -1227,8 +1283,18 @@
 
         class JSaturnStorage {
             static restoreState() {
-                const serializedData = JSaturnStorage.load(JSaturnDataModel.StorageKeys.rootData);
-                JSaturnDataEngine.Tranformers.RootData.dataToHtml(serializedData);
+                const jsonData = JSaturnStorage.load(JSaturnDataModel.StorageKeys.rootData);
+                let dataObject = {dataset: {datatype: "RootData"}};
+                try {
+                    dataObject = JSON.parse(jsonData);
+                } catch (e) {
+                    console.error(Log(
+                        `Unable to parse JSON from stored state`,
+                        "4a983029-f0ec-4acf-a45b-093e3e17ff5d",
+                        jsonData
+                    ));
+                }
+                JSaturnDataEngine.Tranformers.RootData.dataToHtml(dataObject);
             }
 
             /**
@@ -1236,11 +1302,21 @@
              * - to allow hooking functionality in the future
              *
              * @param {string} key
-             * @param {*} data
+             * @param {string} data
              */
             static store(key, data) {
                 if (!key || !data) {
                     return;
+                }
+                if (data instanceof Object) {
+                    console.warn(Log(
+                        "Data to be stored is not stringified, resulting in implicit conversion. Explicit conversion is preferred to avoid unpredicted states after deserialization.",
+                        "b5d3b4b2-2284-4d65-ad7b-4c0dbdb27c49",
+                        {
+                            key: key,
+                            data: data
+                        }
+                    ))
                 }
                 localStorage.setItem(key, data);
             }
@@ -1248,11 +1324,10 @@
             static load(key) {
                 const storedData = localStorage.getItem(key);
                 if (!storedData) {
-                    JSaturnRoot.log(
-                        "error",
+                    console.error(Log(
                         "A save has been recorded, but contents are undefined. Check for serialization issues.",
                         "332803b9-6d83-41f3-bf19-8d711eb81c29",
-                    );
+                    ));
                 }
                 return localStorage.getItem(key);
             }
@@ -1281,7 +1356,7 @@
             static saveState() {
                 JSaturnStorage.store(
                     JSaturnDataModel.StorageKeys.rootData,
-                    JSaturnDataEngine.serializeFromRoot()
+                    JSON.stringify(JSaturnDataEngine.serializeFromRoot())
                 );
                 const bottomText = document.getElementById('bottom-info')
                 bottomText.innerText = `Last saved now`;
@@ -1333,11 +1408,12 @@
                         <div id="root-container-top-bar-left" class="control-bar-left">
                             <button onclick="togglePopUp('feature-popup')">❎✅</button>
                             <div class="popup-content" id="feature-popup">
-                                <button id="auto-save" class="feature-toggle"
+                                <button id="auto-save-toggle" class="feature-toggle" data-feature="autoSave"
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On
                                 </button>
                                 <!--                                TODO [feature] @curolith Highlighting disabled until functional-->
-                                <button id="syntax-highlighting" class="feature-toggle" disabled
+                                <button id="syntax-highlighting-toggle" class="feature-toggle"
+                                        data-feature="syntaxHighlighting" disabled
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off
                                 </button>
                             </div>
