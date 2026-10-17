@@ -471,7 +471,7 @@
                 },
                 visible: {
                     codeText: "",
-                    codeOutput: "",
+                    cellName: "",
                 }
             });
 
@@ -508,6 +508,7 @@
             }
 
             static ensureId(element) {
+                console.log("dlskfjödlskjfaöl")
                 const chars = "abcdefghijklmnopqrstuvwxyz";
                 element.id = element.id || (element.className || element.tagName).split(" ").findLast(Boolean) + "-" + "_".repeat(8).split("").map(c => chars[Math.floor((Math.random() * 26))]).join('');
             }
@@ -532,8 +533,9 @@
             static createNameField(cellName) {
                 return JSaturnBuilders.JSaturnElement(document.createElement("h2")).apply(cname => {
                     cname.className = "cell-name";
+                    cname.id = "cell-name"
                     cname.contentEditable = "plaintext-only";
-                    cname.innerText = cellName ?? "Cell of the " + String.fromCodePoint(128000 + Math.floor(Math.random() * 63));
+                    cname.innerText = cellName || "Cell of the " + String.fromCodePoint(128000 + Math.floor(Math.random() * 63));
                 })
             }
 
@@ -541,40 +543,30 @@
                 return JSaturnBuilders.createDiv(customClass ?? "cell").apply(cell => cell.append(
                     JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
-                            JSaturnBuilders.createDiv('control-bar-left').apply(controlBar => {
-                                controlBar.id = 'top-control-bar-left';
+                            JSaturnBuilders.createDiv('control-bar-left', 'top-control-bar-left').apply(controlBar => {
                                 controlBar.append(JSaturnBuilders.createButton('delete-cell-button', (button) => {
                                     button.param.remove();
                                 }, `❌`, cell));
                                 controlBar.append(JSaturnBuilders.createNameField(cellName))
                             }),
-                            JSaturnBuilders.createDiv('control-bar-center').apply(controlBar => {
-                                controlBar.id = 'top-control-bar-center';
-                            }),
-                            JSaturnBuilders.createDiv('control-bar-right').apply(controlBar => {
-                                controlBar.id = 'top-control-bar-right';
-                            })
+                            JSaturnBuilders.createDiv('control-bar-center', 'top-control-bar-center'),
+                            JSaturnBuilders.createDiv('control-bar-right',  'top-control-bar-right')
                         )
                     }),
-                    JSaturnBuilders.createDiv("cell-content"),
+                    JSaturnBuilders.createDiv("cell-content", "cell-content"),
                     JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
-                            JSaturnBuilders.createDiv('control-bar-left').apply(controlBar => {
-                                controlBar.id = 'bottom-control-bar-left';
-                            }),
-                            JSaturnBuilders.createDiv("control-bar-center").apply(controlBar => {
-                                controlBar.id = 'bottom-control-bar-center';
-                                const popupContent = JSaturnBuilders.createDiv('popup-content');
+                            JSaturnBuilders.createDiv('control-bar-left', 'bottom-control-bar-left'),
+                            JSaturnBuilders.createDiv("control-bar-center", 'bottom-control-bar-center').apply(controlBar => {
+                                const popupContent = JSaturnBuilders.createDiv('popup-content', JSaturnDataEngine.newKey());
                                 controlBar.append(
-                                    JSaturnBuilders.createButton('add-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell),
+                                    JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell),
                                     JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
                                     popupContent,
-                                    JSaturnBuilders.createButton('add-text-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell)
+                                    JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell)
                                 )
                             }),
-                            JSaturnBuilders.createDiv('control-bar-right').apply(controlBar => {
-                                controlBar.id = 'bottom-control-bar-right';
-                            })
+                            JSaturnBuilders.createDiv('control-bar-right', 'bottom-control-bar-right')
                         )
                     })
                 ));
@@ -583,8 +575,8 @@
             static createCodeCell(data) {
                 return JSaturnBuilders.createCell("cell code-cell", data.cellName).apply(cell => {
                     // cell['persistenceKey'] = 'code-cell';
-                    cell.querySelector('.cell-content').append(
-                        JSaturnBuilders.createDiv("code-output-box").apply(codeOutputBox => {
+                    cell.querySelector('#cell-content').append(
+                        JSaturnBuilders.createDiv("code-output-box", "code-output-box").apply(codeOutputBox => {
                             codeOutputBox.append(
                                 JSaturnBuilders.createCodeField(data.codeText).apply(codeField => {
                                     codeField.addEventListener('keypress', function (e) {
@@ -597,7 +589,7 @@
                             codeOutputBox.setOutput = (output) => {
                                 codeOutputBox.querySelectorAll('.code-output-field').forEach(field => field.remove());
                                 if (output.length > 0) {
-                                    codeOutputBox.append(JSaturnBuilders.createDiv("code-output-field")
+                                    codeOutputBox.append(JSaturnBuilders.createDiv("code-output-field", "code-output-field")
                                         .apply(outputField => outputField.innerHTML = output));
                                 }
                             }
@@ -613,16 +605,17 @@
             }
 
             static createCodeField(code) {
-                return JSaturnBuilders.createDiv('code-field').apply(codeField => {
+                return JSaturnBuilders.createDiv("code-field", "code-field").apply(codeField => {
                         codeField.contentEditable = 'true';
                         codeField.innerText = code ?? "";
                     }
                 )
             }
 
-            static createDiv(className) {
+            static createDiv(className, id) {
                 return JSaturnBuilders.JSaturnElement(document.createElement('div')).withProperties({
-                    className: className
+                    className: className,
+                    id: id || className + "-" + JSaturnDataEngine.newKey()
                 });
             }
 
@@ -642,13 +635,13 @@
             static createTextCell(data) {
                 return JSaturnBuilders.createCell("cell text-cell", data.cellName).apply(cell => {
                     // cell['persistenceKey'] = 'text-cell';
-                    cell.querySelector('.cell-content')
+                    cell.querySelector('#cell-content')
                         .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = data.htmlContent ?? ""));
                     cell.querySelector('.popup-content').append(
                         JSaturnBuilders.createButton(
                             "button",
                             (button) => window.navigator.clipboard.readText().then((text) => {
-                                const textField = button.param.querySelector('.text-field');
+                                const textField = button.param.querySelector('#text-field');
                                 textField.innerHTML = textField.innerHTML + text;
                             }),
                             "📋 Paste HTML from clipboard",
@@ -659,7 +652,7 @@
             }
 
             static createTextField() {
-                return JSaturnBuilders.createDiv("text-field").apply(textField => {
+                return JSaturnBuilders.createDiv("text-field", "text-field").apply(textField => {
                     textField.contentEditable = 'true';
                 });
             }
@@ -672,7 +665,7 @@
                 if (!JSaturnFeatures.get("syntax-highlighting")) {
                     return;
                 }
-                const codeField = cell.querySelector('.code-field');
+                const codeField = cell.querySelector('#code-field');
                 const code = codeField.innerText;
                 const highlightResult = hljs.highlight(code, {
                     language: 'javascript',
@@ -683,7 +676,7 @@
             }
 
             static removeHighlighting(cell) {
-                const codeField = cell.querySelector(".code-field");
+                const codeField = cell.querySelector("#code-field");
                 const code = codeField.innerText;
                 const data = hljs.highlight(code, {
                     language: 'plaintext',
@@ -714,7 +707,7 @@
             }
 
             static runCell(cell) {
-                const codeField = cell.querySelector('.code-field');
+                const codeField = cell.querySelector('#code-field');
                 if (!codeField) {
                     return;
                 }
@@ -736,7 +729,7 @@
                 }
                 JSaturnRoot.runtimeData.global = global;
                 console = consoleBox;
-                cell.querySelector('.code-output-box').setOutput(resultStrings.join("<br>"));
+                cell.querySelector('#code-output-box').setOutput(resultStrings.join("<br>"));
                 JSaturnCodeCellUtility.highlightCell(cell);
             }
         }
@@ -1075,7 +1068,7 @@
                         return {
                             dataset: JSaturnRoot.rootDataSet,
                             visible: {
-                                bookData: JSaturnDataEngine.serialize(htmlElement.querySelector(".cell-container"))
+                                bookData: JSaturnDataEngine.serialize(htmlElement.querySelector("#cell-container"))
                             },
                             meta: {
                                 serializationDate: new Date().toISOString()
@@ -1156,18 +1149,18 @@
                         return {
                             dataset: htmlElement.dataset,
                             visible: {
-                                codeText: htmlElement.querySelector('.code-field')?.innerText,
-                                codeOutput: htmlElement.querySelector('.cell-name')?.innerText,
+                                cellName: htmlElement.querySelector('#cell-name')?.innerText,
+                                codeText: htmlElement.querySelector('#code-field')?.innerText,
                             }
                         }
                     },
                     htmlToMarkdown: (htmlElement) => {
                         return `## ${
-                            htmlElement.querySelector('.cell-name')?.innerHTML
+                            htmlElement.querySelector('#cell-name')?.innerHTML
                         }\n\n\`\`\`javascript\n${
-                            htmlElement.querySelector('.code-field')?.innerText
+                            htmlElement.querySelector('#code-field')?.innerText
                         }\n\`\`\`\n\n${
-                            htmlElement.querySelector('.code-output-field')?.outerHTML
+                            htmlElement.querySelector('#code-output-field')?.outerHTML
                         }\n`;
                     },
                 },
@@ -1197,9 +1190,9 @@
                     htmlToData: (htmlElement) => {
                         return {
                             dataset: htmlElement.dataset,
-                            visisble: {
-                                htmlContent: htmlElement.querySelector('#name-field')?.innerText,
-                                cellName: htmlElement.querySelector('#text-field')?.innerHTML,
+                            visible: {
+                                cellName: htmlElement.querySelector('#cell-name')?.innerText,
+                                htmlContent: htmlElement.querySelector('#text-field')?.innerHTML,
                             }
                         };
                     },
@@ -1267,8 +1260,7 @@
             static handleOutdatedModelData(data) {
                 if (!JSaturnMonitor.offerEvent("a1e77e4d-a173-4b85-9eef-65e2e5535096", 1, 0).accepted) {
                     JSaturnMonitor.abortExecution("JSaturn could not recover to a healthy state.")
-                }
-                ;
+                };
                 console.warn(Log(
                     "Stored data was created with outdated model. Downloading backup...",
                     '922be13a-af1d-4c7c-8a47-e124ec9225c8',
