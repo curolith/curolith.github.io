@@ -976,28 +976,28 @@
                     dataToHtml: (data) => {
                         const rootDataClone = structuredClone(JSaturnDataModel.RootData);
                         data = {
-                            ...rootDataCopy,
+                            ...rootDataClone,
                             ...data,
                             ...{
                                 dataset: {
-                                    ...rootDataCopy.dataset,
+                                    ...rootDataClone.dataset,
                                     ...data.dataset,
                                     ...{
-                                        ...rootDataCopy.dataset.configData,
+                                        ...rootDataClone.dataset.configData,
                                         ...data.dataset?.configData,
                                         ...{
-                                            ...rootDataCopy.dataset.configData.featureData,
+                                            ...rootDataClone.dataset.configData.featureData,
                                             ...data.dataset?.configData?.featureData
                                         }
                                     }
                                 },
-                                runtimeData: {...rootDataCopy.runtimeData}, // Ensure no accidental persistence overwrites defualt
+                                runtimeData: {...rootDataClone.runtimeData}, // Ensure no accidental persistence overwrites defualt
                                 visible: {
-                                    ...rootDataCopy.visible,
+                                    ...rootDataClone.visible,
                                     ...data.visible,
                                     ...{
                                         bookData: {
-                                            ...rootDataCopy.visible.bookData,
+                                            ...rootDataClone.visible.bookData,
                                             ...data.visible?.bookData
                                         }
                                     }
@@ -1013,7 +1013,9 @@
 
                         const rootContainer = document.getElementById('root-container');
                         JSaturnRoot.rootDataSet = data.dataset;
+
                         JSaturnDataEngine.deserialize(data.visible.bookData);
+
                         JSaturnFeatures.restoreFeatureToggles();
                         if (JSaturnFeatures.get('syntax-highlighting')) {
                             JSaturnFeatures.toggle('sytax-highlighting');
@@ -1035,9 +1037,23 @@
 
                 BookData: {
                     dataToHtml: (data) => {
+                        const bookDataClone = structuredClone(JSaturnDataModel.BookData);
+                        data = {
+                            ...bookDataClone,
+                            ...data,
+                            ...{
+                                dataset: {
+                                    ...bookDataClone.dataset,
+                                    ...data.dataset
+                                },
+                                visible: {
+                                    ...bookDataClone.visible,
+                                    ...data.visible,
+                                }
+                            }
+                        };
+                        
                         data.key = data.key ?? JSaturnDataEngine.newKey();
-
-                        console.warn()
 
                         const cellContainer = document.querySelector('#cell-container');
                         cellContainer.innerHTML = '';
@@ -1063,7 +1079,22 @@
 
                 CodeCellData: {
                     dataToHtml: (data) => {
-                        data = Object.assign(data, structuredClone(JSaturnDataModel.CodeCellData));
+                        const codeCellDataClone = structuredClone(JSaturnDataModel.CodeCellData);
+                        data = {
+                            ...codeCellDataClone,
+                            ...data,
+                            ...{
+                                dataset: {
+                                    ...codeCellDataClone.dataset,
+                                    ...data.dataset
+                                },
+                                visible: {
+                                    ...codeCellDataClone.visible,
+                                    ...data.visible,
+                                }
+                            }
+                        };
+
                         data.key = data.key ?? JSaturnDataEngine.newKey();
 
                         return JSaturnBuilders.createCodeCell(data).withDataset(data.dataset);
@@ -1090,7 +1121,22 @@
 
                 TextCellData: {
                     dataToHtml: (data) => {
-                        data = Object.assign(data, structuredClone(JSaturnDataModel.TextCellData));
+                        const textCellDataClone = structuredClone(JSaturnDataModel.TextCellData);
+                        data = {
+                            ...textCellDataClone,
+                            ...data,
+                            ...{
+                                dataset: {
+                                    ...textCellDataClone.dataset,
+                                    ...data.dataset
+                                },
+                                visible: {
+                                    ...textCellDataClone.visible,
+                                    ...data.visible,
+                                }
+                            }
+                        };
+
                         data.key = data.key ?? JSaturnDataEngine.newKey();
 
                         return JSaturnBuilders.createTextCell(data).withDataset(data.dataset);
