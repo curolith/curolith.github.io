@@ -403,10 +403,105 @@
     </head>
 
     <script>
+        class JSaturnDataModel {
+
+            static StorageKeys = {
+                rootData: "jSaturnRootData",
+                lastSave: "lastSave",
+
+            }
+
+            // static TemplateData = {
+            //     // defines all keys with default values / value setters
+            //     datatype: "TemplateData",
+            //     children: [],
+            //     datatypeKey: "TemplateData"
+            //
+            // };
+
+            static RootData = {
+                dataset: {
+                    dataModelVersion: 0.2,
+                    datatype: "RootData",
+                    configData: {
+                        username: "",
+                        featureData: {
+                            syntaxHighlighting: false,
+                            autoSave: true
+                        },
+                    },
+                },
+                runtimeData: {
+                    // Not persisted, only initialized:
+                    downloadUrl: null,
+                    log: [],
+                    // TODO [feature] @curolith add option to specify imports that are guaranteed before every cell
+                    global: {},
+                    lastSave: 0,
+                    timeHandlers: {
+                        lastSaveText: null,
+                        triggerAutoSave: null
+                    }
+                },
+                visible: {
+                    bookData: JSaturnDataModel.BookData,
+                }
+            };
+
+            static BookData = {
+                dataset: {
+                    datatype: "BookData",
+                },
+                visible: {
+                    cells: [],
+                }
+            };
+
+            static CodeCellData = {
+                dataset: {
+                    datatype: "CodeCellData",
+                },
+                visible: {
+                    codeText: "",
+                    codeOutput: "",
+                }
+            };
+
+            static TextCellData = {
+                dataset: {
+                    datatype: "TextCellData",
+                },
+                visible: {
+                    htmlContent: "",
+                    cellName: "",
+                },
+            }
+        }
+
         class JSaturnBuilders {
-            static addUUID(element) {
+            static Initializer
+
+            static JSaturnElement(element) {
+                element.initializers = []
+                element.withProperties = function (properties) {
+                    JSaturnDataEngine.ensureDeep(element, properties)
+                    return this;
+                };
+                element.withDataset = function (dataset) {
+                    JSaturnDataEngine.ensureDeep(element.dataset, dataset)
+                    return this;
+                };
+                element.apply = function (f) {
+                    f(element);
+                    return this;
+                };
+                JSaturnBuilders.ensureId(element);
+                return element;
+            }
+
+            static ensureId(element) {
                 const chars = "abcdefghijklmnopqrstuvwxyz";
-                element.id = (element.className ?? element.tagName).split(" ").findLast(Boolean) + "-" + "_".repeat(8).split("").map(c => chars[Math.floor((Math.random() * 26))]).join('');
+                element.id = element.id || (element.className || element.tagName).split(" ").findLast(Boolean) + "-" + "_".repeat(8).split("").map(c => chars[Math.floor((Math.random() * 26))]).join('');
             }
 
             static applicable(o) {
@@ -418,7 +513,8 @@
             }
 
             static createButton(className, clickAction, innerHTML, param) {
-                return JSaturnBuilders.createElement('button', className).apply(button => {
+                return JSaturnBuilders.JSaturnElement(document.createElement('button')).apply(button => {
+                    button.className = className;
                     button.param = param;
                     button.onclick = () => clickAction(button);
                     button.innerHTML = innerHTML;
@@ -426,9 +522,10 @@
             }
 
             static createNameField(cellName) {
-                return JSaturnBuilders.createElement("h2", "cell-name").apply(cname => {
-                    cname.contentEditable = "true";
-                    cname.innerHTML = cellName ?? "Cell of the " + String.fromCodePoint(128000 + Math.floor(Math.random() * 63));
+                return JSaturnBuilders.JSaturnElement(document.createElement("h2")).apply(cname => {
+                    cname.className = "cell-name";
+                    cname.contentEditable = "plaintext-only";
+                    cname.innerText = cellName ?? "Cell of the " + String.fromCodePoint(128000 + Math.floor(Math.random() * 63));
                 })
             }
 
@@ -461,12 +558,10 @@
                                 controlBar.id = 'bottom-control-bar-center';
                                 const popupContent = JSaturnBuilders.createDiv('popup-content');
                                 controlBar.append(
-                                    JSaturnBuilders.createButton('add-cell-below-button', (button) => button.param.before(JSaturnBuilders.createCodeCell()), '➕ <>', cell),
-                                    //     <button onClick="togglePopUp('options-popup')">•••</button>
-                                    // <div class="popup-content" id="options-popup">
+                                    JSaturnBuilders.createButton('add-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell),
                                     JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
                                     popupContent,
-                                    JSaturnBuilders.createButton('add-text-below-button', (button) => button.param.before(JSaturnBuilders.createTextCell()), '➕ T', cell)
+                                    JSaturnBuilders.createButton('add-text-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell)
                                 )
                             }),
                             JSaturnBuilders.createDiv('control-bar-right').apply(controlBar => {
@@ -477,13 +572,13 @@
                 ));
             }
 
-            static createCodeCell(code, cellName) {
-                return JSaturnBuilders.createCell("cell code-cell", cellName).apply(cell => {
+            static createCodeCell(data) {
+                return JSaturnBuilders.createCell("cell code-cell", data.cellName).apply(cell => {
                     // cell['persistenceKey'] = 'code-cell';
                     cell.querySelector('.cell-content').append(
                         JSaturnBuilders.createDiv("code-output-box").apply(codeOutputBox => {
                             codeOutputBox.append(
-                                JSaturnBuilders.createCodeField(code).apply(codeField => {
+                                JSaturnBuilders.createCodeField(data.codeText).apply(codeField => {
                                     codeField.addEventListener('keypress', function (e) {
                                         if ((e.code === "Enter") && e.ctrlKey) {
                                             JSaturnCodeCellUtility.runCell(cell)
@@ -503,7 +598,7 @@
                     cell.querySelector('#top-control-bar-right').append(
                         JSaturnBuilders.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
                     )
-                    if (JSaturnFeatures.getFeature('syntax-highlighting')) {
+                    if (JSaturnFeatures.get('syntax-highlighting')) {
                         JSaturnCodeCellUtility.highlightCell(cell);
                     }
                 })
@@ -518,25 +613,29 @@
             }
 
             static createDiv(className) {
-                return JSaturnBuilders.createElement('div', className);
+                return JSaturnBuilders.JSaturnElement(document.createElement('div')).withProperties({
+                    className: className
+                });
             }
 
-            static createElement(tag, className) {
-                return JSaturnBuilders.applicable(document.createElement(tag))
-                    .apply(element => {
-                        if (className) {
-                            element.className = className;
-                        }
-                        JSaturnBuilders.addUUID(element);
-                    });
-            }
+            // static createElement(tag, className) {
+            //     return JSaturnUiPrototypes.applicable(document.createElement(tag))
+            //         .apply(element => {
+            //             if (className) {
+            //                 element.className = className;
+            //             }
+            //             JSaturnBuilders.ensureId(element);
+            //             document.createNodeIterator()
+            //             element.dataset
+            //         });
+            // }
 
 
-            static createTextCell(text, cellName) {
-                return JSaturnBuilders.createCell("cell text-cell", cellName).apply(cell => {
+            static createTextCell(data) {
+                return JSaturnBuilders.createCell("cell text-cell", data.cellName).apply(cell => {
                     // cell['persistenceKey'] = 'text-cell';
                     cell.querySelector('.cell-content')
-                        .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = text ?? ""));
+                        .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = data.htmlContent ?? ""));
                     cell.querySelector('.popup-content').append(
                         JSaturnBuilders.createButton(
                             "button",
@@ -562,7 +661,7 @@
             static highlightCell(cell) {
                 // TODO [feature] @curolith highlighting disabled until functional
                 return;
-                if (!JSaturnFeatures.getFeature("syntax-highlighting")) {
+                if (!JSaturnFeatures.get("syntax-highlighting")) {
                     return;
                 }
                 const codeField = cell.querySelector('.code-field');
@@ -587,6 +686,20 @@
             }
 
             static runAll() {
+                const arr = [];
+                const iter = document.createNodeIterator(document, NodeFilter.SHOW_ELEMENT, node => {
+                    const val = node?.dataset?.datatype ? 1 : 3;
+                    console.log(String(node.id) + String(val));
+                    return val
+                });
+                let node = iter.nextNode();
+                while (node) {
+                    arr.push(node);
+                    node = iter.nextNode()
+                }
+                console.log(arr);
+
+                ///////////
                 document.querySelectorAll(".cell").forEach(cell => {
                     JSaturnCodeCellUtility.runCell(cell);
                 });
@@ -621,37 +734,32 @@
         }
 
         class JSaturnRoot {
-            static runtimeData = {
-                log: [],
-                global: {}
-            };
-
-            static configData = {
-                features: {
-                    'syntax-highlighting': false,
-                    'auto-save': true
-                },
-            }
-
-            static longtermData = {
-                username: "",
-                lastSave: 0
-            }
+            static rootDataSet = structuredClone(JSaturnDataModel.RootData.dataset);
+            static runtimeData = structuredClone(JSaturnDataModel.RootData.runtimeData);
 
             static init() {
-                const lastSave = JSaturnStorage.load('lastSave');
+                Object.entries(console).forEach(([key, value]) => {
+                    if (value instanceof Function) {
+                        console[key] = (function (...args) {
+                            JSaturnRoot.runtimeData.log.push({op: key, args: args});
+                            return value(...args);
+                        })
+                    }
+                    ;
+                })
+                const lastSave = JSaturnStorage.load(JSaturnDataModel.StorageKeys.lastSave);
                 if (lastSave) {
                     JSaturnStorage.restoreState();
                 } else {
                     JSaturnSnippetUtility.deserializeDemoData();
                 }
                 document.addEventListener("keypress", (e) => {
-                    if (["Enter", "Space"].includes(e.code)) {
-                        JSaturnStorage.triggerAutoSave();
+                    if (["Enter", "Space", ".", ";"].includes(e.code)) {
+                        JSaturnStorage.offerAutoSave();
                     }
                 });
                 document.addEventListener("click", (e) => {
-                    JSaturnStorage.triggerAutoSave();
+                    JSaturnStorage.offerAutoSave();
                 });
             }
 
@@ -671,61 +779,79 @@
             }
 
             static removeAll() {
-                [...document.querySelector('#cell-container').children].forEach(cell => cell.remove());
+                document.getElementById('cell-container').innerHTML = "";
             }
         }
 
         function setUserName(s) {
-            const swap = JSaturnRoot.longtermData.username;
-            JSaturnRoot.longtermData.username = s;
+            JSaturnRoot.getRootData();
         }
 
         class JSaturnFeatures {
             static featureChangeHandlers = {
-                'syntax-highlighting': (newState) => {
+                'syntax-highlighting': (newState, oldState) => {
                     // TODO [feature] @curolith Highlighting disabled until functional
                     if (newState) {
                         // document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
                     } else {
-                        document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
+                        if (oldState) {
+                            document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.removeHighlighting(cell));
+                        }
                     }
                 },
-                'auto-save': (newState) => {
+                'auto-save': (newState, oldState) => {
                     JSaturnStorage.saveState();
+                    if (newState) {
+                        window.clearInterval(JSaturnRoot.runtimeData.timeHandlers.triggerAutoSave);
+                        JSaturnRoot.runtimeData.timeHandlers.triggerAutoSave = window
+                            .setInterval(() => JSaturnStorage.offerAutoSave(), 5 * 1000);
+                    } else {
+                        window.clearInterval(JSaturnRoot.runtimeData.timeHandlers.triggerAutoSave);
+                    }
                 }
             }
 
-            static featureChange(feature, newState) {
+            static notifyFeatureChangeListeners(feature, oldState, newState) {
                 JSaturnFeatures.featureChangeHandlers[feature]?.(newState);
-            }
-
-            static getFeature(feature) {
-                return JSaturnRoot.configData.features[feature];
             }
 
             static handleFeatureToggle(toggleButton) {
                 const feature = toggleButton.id?.replace(/feature-toggle-/, "");
-                const newState = JSaturnFeatures.toggleFeature(feature);
+                const newState = JSaturnFeatures.toggle(feature);
                 JSaturnFeatures.updateFeatureToggleText(feature, newState, toggleButton);
-                JSaturnFeatures.featureChange(feature, newState);
             }
 
             static restoreFeatureToggles() {
                 document.querySelectorAll('.feature-toggle').forEach(toggleButton => {
                     const feature = toggleButton.id;
-                    const configState = JSaturnFeatures.getFeature(feature);
+                    const configState = JSaturnFeatures.get(feature);
+                    JSaturnFeatures.featureChangeHandlers[feature]?.(configState, JSaturnDataModel.RootData.dataset.configData.featureData[feature]);
                     JSaturnFeatures.updateFeatureToggleText(feature, configState, toggleButton)
                 })
             }
 
-            static setFeature(feature, value) {
-                JSaturnRoot.configData.features[feature] = value;
+            /**
+             * @param {string} feature
+             * @param {boolean} value
+             *
+             * @return true iff the value has changed
+             */
+            static set(feature, value) {
+                const oldSate = JSaturnFeatures.get(feature);
+                if (oldSate === value) {
+                    return false;
+                }
+                JSaturnRoot.rootDataSet.configData.featureData[feature] = value;
+                JSaturnFeatures.featureChangeHandlers[feature]?.(value);
+                return true;
             }
 
-            static toggleFeature(feature) {
-                const newState = !JSaturnFeatures.getFeature(feature);
-                JSaturnFeatures.setFeature(feature, newState);
-                return newState;
+            static get(feature) {
+                return JSaturnRoot.rootDataSet.configData.featureData[feature];
+            }
+
+            static toggle(feature) {
+                return JSaturnFeatures.set(feature, !JSaturnFeatures.get(feature));
             }
 
             static updateFeatureToggleText(feature, newState, toggleButton) {
@@ -761,7 +887,7 @@
             }
 
             static serializeAndEscape() {
-                return escape(JSON.stringify(JSaturnDataModel.serializeFromRoot()))
+                return escape(JSON.stringify(JSaturnDataEngine.serializeFromRoot()))
             }
 
             static exportStateToClipboard() {
@@ -770,7 +896,7 @@
 
             static exportStateToFile() {
                 JSaturnIO.downloadFile(
-                    JSON.stringify(JSaturnDataModel.serializeFromRoot()),
+                    JSON.stringify(JSaturnDataEngine.serializeFromRoot()),
                     "JSaturn-export_" + JSaturnIO.getFileDateTimeString(),
                     "json"
                 )
@@ -780,27 +906,27 @@
                 JSaturnIO.pickFile(fileInput => {
                     const file = fileInput.files[0];
                     file.text().then((text) => {
-                        JSaturnDataModel.deserialize(JSON.parse(text))
+                        JSaturnDataEngine.deserialize(JSON.parse(text))
                     });
                 }, "txt", "json")
             }
 
             static exportMarkdownToClipboard() {
-                window.navigator.clipboard.writeText(JSaturnDataModel.markdownFromRoot());
+                window.navigator.clipboard.writeText(JSaturnDataEngine.markdownCurrentBook());
             }
 
             // TODO [refactor] @curolith adapt other classes to use this instead of class name
 
             static exportMarkdownToFile() {
                 JSaturnIO.downloadFile(
-                    JSaturnDataModel.markdownFromRoot(),
+                    JSaturnDataEngine.markdownCurrentBook(),
                     "JSaturn-export_" + JSaturnIO.getFileDateTimeString(),
                     "md"
                 )
             }
 
             static unescapeAndDeserialize(value) {
-                JSaturnDataModel.deserialize(JSON.parse(unescape(value)))
+                JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))
             }
 
             static importFromClipboard() {
@@ -808,7 +934,7 @@
             }
         }
 
-        class JSaturnDataModel {
+        class JSaturnDataEngine {
             // TODO Update on change and implement migration
             static dataModelVersion = 0.0;
             static transformers = {
@@ -825,93 +951,12 @@
                     .toArray().join("-")
             };
 
-            static Prototypes = {
-// Not persisted or rendered
-                RuntimeData: {
-                    children,
-                    dataPrototype: {},
-                },
-
-                // TemplateData: {
-                //     dataToHtml: (data) => {
-                //         data = Object.assign(data ?? {}, {
-                //             // defines all keys with default values / value setters
-                //             dataType: "TemplateData",
-                //             children: [],
-                //             dataTypeKey: "TemplateData"
-                //         });
-                //         data.key = data.key ?? JSaturnDataModel.newKey();
-                //         // visible data -> html
-                //         // invisible data -> element.dataset.xyz = ...
-                //         // mind the children
-                //     },
-                //     htmlToData: (htmlElement) => {
-                //         const data = htmlElement.dataset
-                //
-                //         // inverse of data To Html
-                //         data.key = data.key ?? JSaturnDataModel.newKey();
-                //     },
-                //     htmlToMarkdown: (htmlElement) => {
-                //         // html ->  data -> markdown
-                //     },
-                // },
-
-                RootData: {
-                    dataType: "RootData",
-                    children: [],
-                    configData: ConfigData.dataPrototype,
-                    bookData: BookData.dataPrototype,
-                },
-
-                ConfigData: {
-                    dataType: "ConfigData",
-                    children: [],
-                    features: FeatureData.dataPrototype
-                },
-
-                FeatureData: {
-                    dataType: "FeatureData",
-                    syntaxHighlighting: false,
-                    autoSave: true
-
-                },
-
-                BookData: {
-
-                    dataType: "BookData",
-                    children: [],
-                },
-
-                CodeCellData: {
-                    dataType: "CodeCellData",
-                },
-
-                TextCellData: {
-
-                    dataType: "TextCellData",
-                    htmlContent: "",
-                    cellName: "",
-                },
-            }
-
             static Tranformers = {
-                // Not persisted or rendered
-                RuntimeData: {
-                    children,
-                    dataPrototype: {},
-
-                    // TODO [refactor] @curolith hm?
-                },
 
                 // TemplateData: {
                 //     dataToHtml: (data) => {
-                //         data = Object.assign(data ?? {}, {
-                //             // defines all keys with default values / value setters
-                //             dataType: "TemplateData",
-                //             children: [],
-                //             dataTypeKey: "TemplateData"
-                //         });
-                //         data.key = data.key ?? JSaturnDataModel.newKey();
+                //         data = JSaturnDataEngine.ensureDeep(JSaturnDataModel.TemplateData, data ?? {});
+                //         data.key = data.key ?? JSaturnDataEngine.newKey();
                 //         // visible data -> html
                 //         // invisible data -> element.dataset.xyz = ...
                 //         // mind the children
@@ -920,350 +965,238 @@
                 //         const data = htmlElement.dataset
                 //
                 //         // inverse of data To Html
-                //         data.key = data.key ?? JSaturnDataModel.newKey();
+                //         data.key = data.key ?? JSaturnDataEngine.newKey();
                 //     },
                 //     dataToMarkdown: (data) => {
-                //         // html ->  data -> markdown
+                //
                 //     },
                 // },
 
                 RootData: {
                     dataToHtml: (data) => {
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.RootData);
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-                        // visible data -> html
-                        // invisible data -> element.dataset.xyz = ...
-                        // mind the children
+                        const rootDataClone = structuredClone(JSaturnDataModel.RootData);
+                        data = {
+                            ...rootDataCopy,
+                            ...data,
+                            ...{
+                                dataset: {
+                                    ...rootDataCopy.dataset,
+                                    ...data.dataset,
+                                    ...{
+                                        ...rootDataCopy.dataset.configData,
+                                        ...data.dataset?.configData,
+                                        ...{
+                                            ...rootDataCopy.dataset.configData.featureData,
+                                            ...data.dataset?.configData?.featureData
+                                        }
+                                    }
+                                },
+                                runtimeData: {...rootDataCopy.runtimeData}, // Ensure no accidental persistence overwrites defualt
+                                visible: {
+                                    ...rootDataCopy.visible,
+                                    ...data.visible,
+                                    ...{
+                                        bookData: {
+                                            ...rootDataCopy.visible.bookData,
+                                            ...data.visible?.bookData
+                                        }
+                                    }
+                                }
+                            }
+                        };
 
-                        // TODO [refactor] @curolith
+                        data.key = data.key ?? JSaturnDataEngine.newKey();
 
+                        if (data.dataModelVersion !== JSaturnDataModel.RootData.dataModelVersion) {
+                            data = JSaturnDataEngine.handleOutdatedModelData(data);
+                        }
+
+                        const rootContainer = document.getElementById('root-container');
+                        JSaturnRoot.rootDataSet = data.dataset;
+                        JSaturnDataEngine.deserialize(data.visible.bookData);
+                        JSaturnFeatures.restoreFeatureToggles();
+                        if (JSaturnFeatures.get('syntax-highlighting')) {
+                            JSaturnFeatures.toggle('sytax-highlighting');
+                        }
+                        return rootContainer;
                     },
                     htmlToData: (htmlElement) => {
-                        const data = Object.assign(htmlElement?.dataset ?? {}, JSaturnDataModel.Prototypes.RootData);
-
-                        // inverse of data To Html
-                        data.key = data.key ?? JSaturnDataModel.newKey();
+                        return {
+                            dataset: JSaturnRoot.rootDataSet,
+                            visible: {
+                                bookData: JSaturnDataEngine.serialize(htmlElement.querySelector(".cell-container"))
+                            }
+                        }
                     },
-                    dataToMarkdown: (data) => {
-                        // html ->  data -> markdown
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.RootData);
-
-                        // TODO [refactor] @curolith
-
-                    },
-                },
-
-                ConfigData: {
-                    dataToHtml: (data) => {
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.ConfigData);
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-                        // visible data -> html
-                        // invisible data -> element.dataset.xyz = ...
-                        // mind the children
-
-                        // TODO [refactor] @curolith
-
-                    },
-                    htmlToData: (htmlElement) => {
-                        const data = Object.assign(htmlElement?.dataset ?? {}, JSaturnDataModel.Prototypes.ConfigData);
-
-                        // inverse of data To Html
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-
-                        // TODO [refactor] @curolith
-
-                    },
-                    dataToMarkdown: (data) => {
-                        // html ->  data -> markdown
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.ConfigData);
-
-                        // TODO [refactor] @curolith
-
-                    },
-                },
-
-                FeatureData: {
-                    dataToHtml: (data) => {
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.FeatureData);
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-                        // visible data -> html
-                        // invisible data -> element.dataset.xyz = ...
-                        // mind the children
-
-                        // TODO [refactor] @curolith
-
-                    },
-                    htmlToData: (htmlElement) => {
-                        const data = hObject.assign(htmlElement.dataset ?? {}, JSaturnDataModel.Prototypes.FeatureData);
-
-                        // inverse of data To Html
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-
-                        // TODO [refactor] @curolith
-
-                    },
-                    dataToMarkdown: (data) => {
-                        // html ->  data -> markdown
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.FeatureData);
-
-                        // TODO [refactor] @curolith
-
+                    htmlToMarkdown: (htmlElement) => {
+                        JSaturnRoot.log("error", `Root does not support markdown. Use BookData instead`, "16b74906-5c9e-4d6c-855e-d52d8b31aeab", JSaturnDataModel.RootData);
                     },
                 },
 
                 BookData: {
                     dataToHtml: (data) => {
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.BookData);
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-                        // visible data -> html
-                        // invisible data -> element.dataset.xyz = ...
-                        // mind the children
+                        data.key = data.key ?? JSaturnDataEngine.newKey();
 
-                        // TODO [refactor] @curolith
-                        JSaturnRoot.longtermData = JSaturnStorage.load('jSaturnLongtermData');
-                        if (data.data.dataModelVersion !== JSaturnDataModel.dataModelVersion) {
-                            data = JSaturnDataModel.migratedata(data);
-                        }
-                        JSaturnRoot.configData = data.data.configData;
-                        JSaturnDataModel.deserialize(data.data.rootContainerData);
-                        JSaturnFeatures.restoreFeatureToggles();
-                        if (JSaturnFeatures.getFeature('syntax-highlighting')) {
-                            JSaturnFeatures.toggleFeature('sytax-highlighting');
-                        }
-                        return document;
+                        console.warn()
 
-                        const rootContainer = JSaturnBuilders.applicable(document.querySelector('#root-container'));
-                        const children = [...data.data?.children]?.map(JSaturnDataModel.deserialize);
-                        rootContainer.append(...children);
-                        return rootContainer;
-
-                        const cellContainer = JSaturnBuilders.applicable(document.querySelector('#cell-container'));
+                        const cellContainer = document.querySelector('#cell-container');
                         cellContainer.innerHTML = '';
-                        const children = [...data.data?.children]?.map(JSaturnDataModel.deserialize);
-                        cellContainer.append(...children);
+                        cellContainer.append(data.cells.map(JSaturnDataEngine.deserialize));
                         return cellContainer;
                     },
                     htmlToData: (htmlElement) => {
-                        const data = Object.assign(htmlElement.dataset ?? {}, JSaturnDataModel.Prototypes.BookData);
-
-                        // inverse of data To Html
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-
-                        // TODO [refactor] @curolith
-                        const rootContainer = document.querySelector('#root-container');
-                        JSaturnStorage.store({
-                            key: 'jSaturnLongtermData',
-                            data: JSaturnRoot.longtermData
-                        });
                         return {
-                            persistenceKey: '#document',
-                            data: {
-                                dataModelVersion: JSaturnDataModel.dataModelVersion,
-                                configData: JSaturnRoot.configData,
-                                rootContainerData: JSaturnDataModel.transformData(rootContainer, JSaturnDataModel.transformers.serialize)
-                            }
-                        }
-                        return {
-                            persistenceKey: 'root-container',
-                            data: {
-                                children: JSaturnDataModel.serializeChildren(htmlElement)
-                            }
-                        }
-                        return {
-                            persistenceKey: 'cell-container',
-                            data: {
-                                children: JSaturnDataModel.serializeChildren(htmlElement)
+                            dataset: htmlElement.dataset,
+                            visible: {
+                                cells: htmlElement.querySelectorAll(".cell").toArray?.().map(JSaturnDataEngine.serialize),
                             }
                         }
                     },
-                    dataToMarkdown: (data) => {
-                        // html ->  data -> markdown
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.BookData);
-
-                        // TODO [refactor] @curolith
-                        [
-                            "# JSaturn" + (JSaturnRoot.longtermData.username ? "\n" + JSaturnRoot.longtermData.username : ""),
-                            (new Date().toLocaleString()).toString().match(/^[^:]+:[^:]+/),
-                            "<br>",
-                            "",
-                            "---",
-                            JSaturnDataModel.transformData(document.querySelector('#root-container'), JSaturnDataModel.transformers.markdown)
-                        ].flat(100).join("\n")
-                        JSaturnDataModel.markdownChildren(htmlElement)
-                        JSaturnDataModel.markdownChildren(htmlElement).reverse()
+                    htmlToMarkdown: (htmlElement) => {
+                        return `# JSaturn\n\n${
+                            JSaturnRoot.longtermData.username ? JSaturnRoot.longtermData.username + "\n\n" : ""
+                        }${
+                            document.querySelector('#cell-container')?.querySelectorAll('.cell').toArray?.().resverse().map(cell => JSaturnDataEngine.transformers.markdown).reverse().join("\n")
+                        }`
                     },
                 },
 
                 CodeCellData: {
                     dataToHtml: (data) => {
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.CodeCellData);
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-                        // visible data -> html
-                        // invisible data -> element.dataset.xyz = ...
-                        // mind the children
+                        data = Object.assign(data, structuredClone(JSaturnDataModel.CodeCellData));
+                        data.key = data.key ?? JSaturnDataEngine.newKey();
 
-                        // TODO [refactor] @curolith
-                        return JSaturnBuilders.createCodeCell(data.data?.codeField, data.data?.cellName);
+                        return JSaturnBuilders.createCodeCell(data).withDataset(data.dataset);
                     },
                     htmlToData: (htmlElement) => {
-                        const data = Object.assign(htmlElement.dataset ?? {}, JSaturnDataModel.Prototypes.CodeCellData);
-
-                        // inverse of data To Html
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-
-                        // TODO [refactor] @curolith
                         return {
-                            persistenceKey: 'code-cell',
-                            data: {
-                                cellName: htmlElement.querySelector('.cell-name')?.innerHTML,
-                                codeField: htmlElement.querySelector('.code-field')?.innerText,
+                            dataset: htmlElement.dataset,
+                            visible: {
+                                codeText: htmlElement.querySelector('.code-field')?.innerText,
+                                codeOutput: htmlElement.querySelector('.cell-name')?.innerText,
                             }
                         }
                     },
-                    dataToMarkdown: (data) => {
-                        // html ->  data -> markdown
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.CodeCellData);
-
-                        // TODO [refactor] @curolith
-                        return [
-                            "## " + htmlElement.querySelector('.cell-name')?.innerHTML,
-                            "```javascript",
-                            htmlElement.querySelector('.code-field')?.innerText,
-                            "```",
-                            htmlElement.querySelector('.code-output-field')?.outerHTML,
-                            "",
-                            "---",
-                        ]
+                    htmlToMarkdown: (htmlElement) => {
+                        return `## ${
+                            htmlElement.querySelector('.cell-name')?.innerHTML
+                        }\n\n\`\`\`javascript\n${
+                            htmlElement.querySelector('.code-field')?.innerText
+                        }\n\`\`\`\n\n${
+                            htmlElement.querySelector('.code-output-field')?.outerHTML
+                        }\n`;
                     },
                 },
 
                 TextCellData: {
                     dataToHtml: (data) => {
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.TextCellData);
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-                        // visible data -> html
-                        // invisible data -> element.dataset.xyz = ...
-                        // mind the children
+                        data = Object.assign(data, structuredClone(JSaturnDataModel.TextCellData));
+                        data.key = data.key ?? JSaturnDataEngine.newKey();
 
-                        // TODO [refactor] @curolith
-                        return JSaturnBuilders.createTextCell(data.data?.textField, data.data?.cellName);
+                        return JSaturnBuilders.createTextCell(data).withDataset(data.dataset);
                     },
                     htmlToData: (htmlElement) => {
-                        const data = Object.assign(htmlElement.dataset ?? {}, JSaturnDataModel.Prototypes.TextCellData);
-
-                        // inverse of data To Html
-                        data.key = data.key ?? JSaturnDataModel.newKey();
-
-                        // TODO [refactor] @curolith
                         return {
-                            persistenceKey: 'text-cell',
-                            data: {
-                                cellName: htmlElement.querySelector('.cell-name')?.innerHTML,
-                                textField: htmlElement.querySelector('.text-field')?.innerHTML
+                            dataset: htmlElement.dataset,
+                            visisble: {
+                                htmlContent: htmlElement.querySelector('#name-field')?.innerText,
+                                cellName: htmlElement.querySelector('#text-field')?.innerHTML,
                             }
-                        }
+                        };
                     },
-                    dataToMarkdown: (data) => {
-                        // html ->  data -> markdown
-                        data = Object.assign(data ?? {}, JSaturnDataModel.Prototypes.TextCellData);
-
-                        // TODO [refactor] @curolith make with ` and vars`
-                        return [
-                            "",
-                            "## " + htmlElement.querySelector('.cell-name')?.innerHTML,
-                            htmlElement.querySelector('.text-field')?.innerHTML,
-                            "",
-                            "---"
-                        ];
+                    htmlToMarkdown: (htmlElement) => {
+                        return `## ${
+                            htmlElement.querySelector('#name-field')?.innerHTML
+                        }\n\n${
+                            htmlElement.querySelector('#text-field')?.innerHTML
+                        }\n`;
                     },
                 },
             }
 
-            static getModelForData(data) {
-                if (!data) {
+            static getTransformer(data) {
+                if (!data?.dataset?.datatype) {
                     return null;
                 }
-                return ["default", data["nodeName"]]
-                    .concat(data["className"]?.split(" "))
-                    .concat([data["persistenceKey"]])
-                    .map(key => JSaturnDataModel.Tranformers[key])
-                    .findLast(Boolean);
+                return JSaturnDataEngine.Tranformers[data.dataset.datatype];
             }
 
             static transformData(data, transformation) {
-                return JSaturnDataModel.getModelForData(data)?.[transformation]?.(data);
+                return JSaturnDataEngine.getTransformer(data)?.[transformation]?.(data);
             }
 
             static serialize(data) {
-                return JSaturnDataModel.transformData(data, JSaturnDataModel.transformers.htmlToData)
+                return JSaturnDataEngine.transformData(data, JSaturnDataEngine.transformers.htmlToData)
+            }
+
+            static ensureDeep(data, proto) {
+                // TODO [bug-logical] @curolith check for possible issue:
+                //   ensureDeep({a: 3, b: {x: 0}}, {a: 3, b: {x: 0, y: 1}}) == maybe ==> {a: 3, b: {x: 0}} (because b is already present. assign might not be recursive)
+                const newData = Object.assign(data, structuredClone(proto));
+                return newData;
             }
 
             static deserialize(persistenceData) {
                 if (!persistenceData) {
                     return null;
                 }
-                const element = JSaturnDataModel.transformData(persistenceData, JSaturnDataModel.transformers.dataToHtml);
+                const element = JSaturnDataEngine.transformData(persistenceData, JSaturnDataEngine.transformers.dataToHtml);
                 if (element) {
                     return element;
                 }
                 JSaturnRoot.log(
                     'error',
-                    'No deserialization implementation found',
+                    'No deserialization implementation found. Dumping and initilializing empty.',
                     '8ae76dbf-fd43-4ffd-84f1-a4a40619d440',
                     persistenceData
                 )
+                JSaturnIO.exportStateToFile();
+                JSaturnDataEngine.initElement(JSaturnDataModel.RootData);
             }
 
-            static serializeChildren(persistenceElement) {
-                return [...persistenceElement.children].map(x => JSaturnDataModel.serialize(x)).filter(Boolean);
-            }
-
-            static markdownChildren(persistenceElement) {
-                return [...persistenceElement.children].map(child => JSaturnDataModel.transformData(child, JSaturnDataModel.transformers.htmlToMarkdown)).filter(Boolean)
-                    ?.map(arr => {
-                        if (arr["push"]) {
-                            arr.push("");
-                            return arr
-                        }
-                        return arr;
-                    });
+            static initElement(model) {
+                return JSaturnDataEngine.getTransformer(model)?.dataToHtml({});
             }
 
             static serializeFromRoot() {
-                return JSaturnDataModel.serialize(document);
+                return JSaturnDataEngine.serialize(document.getElementById('root-container'));
             }
 
-            static markdownFromRoot() {
-                return JSaturnDataModel.transformData(document, JSaturnDataModel.transformers.htmlToMarkdown);
+            static markdownCurrentBook() {
+                return JSaturnDataEngine.transformData(document.getElementById('cell-container'), JSaturnDataEngine.transformers.htmlToMarkdown);
             }
 
-            static migratePersistenceData(persistenceData) {
+            static handleOutdatedModelData(data) {
                 JSaturnRoot.log(
-                    'error',
-                    "Persisted data is outdated. Migration required but not yet implemented. Data stored in log context (runtime)",
+                    'warn',
+                    "Stored data was created with outdated model. Downloading backup...",
                     '922be13a-af1d-4c7c-8a47-e124ec9225c8',
-                    persistenceData
+                    data
                 );
-                return null;
+                JSaturnIO.exportStateToFile();
+                data.dataset.dataModelVersion = JSaturnDataModel.RootData.dataset.dataModelVersion;
+                return data;
             }
         }
 
         class JSaturnStorage {
             static restoreState() {
-                const serializedData = JSaturnStorage.load('jSaturnRootData');
-                JSaturnDataModel.deserialize(serializedData);
+                const serializedData = JSaturnStorage.load(JSaturnDataModel.StorageKeys.rootData);
+                JSaturnDataEngine.Tranformers.RootData.dataToHtml(serializedData);
             }
 
-            static store(storable) {
-                if (!storable.key) {
-                    JSaturnRoot.log(
-                        'error',
-                        'No key provided for storable',
-                        '06afa351-f87c-4c3f-ad4a-7e90afac5281',
-                        storable
-                    )
+            /**
+             * Use this function instead of local storage
+             * - to allow hooking functionality in the future
+             *
+             * @param {string} key
+             * @param {*} data
+             */
+            static store(key, data) {
+                if (!key || !data) {
+                    return;
                 }
-                localStorage.setItem(storable.key, JSON.stringify(storable.data));
+                localStorage.setItem(key, data);
             }
 
             static load(key) {
@@ -1275,29 +1208,60 @@
                         "332803b9-6d83-41f3-bf19-8d711eb81c29",
                     );
                 }
-                return JSON.parse(localStorage.getItem(key));
+                return localStorage.getItem(key);
+            }
+
+            static getLastSavedMessage(lastSaved) {
+                const divideRounded = function (x, y) {
+                    return (x / y) - ((x / y) % 1)
+                }
+                const rtf = new Intl.RelativeTimeFormat("en", {
+                    localeMatcher: "best fit",
+                    numeric: "auto",
+                    style: "long",
+                });
+                const diff = lastSaved - new Date()
+                if (diff > -(60 * 1000)) {
+                    return rtf.format(divideRounded(diff, 1000), "seconds");
+                } else if (diff > -(60 * 60 * 1000)) {
+                    return rtf.format(divideRounded(diff, 60 * 1000), "minutes");
+                } else if (diff > -(60 * 60 * 60 * 1000)) {
+                    return rtf.format(divideRounded(diff, 60 * 60 * 1000), "hours");
+                } else {
+                    return rtf.format(divideRounded(diff, 24 * 60 * 60 * 1000), "days");
+                }
             }
 
             static saveState() {
-                const serializedData = JSaturnDataModel.serializeFromRoot();
-                JSaturnStorage.store({
-                    key: 'jSaturnRootData',
-                    data: serializedData
-                });
-                if (!JSaturnRoot.longtermData) {
-                    JSaturnRoot.longtermData = {
-                        username: "",
-                        lastSave: 0
-                    }
-                }
-                JSaturnRoot.longtermData.lastSave = Date.now();
+                JSaturnStorage.store(
+                    JSaturnDataModel.StorageKeys.rootData,
+                    JSaturnDataEngine.serializeFromRoot()
+                );
+                const bottomText = document.getElementById('bottom-info')
+                bottomText.innerText = `Last saved now`;
+                const lastSave = Date.now();
+                JSaturnStorage.store(JSaturnDataModel.StorageKeys.lastSave, lastSave);
+                JSaturnRoot.runtimeData.lastSave = lastSave;
+                window.clearInterval(JSaturnRoot.runtimeData.timeHandlers.lastSaveText)
+                JSaturnRoot.runtimeData.timeHandlers.lastSaveText = window
+                    .setInterval(() => bottomText.innerText = `Last saved ${JSaturnStorage.getLastSavedMessage(lastSave)}`, 10 * 1000);
             }
 
-            static triggerAutoSave() {
-                if (!JSaturnFeatures.getFeature('auto-save')) {
+            static offerAutoSave() {
+                if (!JSaturnFeatures.get('auto-save')) {
+                    return;
+                }
+                if ((Date.now() - (JSaturnRoot.rootDataSet?.runtimeData?.lastSave ?? 0)) < (2 * 1000)) {
                     return;
                 }
                 JSaturnStorage.saveState();
+            }
+
+            static getStorageDump() {
+                return Array(localStorage.length).keys().map(i => localStorage.key(i)).map(key => ({
+                    key: key,
+                    value: localStorage.getItem(key)
+                })).toArray();
             }
         }
 
@@ -1308,16 +1272,16 @@
 
         class JSaturnSnippetUtility {
             static deserializeDemoData() {
-                const demoData = '%7B%22persistenceKey%22%3A%22%23document%22%2C%22data%22%3A%7B%22dataModelVersion%22%3A0%2C%22configData%22%3A%7B%22features%22%3A%7B%22syntax-highlighting%22%3Afalse%2C%22auto-save%22%3Atrue%7D%7D%2C%22rootContainerData%22%3A%7B%22persistenceKey%22%3A%22root-container%22%2C%22data%22%3A%7B%22children%22%3A%5B%7B%22persistenceKey%22%3A%22cell-container%22%2C%22data%22%3A%7B%22children%22%3A%5B%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Credit%20for%20the%20gif%3A%22%2C%22textField%22%3A%22By%20%3Ca%20href%3D%5C%22//commons.wikimedia.org/wiki/User%3ALucasVB%5C%22%20title%3D%5C%22User%3ALucasVB%5C%22%3ELucas%20Vieira%3C/a%3E%20-%20%3Cspan%20class%3D%5C%22int-own-work%5C%22%20lang%3D%5C%22en%5C%22%3EOwn%20work%3C/span%3E%2C%20%3Ca%20href%3D%5C%22http%3A//creativecommons.org/licenses/by-sa/3.0/%5C%22%20title%3D%5C%22Creative%20Commons%20Attribution-Share%20Alike%203.0%5C%22%3ECC%20BY-SA%203.0%3C/a%3E%2C%20%3Ca%20href%3D%5C%22https%3A//commons.wikimedia.org/w/index.php%3Fcurid%3D101736%5C%22%3ELink%3C/a%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22code-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22HTML%20Output%22%2C%22codeField%22%3A%22//%20HTML%20Strings%20are%20rendered%20in%20the%20ouput%3A%5Cn%5Cnconst%20imageUrl%20%3D%20%5C%22https%3A//upload.wikimedia.org/wikipedia/commons/e/e5/Gospers_glider_gun.gif%3Futm_source%3Den.wikipedia.org%26utm_campaign%3Dimageinfo%26utm_content%3Dthumbnail_unscaled%5C%22%3B%5Cn%5Cnconst%20htmlSnippet%20%3D%A0%60%3Cimg%20src%3D%5C%22%24%7BimageUrl%7D%5C%22%3E%60%3B%5Cn%5Cn%5Cnconsole.log%28htmlSnippet%29%3B%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Technical%20Details%22%2C%22textField%22%3A%22Cell%20code%20is%20executed%20in%20a%20%3Ca%20jsname%3D%5C%22UWckNb%5C%22%20class%3D%5C%22zReHs%5C%22%20href%3D%5C%22https%3A//en.wikipedia.org/wiki/Closure_%28computer_programming%29%5C%22%20data-ved%3D%5C%222ahUKEwjopYG5mLGXAxUSSPEDHTGZGDMQFnoECB0QAQ%5C%22%3E%3Ch3%20class%3D%5C%22LC20lb%20MBeuO%20DKV0Md%5C%22%20id%3D%5C%22_DxnLaqjiDJKQxc8PsbLimAM_67%5C%22%20style%3D%5C%22display%3A%20inline%20%21important%3B%5C%22%3E%3Cspan%20style%3D%5C%22font-weight%3A%20normal%3B%5C%22%3Eclosure%3C/span%3E%3C/h3%3E%3C/a%3E%2C%20this%20means%20that%20variables%20created%20in%20the%20cell%20are%20not%20available%20to%20other%20cells.%20For%20this%20purpose%20the%20%5C%22global%5C%22%20object%20is%20available%20to%20each%20cell.%20So%20too%20is%20the%20document%20and%20all%20variables%20of%20outer%20closures%2C%20global%20is%20used%20exclusively%20as%20inter-cell%20storage%20though%20variables%20stored%20in%20global%20are%20runtime%20dependent.%3Cbr%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22The%20UI%22%2C%22textField%22%3A%22%3Cdiv%3EUntil%20tooltips%20are%20added%2C%20consider%20this%20overview%3A%3C/div%3E%3Cdiv%3E%3Cbr%3E%3Cbutton%3E%u274E%u2705%3C/button%3E%26nbsp%3B%20-%20%3Cb%3EFeature-toggles%2C%3C/b%3E%26nbsp%3Bcurrently%20the%20syntax-highlighting%20is%20disabled%20because%20of%20serialization%20issues.%3Cdiv%3E%3Cbr%3E%3C/div%3E%3C/div%3E%3Cbutton%3E%u2795%20%26lt%3B%26gt%3B%3C/button%3E%20-%20%3Cb%3EAdd%20code-cell%3C/b%3E%26nbsp%3B%28below%20the%20button%29%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u2022%u2022%u2022%3C/button%3E%20-%26nbsp%3B%3Cb%3E%26nbsp%3BOptions%3C/b%3E%2C%20those%20at%20the%20top%20of%20the%20document%20are%20general%20options%2C%20those%20on%20cell%20are%20cell-specific%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u2795%20T%3C/button%3E%20-%20%3Cb%3EAdd%20text%20cell%20%3C/b%3E%28below%20the%20button%29%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u23E9%3C/button%3E%20-%20%3Cb%3ERun%20all%20code%20cells%3C/b%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22About%20JSaturn%22%2C%22textField%22%3A%22JSaturn%20in%20it%27s%20core%20is%20a%20JavaScript%20console%20interface.%20There%20are%20two%20types%20of%20cells%20/%20blocks%2C%20text-cells%20like%20this%20one%2C%20and%20Code%20cells.%26nbsp%3B%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cu%3EText-cells%26nbsp%3B%3C/u%3Econtain%20rendered%20HTML%20via%20the%20three%20dots%20you%20can%20access%20the%20options%20for%20a%20cell%2C%20such%20as%20appending%20html%20code%20from%20Clipboard.%20This%20way%20i%20can%20put%20the%20Youtube%20embed%20of%20some%20jolly%20Video%20directly%20into%20the%20text%20cell%3A%3Cdiv%3E%3Cbr%3E%3C/div%3E%3C/div%3E%3Cbr%3E%3Ciframe%20width%3D%5C%22280%5C%22%20height%3D%5C%22157%5C%22%20src%3D%5C%22https%3A//www.youtube-nocookie.com/embed/r6Rp-uo6HmI%3Fsi%3DCl0aZfaIOtpSPCX3%5C%22%20title%3D%5C%22YouTube%20video%20player%5C%22%20frameborder%3D%5C%220%5C%22%20allow%3D%5C%22accelerometer%3B%20autoplay%3B%20clipboard-write%3B%20encrypted-media%3B%20gyroscope%3B%20picture-in-picture%3B%20web-share%5C%22%20referrerpolicy%3D%5C%22strict-origin-when-cross-origin%5C%22%20allowfullscreen%3D%5C%22%5C%22%3E%3C/iframe%3E%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cdiv%3EThe%20great%20thing%20is%20that%20%3Cb%3Eall%20types%20of%20exports%20and%20imports%20support%20HTML%20content%20in%20cells%3C/b%3E.%20You%20can%20also%20use%20default%20browser%20keybinds%20such%20as%3A%20%3Cb%3ECtrl%20+%20B%2C%20%3C/b%3E%3Ci%3ECtrl%20+%20I%2C%20%3C/i%3E%3Cu%3ECtrl%20+%20U%3C/u%3E%3C/div%3E%3Cdiv%3E%3Cu%3E%3Cbr%3E%3C/u%3E%3C/div%3E%3Cdiv%3E%3Cbr%3E%3Cu%3ECode-cells%3C/u%3E%20%28those%20with%20a%20play-button%29%20can%20execute%20JavaScript%20Code.%20The%20three%20dots%20above%20this%20cell%20are%20the%20options%20for%20the%20entire%20document.%20This%20includes%20for%20example%20the%20option%20to%20generate%20a%20markdown%20file%20representing%20the%20current%20state%20of%20the%20cells%20-%20including%20the%20current%20output%20of%20code%20cells.%26nbsp%3B%3C/div%3E%3C/div%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22code-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Hello%20World%21%20Welcome%20to%20JSaturn%22%2C%22codeField%22%3A%22const%20username%20%3D%20%5C%22Jane%20Doe%5C%22%3B%20//%20Replace%20Jane%20Doe%20with%20your%20name%20to%20run%20your%20first%20Code%20%3AD%5Cn%5Cn%5Cn//%20Personalization%5CnsetUserName%28username%29%3B%5Cn%5Cn%5Cnconsole.log%28%5C%22Nice%20to%20meet%20You%2C%20%5C%22%20+%20username%29%3B%22%7D%7D%5D%7D%7D%5D%7D%7D%7D%7D'
-                JSaturnIO.unescapeAndDeserialize(demoData);
+                const demoData = //'%7B%22persistenceKey%22%3A%22%23document%22%2C%22data%22%3A%7B%22dataModelVersion%22%3A0%2C%22configData%22%3A%7B%22features%22%3A%7B%22syntax-highlighting%22%3Afalse%2C%22auto-save%22%3Atrue%7D%7D%2C%22rootContainerData%22%3A%7B%22persistenceKey%22%3A%22root-container%22%2C%22data%22%3A%7B%22children%22%3A%5B%7B%22persistenceKey%22%3A%22cell-container%22%2C%22data%22%3A%7B%22children%22%3A%5B%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Credit%20for%20the%20gif%3A%22%2C%22textField%22%3A%22By%20%3Ca%20href%3D%5C%22//commons.wikimedia.org/wiki/User%3ALucasVB%5C%22%20title%3D%5C%22User%3ALucasVB%5C%22%3ELucas%20Vieira%3C/a%3E%20-%20%3Cspan%20class%3D%5C%22int-own-work%5C%22%20lang%3D%5C%22en%5C%22%3EOwn%20work%3C/span%3E%2C%20%3Ca%20href%3D%5C%22http%3A//creativecommons.org/licenses/by-sa/3.0/%5C%22%20title%3D%5C%22Creative%20Commons%20Attribution-Share%20Alike%203.0%5C%22%3ECC%20BY-SA%203.0%3C/a%3E%2C%20%3Ca%20href%3D%5C%22https%3A//commons.wikimedia.org/w/index.php%3Fcurid%3D101736%5C%22%3ELink%3C/a%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22code-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22HTML%20Output%22%2C%22codeField%22%3A%22//%20HTML%20Strings%20are%20rendered%20in%20the%20ouput%3A%5Cn%5Cnconst%20imageUrl%20%3D%20%5C%22https%3A//upload.wikimedia.org/wikipedia/commons/e/e5/Gospers_glider_gun.gif%3Futm_source%3Den.wikipedia.org%26utm_campaign%3Dimageinfo%26utm_content%3Dthumbnail_unscaled%5C%22%3B%5Cn%5Cnconst%20htmlSnippet%20%3D%A0%60%3Cimg%20src%3D%5C%22%24%7BimageUrl%7D%5C%22%3E%60%3B%5Cn%5Cn%5Cnconsole.log%28htmlSnippet%29%3B%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Technical%20Details%22%2C%22textField%22%3A%22Cell%20code%20is%20executed%20in%20a%20%3Ca%20jsname%3D%5C%22UWckNb%5C%22%20class%3D%5C%22zReHs%5C%22%20href%3D%5C%22https%3A//en.wikipedia.org/wiki/Closure_%28computer_programming%29%5C%22%20data-ved%3D%5C%222ahUKEwjopYG5mLGXAxUSSPEDHTGZGDMQFnoECB0QAQ%5C%22%3E%3Ch3%20class%3D%5C%22LC20lb%20MBeuO%20DKV0Md%5C%22%20id%3D%5C%22_DxnLaqjiDJKQxc8PsbLimAM_67%5C%22%20style%3D%5C%22display%3A%20inline%20%21important%3B%5C%22%3E%3Cspan%20style%3D%5C%22font-weight%3A%20normal%3B%5C%22%3Eclosure%3C/span%3E%3C/h3%3E%3C/a%3E%2C%20this%20means%20that%20variables%20created%20in%20the%20cell%20are%20not%20available%20to%20other%20cells.%20For%20this%20purpose%20the%20%5C%22global%5C%22%20object%20is%20available%20to%20each%20cell.%20So%20too%20is%20the%20document%20and%20all%20variables%20of%20outer%20closures%2C%20global%20is%20used%20exclusively%20as%20inter-cell%20storage%20though%20variables%20stored%20in%20global%20are%20runtime%20dependent.%3Cbr%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22The%20UI%22%2C%22textField%22%3A%22%3Cdiv%3EUntil%20tooltips%20are%20added%2C%20consider%20this%20overview%3A%3C/div%3E%3Cdiv%3E%3Cbr%3E%3Cbutton%3E%u274E%u2705%3C/button%3E%26nbsp%3B%20-%20%3Cb%3EFeature-toggles%2C%3C/b%3E%26nbsp%3Bcurrently%20the%20syntax-highlighting%20is%20disabled%20because%20of%20serialization%20issues.%3Cdiv%3E%3Cbr%3E%3C/div%3E%3C/div%3E%3Cbutton%3E%u2795%20%26lt%3B%26gt%3B%3C/button%3E%20-%20%3Cb%3EAdd%20code-cell%3C/b%3E%26nbsp%3B%28below%20the%20button%29%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u2022%u2022%u2022%3C/button%3E%20-%26nbsp%3B%3Cb%3E%26nbsp%3BOptions%3C/b%3E%2C%20those%20at%20the%20top%20of%20the%20document%20are%20general%20options%2C%20those%20on%20cell%20are%20cell-specific%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u2795%20T%3C/button%3E%20-%20%3Cb%3EAdd%20text%20cell%20%3C/b%3E%28below%20the%20button%29%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cbutton%3E%u23E9%3C/button%3E%20-%20%3Cb%3ERun%20all%20code%20cells%3C/b%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22text-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22About%20JSaturn%22%2C%22textField%22%3A%22JSaturn%20in%20it%27s%20core%20is%20a%20JavaScript%20console%20interface.%20There%20are%20two%20types%20of%20cells%20/%20blocks%2C%20text-cells%20like%20this%20one%2C%20and%20Code%20cells.%26nbsp%3B%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cu%3EText-cells%26nbsp%3B%3C/u%3Econtain%20rendered%20HTML%20via%20the%20three%20dots%20you%20can%20access%20the%20options%20for%20a%20cell%2C%20such%20as%20appending%20html%20code%20from%20Clipboard.%20This%20way%20i%20can%20put%20the%20Youtube%20embed%20of%20some%20jolly%20Video%20directly%20into%20the%20text%20cell%3A%3Cdiv%3E%3Cbr%3E%3C/div%3E%3C/div%3E%3Cbr%3E%3Ciframe%20width%3D%5C%22280%5C%22%20height%3D%5C%22157%5C%22%20src%3D%5C%22https%3A//www.youtube-nocookie.com/embed/r6Rp-uo6HmI%3Fsi%3DCl0aZfaIOtpSPCX3%5C%22%20title%3D%5C%22YouTube%20video%20player%5C%22%20frameborder%3D%5C%220%5C%22%20allow%3D%5C%22accelerometer%3B%20autoplay%3B%20clipboard-write%3B%20encrypted-media%3B%20gyroscope%3B%20picture-in-picture%3B%20web-share%5C%22%20referrerpolicy%3D%5C%22strict-origin-when-cross-origin%5C%22%20allowfullscreen%3D%5C%22%5C%22%3E%3C/iframe%3E%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cbr%3E%3C/div%3E%3Cdiv%3E%3Cdiv%3EThe%20great%20thing%20is%20that%20%3Cb%3Eall%20types%20of%20exports%20and%20imports%20support%20HTML%20content%20in%20cells%3C/b%3E.%20You%20can%20also%20use%20default%20browser%20keybinds%20such%20as%3A%20%3Cb%3ECtrl%20+%20B%2C%20%3C/b%3E%3Ci%3ECtrl%20+%20I%2C%20%3C/i%3E%3Cu%3ECtrl%20+%20U%3C/u%3E%3C/div%3E%3Cdiv%3E%3Cu%3E%3Cbr%3E%3C/u%3E%3C/div%3E%3Cdiv%3E%3Cbr%3E%3Cu%3ECode-cells%3C/u%3E%20%28those%20with%20a%20play-button%29%20can%20execute%20JavaScript%20Code.%20The%20three%20dots%20above%20this%20cell%20are%20the%20options%20for%20the%20entire%20document.%20This%20includes%20for%20example%20the%20option%20to%20generate%20a%20markdown%20file%20representing%20the%20current%20state%20of%20the%20cells%20-%20including%20the%20current%20output%20of%20code%20cells.%26nbsp%3B%3C/div%3E%3C/div%3E%22%7D%7D%2C%7B%22persistenceKey%22%3A%22code-cell%22%2C%22data%22%3A%7B%22cellName%22%3A%22Hello%20World%21%20Welcome%20to%20JSaturn%22%2C%22codeField%22%3A%22const%20username%20%3D%20%5C%22Jane%20Doe%5C%22%3B%20//%20Replace%20Jane%20Doe%20with%20your%20name%20to%20run%20your%20first%20Code%20%3AD%5Cn%5Cn%5Cn//%20Personalization%5CnsetUserName%28username%29%3B%5Cn%5Cn%5Cnconsole.log%28%5C%22Nice%20to%20meet%20You%2C%20%5C%22%20+%20username%29%3B%22%7D%7D%5D%7D%7D%5D%7D%7D%7D%7D'
+                    JSaturnIO.unescapeAndDeserialize(demoData);
             }
         }
     </script>
 
     <body>
         <h1>> JSaturn</h1>
-        <div class="cell">
-            <div id="root-container" class="root-container">
+        <div id="root-container" class="root-container" data-datatype="RootData">
+            <div class="cell">
                 <div id="header">
                     <div id="root-container-bar-container" class="control-bar-container">
                         <div id="root-container-top-bar-left" class="control-bar-left">
@@ -1333,8 +1297,8 @@
                             </div>
                         </div>
                         <div id="root-container-top-bar-center" class="control-bar-center">
-                            <button class="add-cell-below-button"
-                                    onclick="document.querySelector('#cell-container').append(JSaturnBuilders.createCodeCell())">
+                            <button class="add-code-cell-below-button"
+                                    onclick="document.querySelector('#cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData))">
                                 ➕ <>
                             </button>
                             <button onclick="togglePopUp('options-popup')">•••</button>
@@ -1367,8 +1331,8 @@
                                     demo cells
                                 </button>
                             </div>
-                            <button class="add-text-below-button"
-                                    onclick="document.querySelector('#cell-container').append(JSaturnBuilders.createTextCell())">
+                            <button class="add-text-cell-below-button"
+                                    onclick="document.getElementById('cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData))">
                                 ➕ T
                             </button>
                         </div>
@@ -1377,12 +1341,13 @@
                         </div>
                     </div>
                 </div>
-                <div id="cell-container" class="cell-container"></div>
-                <!--                    TODO add bottom data like last saved-->
+                <div id="cell-container" class="cell-container" data-datatype="BookData"></div>
             </div>
-            <script>
-                JSaturnRoot.init();
-            </script>
         </div>
+        <div id="bottom-info" class="bottom-info"></div>
+        <script>
+            JSaturnRoot.init();
+        </script>
     </body>
+
 </html>
