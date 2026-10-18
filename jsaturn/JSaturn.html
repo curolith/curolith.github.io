@@ -450,7 +450,8 @@
                     timeHandlers: {
                         lastSaveText: null,
                         triggerAutoSave: null
-                    }
+                    },
+                    openPopUps: [],
                 },
                 visible: {
                     bookData: JSaturnDataModel.BookData,
@@ -561,7 +562,7 @@
                                 const popupContent = JSaturnBuilders.createDiv('popup-content', JSaturnDataEngine.newKey());
                                 controlBar.append(
                                     JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell),
-                                    JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param), '•••', popupContent.id),
+                                    JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id),
                                     popupContent,
                                     JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell)
                                 )
@@ -687,21 +688,7 @@
             }
 
             static runAll() {
-                const arr = [];
-                const iter = document.createNodeIterator(document, NodeFilter.SHOW_ELEMENT, node => {
-                    const val = node?.dataset?.datatype ? 1 : 3;
-                    console.log(String(node.id) + String(val));
-                    return val
-                });
-                let node = iter.nextNode();
-                while (node) {
-                    arr.push(node);
-                    node = iter.nextNode()
-                }
-                console.log(arr);
-
-                ///////////
-                document.querySelectorAll(".cell").forEach(cell => {
+                document.querySelectorAll(".code-cell").forEach(cell => {
                     JSaturnCodeCellUtility.runCell(cell);
                 });
             }
@@ -813,9 +800,17 @@
                     }
                 });
                 document.addEventListener("click", (e) => {
+                    if (JSaturnRoot.runtimeData.openPopUps.length > 0) {
+                        const entry = JSaturnRoot.runtimeData.openPopUps[0];
+                        if (e.target === entry.toggleButton || e.target === entry.popup || e.target.parentElement === entry.popup) {
+                            return;
+                        }
+                        entry.popup.classList.toggle("show");
+                        // Should never be more than 1
+                        JSaturnRoot.runtimeData.openPopUps.pop();
+                    }
                     JSaturnStorage.offerAutoSave();
                 });
-
             }
 
             static triggerBreakPoint() {
@@ -1367,9 +1362,14 @@
             }
         }
 
-        function togglePopUp(id) {
+        function togglePopUp(id, button) {
             let popup = document.querySelector(`#${id}`);
-            popup.classList.toggle("show");
+            if (popup.classList.toggle("show")) {
+                JSaturnRoot.runtimeData.openPopUps.push({
+                    popup: popup,
+                    toggleButton: button
+                });
+            };
         }
 
         class JSaturnSnippetUtility {
@@ -1387,7 +1387,7 @@
                 <div id="header">
                     <div id="root-container-bar-container" class="control-bar-container">
                         <div id="root-container-top-bar-left" class="control-bar-left">
-                            <button onclick="togglePopUp('feature-popup')">❎✅</button>
+                            <button onclick="togglePopUp('feature-popup', this)">❎✅</button>
                             <div class="popup-content" id="feature-popup">
                                 <button id="auto-save-toggle" class="feature-toggle" data-feature="autoSave"
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On
@@ -1405,7 +1405,7 @@
                                     onclick="document.querySelector('#cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData))">
                                 ➕ <>
                             </button>
-                            <button onclick="togglePopUp('options-popup')">•••</button>
+                            <button onclick="togglePopUp('options-popup', this)">•••</button>
                             <div class="popup-content" id="options-popup">
                                 <button id="save" onclick="JSaturnStorage.saveState()">💾 Manual save</button>
                                 <button id="export-state-to-clipboard-button"
