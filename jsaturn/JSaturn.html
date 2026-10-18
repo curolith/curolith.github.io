@@ -368,7 +368,7 @@
                 padding: var(--padding-smaller);
                 text-align: justify;
                 transition: ease-in 0.15s;
-                var(--shadow-dark-small);
+            var(--shadow-dark-small);
                 text-wrap: wrap;
                 outline: none;
                 width: fit-content;
@@ -480,6 +480,7 @@
             static TextCellData = Object.freeze({
                 dataset: {
                     datatype: "TextCellData",
+                    mode: "editMode",
                 },
                 visible: {
                     htmlContent: "",
@@ -621,19 +622,6 @@
                 });
             }
 
-            // static createElement(tag, className) {
-            //     return JSaturnUiPrototypes.applicable(document.createElement(tag))
-            //         .apply(element => {
-            //             if (className) {
-            //                 element.className = className;
-            //             }
-            //             JSaturnBuilders.ensureId(element);
-            //             document.createNodeIterator()
-            //             element.dataset
-            //         });
-            // }
-
-
             static createTextCell(data) {
                 return JSaturnBuilders.createCell("cell text-cell", data.cellName).apply(cell => {
                     // cell['persistenceKey'] = 'text-cell';
@@ -649,7 +637,17 @@
                             "📋 Paste HTML from clipboard",
                             cell
                         )
+                    );
+                    cell.querySelector('#top-control-bar-right').append(
+                        JSaturnBuilders.createButton('raw-html-mode-button', (button) => JSaturnTextCellUtility.modeSetters.rawHtmlMode(button.param), "< T >", cell, "Set raw-html-mode")
                     )
+                    cell.querySelector('#top-control-bar-right').append(
+                        JSaturnBuilders.createButton('edit-mode-button', (button) => JSaturnTextCellUtility.modeSetters.editMode(button.param), '✏️', cell, "Set edit-mode")
+                    )
+                    cell.querySelector('#top-control-bar-right').append(
+                        JSaturnBuilders.createButton('view-mode-button', (button) => JSaturnTextCellUtility.modeSetters.viewMode(button.param), '👁️', cell, "Set view-mode")
+                    )
+                    JSaturnTextCellUtility.restoreMode(cell);
                 });
             }
 
@@ -719,6 +717,59 @@
                 console = consoleBox;
                 cell.querySelector('#code-output-box').setOutput(resultStrings.join("<br>"));
                 JSaturnCodeCellUtility.highlightCell(cell);
+            }
+        }
+
+        class JSaturnTextCellUtility {
+            static modes = {
+                viewMode: "viewMode",
+                editMode: "editMode",
+                rawHtmlMode: "rawHtmlMode",
+            }
+
+            static restoreMode(cell) {
+                const mode = cell.dataset.mode || JSaturnTextCellUtility.modes.editMode;
+                JSaturnTextCellUtility.modeSetters[mode]?.(cell);
+            }
+
+            static convertRawHtmlToHtml(textField) {
+                textField.innerHTML = textField.innerText;
+            }
+
+            static convertHtmlToRawHtml(textField) {
+                textField.innerText = textField.innerHTML
+            }
+
+            static modeSetters = {
+                viewMode: (cell) => {
+                    const textField = cell.querySelector("#text-field");
+                    const currentMode = cell.dataset.mode || JSaturnTextCellUtility.modes.editMode;
+                    if (currentMode === JSaturnTextCellUtility.modes.rawHtmlMode) {
+                        JSaturnTextCellUtility.convertRawHtmlToHtml(textField);
+                    }
+                    textField.contentEditable = false;
+                    cell.dataset.mode = JSaturnTextCellUtility.modes.viewMode;
+                },
+
+                editMode: (cell) => {
+                    const textField = cell.querySelector("#text-field");
+                    const currentMode = cell.dataset.mode || JSaturnTextCellUtility.modes.editMode;
+                    if (currentMode === JSaturnTextCellUtility.modes.rawHtmlMode) {
+                        JSaturnTextCellUtility.convertRawHtmlToHtml(textField);
+                    }
+                    textField.contentEditable = true;
+                    cell.dataset.mode = JSaturnTextCellUtility.modes.editMode;
+                },
+
+                rawHtmlMode: (cell) => {
+                    const textField = cell.querySelector("#text-field");
+                    const currentMode = cell.dataset.mode || JSaturnTextCellUtility.modes.editMode;
+                    if (currentMode !== JSaturnTextCellUtility.modes.rawHtmlMode) {
+                        JSaturnTextCellUtility.convertHtmlToRawHtml(textField);
+                    }
+                    textField.contentEditable = true;
+                    cell.dataset.mode = JSaturnTextCellUtility.modes.rawHtmlMode;
+                }
             }
         }
 
@@ -1143,7 +1194,7 @@
                         }
                     },
                     htmlToMarkdown: (htmlElement) => {
-                        const output  = htmlElement.querySelector('#code-output-field')?.innerHTML;
+                        const output = htmlElement.querySelector('#code-output-field')?.innerHTML;
                         return `## ${
                             htmlElement.querySelector('#cell-name')?.innerHTML
                         }\n\n\`\`\`javascript\n${
@@ -1234,6 +1285,9 @@
                     '8ae76dbf-fd43-4ffd-84f1-a4a40619d440',
                     persistenceData
                 ));
+                if (JSaturnMonitor.offerEvent("8fd2224b-b70d-41ed-ba56-014c1af5cbc1", 1, 0).accepted) {
+                    JSaturnIO.exportStateToFile();
+                }
                 return {};
             }
 
@@ -1369,6 +1423,14 @@
                     value: localStorage.getItem(key)
                 })).toArray();
             }
+
+            static dumpStorageToFile() {
+                JSaturnIO.downloadFile(
+                    JSON.stringify(JSaturnStorage.getStorageDump()),
+                    "JSaturn-export_" + JSaturnIO.getFileDateTimeString(),
+                    "json"
+                )
+            }
         }
 
         function togglePopUp(id, button) {
@@ -1378,7 +1440,8 @@
                     popup: popup,
                     toggleButton: button
                 });
-            };
+            }
+            ;
         }
 
         class JSaturnSnippetUtility {
@@ -1396,7 +1459,8 @@
                 <div id="header">
                     <div id="root-container-bar-container" class="control-bar-container">
                         <div id="root-container-top-bar-left" class="control-bar-left">
-                            <button onclick="togglePopUp('feature-popup', this)" title="Show feature toggles">❎✅</button>
+                            <button onclick="togglePopUp('feature-popup', this)" title="Show feature toggles">❎✅
+                            </button>
                             <div class="popup-content" id="feature-popup">
                                 <button id="auto-save-toggle" class="feature-toggle" data-feature="autoSave"
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On
@@ -1415,7 +1479,8 @@
                                     onclick="document.querySelector('#cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData))">
                                 ➕ <>
                             </button>
-                            <button onclick="togglePopUp('options-popup', this)" title="Show general options">•••</button>
+                            <button onclick="togglePopUp('options-popup', this)" title="Show general options">•••
+                            </button>
                             <div class="popup-content" id="options-popup">
                                 <button id="save" onclick="JSaturnStorage.saveState()">💾 Manual save</button>
                                 <button id="export-state-to-clipboard-button"
@@ -1452,7 +1517,8 @@
                             </button>
                         </div>
                         <div id="root-container-top-bar-right" class="control-bar-right">
-                            <button id="run-all" title="Execute all cells" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
+                            <button id="run-all" title="Execute all cells" onclick="JSaturnCodeCellUtility.runAll()">⏩
+                            </button>
                         </div>
                     </div>
                 </div>
