@@ -399,6 +399,11 @@
                 transition: ease-in 0.25s;
             }
 
+            .bottom-bar {
+                margin-top: var(--padding-medium);
+                z-index: 0;
+            }
+
         </style>
     </head>
 
@@ -508,7 +513,6 @@
             }
 
             static ensureId(element) {
-                console.log("dlskfjödlskjfaöl")
                 const chars = "abcdefghijklmnopqrstuvwxyz";
                 element.id = element.id || (element.className || element.tagName).split(" ").findLast(Boolean) + "-" + "_".repeat(8).split("").map(c => chars[Math.floor((Math.random() * 26))]).join('');
             }
@@ -550,7 +554,7 @@
                                 controlBar.append(JSaturnBuilders.createNameField(cellName))
                             }),
                             JSaturnBuilders.createDiv('control-bar-center', 'top-control-bar-center'),
-                            JSaturnBuilders.createDiv('control-bar-right',  'top-control-bar-right')
+                            JSaturnBuilders.createDiv('control-bar-right', 'top-control-bar-right')
                         )
                     }),
                     JSaturnBuilders.createDiv("cell-content", "cell-content"),
@@ -598,7 +602,7 @@
                     cell.querySelector('#top-control-bar-right').append(
                         JSaturnBuilders.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
                     )
-                    if (JSaturnFeatures.get('syntax-highlighting')) {
+                    if (JSaturnFeatures.get("syntaxHighlighting")) {
                         JSaturnCodeCellUtility.highlightCell(cell);
                     }
                 })
@@ -662,7 +666,7 @@
             static highlightCell(cell) {
                 // TODO [feature] @curolith highlighting disabled until functional
                 return;
-                if (!JSaturnFeatures.get("syntax-highlighting")) {
+                if (!JSaturnFeatures.get("syntaxHighlighting")) {
                     return;
                 }
                 const codeField = cell.querySelector('#code-field');
@@ -774,6 +778,8 @@
 
                 document.body.innerHTML = errorPageContent;
 
+                JSaturnRoot.stopRunners();
+
                 throw new Error(Log(
                     "Aborting execution...",
                     "f77bac2f-20c1-4435-aa91-e591cb85698a",
@@ -823,6 +829,10 @@
             static removeAll() {
                 document.getElementById('cell-container').innerHTML = "";
             }
+
+            static stopRunners() {
+                Object.values(JSaturnRoot.runtimeData?.timeHandlers ?? {}).forEach(window.clearInterval);
+            }
         }
 
         function setUserName(s) {
@@ -831,7 +841,7 @@
 
         class JSaturnFeatures {
             static featureChangeHandlers = {
-                'syntax-highlighting': (newState, oldState) => {
+                syntaxHighlighting: (newState, oldState) => {
                     // TODO [feature] @curolith Highlighting disabled until functional
                     if (newState) {
                         // document.querySelectorAll('.cell').forEach(cell => JSaturnCodeCellUtility.highlightCell(cell));
@@ -841,7 +851,7 @@
                         }
                     }
                 },
-                'auto-save': (newState, oldState) => {
+                autoSave: (newState, oldState) => {
                     JSaturnStorage.saveState();
                     if (newState) {
                         window.clearInterval(JSaturnRoot.runtimeData.timeHandlers.triggerAutoSave);
@@ -858,7 +868,7 @@
             }
 
             static handleFeatureToggle(toggleButton) {
-                const feature = toggleButton.id?.replace(/feature-toggle-/, "");
+                const feature = toggleButton.dataset?.feature;
                 const newState = JSaturnFeatures.toggle(feature);
                 JSaturnFeatures.updateFeatureToggleText(feature, newState, toggleButton);
             }
@@ -893,7 +903,9 @@
             }
 
             static toggle(feature) {
-                return JSaturnFeatures.set(feature, !JSaturnFeatures.get(feature));
+                const newVal = !JSaturnFeatures.get(feature);
+                JSaturnFeatures.set(feature, newVal);
+                return newVal;
             }
 
             static updateFeatureToggleText(feature, newState, toggleButton) {
@@ -1038,8 +1050,8 @@
                         JSaturnDataEngine.deserialize(data.visible.bookData);
 
                         JSaturnFeatures.restoreFeatureToggles();
-                        if (JSaturnFeatures.get('syntax-highlighting')) {
-                            JSaturnFeatures.toggle('sytax-highlighting');
+                        if (JSaturnFeatures.get("syntaxHighlighting")) {
+                            JSaturnFeatures.toggle("syntaxHighlighting");
                         }
                         const rootContainer = document.getElementById('root-container');
                         return rootContainer;
@@ -1240,7 +1252,8 @@
             static handleOutdatedModelData(data) {
                 if (!JSaturnMonitor.offerEvent("a1e77e4d-a173-4b85-9eef-65e2e5535096", 1, 0).accepted) {
                     JSaturnMonitor.abortExecution("JSaturn could not recover to a healthy state.")
-                };
+                }
+                ;
                 console.warn(Log(
                     "Stored data was created with outdated model. Downloading backup...",
                     '922be13a-af1d-4c7c-8a47-e124ec9225c8',
@@ -1331,17 +1344,17 @@
                     JSON.stringify(JSaturnDataEngine.serializeFromRoot())
                 );
                 const bottomText = document.getElementById('bottom-info')
-                bottomText.innerText = `Last saved now`;
+                bottomText.innerText = `Last saved: Now`;
                 const lastSave = Date.now();
                 JSaturnStorage.store(JSaturnDataModel.StorageKeys.lastSave, lastSave);
                 JSaturnRoot.runtimeData.lastSave = lastSave;
                 window.clearInterval(JSaturnRoot.runtimeData.timeHandlers.lastSaveText)
                 JSaturnRoot.runtimeData.timeHandlers.lastSaveText = window
-                    .setInterval(() => bottomText.innerText = `Last saved ${JSaturnStorage.getLastSavedMessage(lastSave)}`, 10 * 1000);
+                    .setInterval(() => bottomText.innerText = `Last saved: ${JSaturnStorage.getLastSavedMessage(lastSave)}`, 10 * 1000);
             }
 
             static offerAutoSave() {
-                if (!JSaturnFeatures.get('auto-save')) {
+                if (!JSaturnFeatures.get('autoSave')) {
                     return;
                 }
                 if ((Date.now() - (JSaturnRoot.rootDataSet?.runtimeData?.lastSave ?? 0)) < (2 * 1000)) {
@@ -1438,7 +1451,9 @@
                 <div id="cell-container" class="cell-container" data-datatype="BookData"></div>
             </div>
         </div>
-        <div id="bottom-info" class="bottom-info"></div>
+        <div class="cell bottom-bar">
+            <div id="bottom-info" class="bottom-info"></div>
+        </div>
         <script>
             JSaturnRoot.init();
         </script>
