@@ -470,6 +470,7 @@
                         triggerAutoSave: null
                     },
                     openPopUps: [],
+                    ignoreIssues: false
                 },
                 visible: {
                     bookData: JSaturnDataModel.BookData,
@@ -566,56 +567,57 @@
 
             static createCell(customClass, cellName, dataset) {
                 return JSaturnBuilders.createDiv(customClass ?? "cell").withDataset(dataset).apply(cell => {
-                    const nameField =                    JSaturnBuilders.createNameField(cellName)
+                    const nameField = JSaturnBuilders.createNameField(cellName)
                     cell.append(
-                    JSaturnBuilders.createDiv("control-bar-container-cell-top").apply(cellControls => {
-                        cellControls.append(
-                            JSaturnBuilders.createDiv('control-bar-left', 'top-control-bar-left').apply(controlBarLeft => {
-                                controlBarLeft.append(
-                                    JSaturnBuilders.createButton('delete-cell-button', (button) => {
-                                        button.param.remove();
-                                    }, `❌`, cell, "Delete this cell"),
-                                );
-                                if(!JSaturnBuilders.isMobile()) {
-                                    controlBarLeft.append(nameField);
-                                }
-                            }),
-                            JSaturnBuilders.createDiv('control-bar-right', 'top-control-bar-right')
-                        )
-                    }))
+                        JSaturnBuilders.createDiv("control-bar-container-cell-top").apply(cellControls => {
+                            cellControls.append(
+                                JSaturnBuilders.createDiv('control-bar-left', 'top-control-bar-left').apply(controlBarLeft => {
+                                    controlBarLeft.append(
+                                        JSaturnBuilders.createButton('delete-cell-button', (button) => {
+                                            button.param.remove();
+                                        }, `❌`, cell, "Delete this cell"),
+                                    );
+                                    if (!JSaturnBuilders.isMobile()) {
+                                        controlBarLeft.append(nameField);
+                                    }
+                                }),
+                                JSaturnBuilders.createDiv('control-bar-right', 'top-control-bar-right')
+                            )
+                        }))
                     if (JSaturnBuilders.isMobile()) {
                         cell.append(nameField);
                     }
                     cell.append(JSaturnBuilders.createDiv("cell-content", "cell-content"),
-                    JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
-                        cellControls.append(
-                            JSaturnBuilders.createDiv('control-bar-left', 'bottom-control-bar-left'),
-                            JSaturnBuilders.createDiv("control-bar-center", 'bottom-control-bar-center').apply(controlBar => {
-                                const popupContent = JSaturnBuilders.createDiv('popup-content', JSaturnDataEngine.newKey());
-                                popupContent.append(
-                                    JSaturnBuilders.createButton("copy-cell-button",
-                                        (button) => JSaturnIO.copyCellToClipboard(button.param),
-                                        "📤📋 Copy cell", cell, ""),
-                                    JSaturnBuilders.createButton("paste-below-button", (button) => {
-                                        window.navigator.clipboard.readText().then(value => button.param.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
-                                    }, "📋📥 Paste below", cell, ""),
-                                    JSaturnBuilders.createButton("duplicate-cell-button", (button) => {
-                                        const newCell = JSaturnDataEngine.serialize(button.param)
-                                        newCell.key = JSaturnDataEngine.newKey();
-                                        button.param.before(JSaturnDataEngine.deserialize(newCell))
-                                    }, "⊟ Duplicate cell", cell, "")
-                                )
-                                controlBar.append(
-                                    JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell, "Add code-cell below"),
-                                    JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id, "Show options for this cell"),
-                                    popupContent,
-                                    JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell, "Add text-cell below")
-                                )
-                            }),
-                            JSaturnBuilders.createDiv('control-bar-right', 'bottom-control-bar-right')
-                        )
-                    })
-                );});
+                        JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
+                            cellControls.append(
+                                JSaturnBuilders.createDiv('control-bar-left', 'bottom-control-bar-left'),
+                                JSaturnBuilders.createDiv("control-bar-center", 'bottom-control-bar-center').apply(controlBar => {
+                                    const popupContent = JSaturnBuilders.createDiv('popup-content', JSaturnDataEngine.newKey());
+                                    popupContent.append(
+                                        JSaturnBuilders.createButton("copy-cell-button",
+                                            (button) => JSaturnIO.copyCellToClipboard(button.param),
+                                            "📤📋 Copy cell", cell, ""),
+                                        JSaturnBuilders.createButton("paste-below-button", (button) => {
+                                            window.navigator.clipboard.readText().then(value => button.param.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
+                                        }, "📋📥 Paste below", cell, ""),
+                                        JSaturnBuilders.createButton("duplicate-cell-button", (button) => {
+                                            const newCell = JSaturnDataEngine.serialize(button.param)
+                                            newCell.key = JSaturnDataEngine.newKey();
+                                            button.param.before(JSaturnDataEngine.deserialize(newCell))
+                                        }, "⊟ Duplicate cell", cell, "")
+                                    )
+                                    controlBar.append(
+                                        JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell, "Add code-cell below"),
+                                        JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id, "Show options for this cell"),
+                                        popupContent,
+                                        JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell, "Add text-cell below")
+                                    )
+                                }),
+                                JSaturnBuilders.createDiv('control-bar-right', 'bottom-control-bar-right')
+                            )
+                        })
+                    );
+                });
             }
 
             static createCodeCell(data, dataset) {
@@ -826,6 +828,10 @@
         }
 
         class JSaturnMonitor {
+            static basicEvents = {
+                automaticStorageDump: ["automaticStorageDump", 5, 60000]
+            }
+
             static eventRecords = {}
 
             static offerEvent(id, maxCount, coolDown) {
@@ -1077,7 +1083,14 @@
             }
 
             static importCellsFromClipboard() {
-                window.navigator.clipboard.readText().then(value => JSaturnDataEngine.deserialize(JSON.parse(unescape(value))));
+                window.navigator.clipboard.readText().then(value => {
+                    if (value) {
+                        const before = JSaturnRoot.runtimeData.ignoreIssues;
+                        JSaturnRoot.runtimeData.ignoreIssues = true;
+                        JSaturnDataEngine.deserialize(JSON.parse(unescape(value)));
+                        JSaturnRoot.runtimeData.ignoreIssues = before;
+                    }
+                });
             }
 
             static copyCellToClipboard(cell) {
@@ -1088,11 +1101,19 @@
 
             static pasteCellBelow(cell) {
                 if (!cell) {
-                    window.navigator.clipboard.readText().then(value =>
-                        document.querySelector("#cell-container").append(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
+                    window.navigator.clipboard.readText().then(value => {
+                        const before = JSaturnRoot.runtimeData.ignoreIssues;
+                        JSaturnRoot.runtimeData.ignoreIssues = true;
+                        document.querySelector("#cell-container").append(JSaturnDataEngine.deserialize(JSON.parse(unescape(value))));
+                        JSaturnRoot.runtimeData.ignoreIssues = before;
+                    })
                 }
-                window.navigator.clipboard.readText().then(value =>
-                    cell.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
+                window.navigator.clipboard.readText().then(value => {
+                    const before = JSaturnRoot.runtimeData.ignoreIssues;
+                    JSaturnRoot.runtimeData.ignoreIssues = true;
+                    cell.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value))));
+                    JSaturnRoot.runtimeData.ignoreIssues = before;
+                });
             }
         }
 
@@ -1323,6 +1344,10 @@
 
             static transformData(data, transformation) {
                 const transformer = JSaturnDataEngine.getTransformer(data);
+                if (!transformer) {
+                    console.error(Log(`No transformer found for data`, "56e600ec-a00d-494c-babd-c6dfdeba2a19", data));
+                    return null;
+                }
                 return transformer[transformation]?.(data);
             }
 
@@ -1349,14 +1374,15 @@
                     return element;
                 }
                 console.error(Log(
-                    'Deserialization failed. Dumping and initilializing empty.',
+                    'Transformation did not return any output.',
                     '8ae76dbf-fd43-4ffd-84f1-a4a40619d440',
                     persistenceData
                 ));
-                if (JSaturnMonitor.offerEvent("8fd2224b-b70d-41ed-ba56-014c1af5cbc1", 1, 0).accepted) {
-                    JSaturnIO.exportStateToFile();
+                if (!JSaturnRoot.runtimeData.ignoreIssues && JSaturnMonitor.offerEvent(...JSaturnMonitor.basicEvents.automaticStorageDump).accepted) {
+                    window.alert("JSaturn could not load all data properly and will now provide a storage dump in case importand data needs to be recovered.")
+                    JSaturnStorage.dumpStorageToFile();
                 }
-                return {};
+                return null;
             }
 
             static initElement(model) {
@@ -1381,8 +1407,14 @@
                     '922be13a-af1d-4c7c-8a47-e124ec9225c8',
                     data,
                 ));
-                window.alert("JSaturn detected stored data from an outdated model and will now backup the stored state to a file before attempting recovery.");
-                JSaturnIO.exportStateToFile();
+
+                if (!JSaturnRoot.runtimeData.ignoreIssues) {
+                    window.alert("JSaturn detected data from an outdated model.");
+                }
+                if (!JSaturnRoot.runtimeData.ignoreIssues && JSaturnMonitor.offerEvent(...JSaturnMonitor.basicEvents.automaticStorageDump)) {
+                    window.alert("JSaturn will now backup the stored state to a file before attempting recovery.");
+                    JSaturnStorage.dumpStorageToFile();
+                }
                 data.dataset.dataModelVersion = JSaturnDataModel.RootData.dataset.dataModelVersion;
                 return data;
             }
