@@ -166,6 +166,7 @@
                 transition: .3s linear;
                 transition: all .2s ease-out;
                 animation: all .2s ease;
+                overflow-wrap: anywhere;
             }
 
             .control-bar-container-tri-column {
@@ -344,6 +345,7 @@
                 display: flex;
                 flex-direction: column-reverse;
                 gap: var(--gap-medium);
+                overflow-wrap: anywhere;
             }
 
             .cell {
@@ -359,8 +361,8 @@
                 padding: 1rem;
                 transition: all .1s ease-out;
                 visibility: visible;
-
                 position: relative;
+                overflow-wrap: anywhere;
             }
 
             .code-cell {
@@ -387,6 +389,7 @@
                 text-wrap: wrap;
                 outline: none;
                 width: fit-content;
+                overflow-wrap: anywhere;
             }
 
             .cell-name:hover {
@@ -507,6 +510,10 @@
         class JSaturnBuilders {
             static Initializer
 
+            static isMobile() {
+                return window.innerWidth < 600;
+            }
+
             static JSaturnElement(element) {
                 element.initializers = [];
                 element.withProperties = function (properties) {
@@ -558,19 +565,28 @@
             }
 
             static createCell(customClass, cellName, dataset) {
-                return JSaturnBuilders.createDiv(customClass ?? "cell").withDataset(dataset).apply(cell => cell.append(
+                return JSaturnBuilders.createDiv(customClass ?? "cell").withDataset(dataset).apply(cell => {
+                    const nameField =                    JSaturnBuilders.createNameField(cellName)
+                    cell.append(
                     JSaturnBuilders.createDiv("control-bar-container-cell-top").apply(cellControls => {
                         cellControls.append(
-                            JSaturnBuilders.createDiv('control-bar-left', 'top-control-bar-left').apply(controlBar => {
-                                controlBar.append(JSaturnBuilders.createButton('delete-cell-button', (button) => {
-                                    button.param.remove();
-                                }, `❌`, cell, "Delete this cell"));
-                                controlBar.append(JSaturnBuilders.createNameField(cellName))
+                            JSaturnBuilders.createDiv('control-bar-left', 'top-control-bar-left').apply(controlBarLeft => {
+                                controlBarLeft.append(
+                                    JSaturnBuilders.createButton('delete-cell-button', (button) => {
+                                        button.param.remove();
+                                    }, `❌`, cell, "Delete this cell"),
+                                );
+                                if(!JSaturnBuilders.isMobile()) {
+                                    controlBarLeft.append(nameField);
+                                }
                             }),
                             JSaturnBuilders.createDiv('control-bar-right', 'top-control-bar-right')
                         )
-                    }),
-                    JSaturnBuilders.createDiv("cell-content", "cell-content"),
+                    }))
+                    if (JSaturnBuilders.isMobile()) {
+                        cell.append(nameField);
+                    }
+                    cell.append(JSaturnBuilders.createDiv("cell-content", "cell-content"),
                     JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
                             JSaturnBuilders.createDiv('control-bar-left', 'bottom-control-bar-left'),
@@ -599,7 +615,7 @@
                             JSaturnBuilders.createDiv('control-bar-right', 'bottom-control-bar-right')
                         )
                     })
-                ));
+                );});
             }
 
             static createCodeCell(data, dataset) {
@@ -876,6 +892,9 @@
                     }
                     ;
                 });
+                //<div id="status-info" className="status-info"></div>
+                const saveMessagePredecessor = JSaturnBuilders.isMobile() ? document.querySelector("#root-container-bar-container") : document.querySelector("#feature-popup");
+                saveMessagePredecessor.after(JSaturnBuilders.createDiv("status-info", "status-info"))
                 const lastSave = JSaturnStorage.load(JSaturnDataModel.StorageKeys.lastSave);
                 if (lastSave) {
                     JSaturnStorage.restoreState();
@@ -1532,7 +1551,6 @@
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off
                                 </button>
                             </div>
-                            <div id="status-info" class="status-info"></div>
                         </div>
                         <div id="root-container-top-bar-center" class="control-bar-center">
                             <button class="add-code-cell-below-button"
