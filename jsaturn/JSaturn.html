@@ -522,12 +522,13 @@
                 return o;
             }
 
-            static createButton(className, clickAction, innerHTML, param) {
+            static createButton(className, clickAction, innerHTML, param, title) {
                 return JSaturnBuilders.JSaturnElement(document.createElement('button')).apply(button => {
                     button.className = className;
                     button.param = param;
                     button.onclick = () => clickAction(button);
                     button.innerHTML = innerHTML;
+                    button.title = title;
                 });
             }
 
@@ -547,7 +548,7 @@
                             JSaturnBuilders.createDiv('control-bar-left', 'top-control-bar-left').apply(controlBar => {
                                 controlBar.append(JSaturnBuilders.createButton('delete-cell-button', (button) => {
                                     button.param.remove();
-                                }, `❌`, cell));
+                                }, `❌`, cell, "Delete this cell"));
                                 controlBar.append(JSaturnBuilders.createNameField(cellName))
                             }),
                             JSaturnBuilders.createDiv('control-bar-center', 'top-control-bar-center'),
@@ -561,10 +562,10 @@
                             JSaturnBuilders.createDiv("control-bar-center", 'bottom-control-bar-center').apply(controlBar => {
                                 const popupContent = JSaturnBuilders.createDiv('popup-content', JSaturnDataEngine.newKey());
                                 controlBar.append(
-                                    JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell),
-                                    JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id),
+                                    JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell, "Add code-cell below"),
+                                    JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id, "Show options for this cell"),
                                     popupContent,
-                                    JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell)
+                                    JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell, "Add text-cell below")
                                 )
                             }),
                             JSaturnBuilders.createDiv('control-bar-right', 'bottom-control-bar-right')
@@ -597,7 +598,7 @@
                         })
                     )
                     cell.querySelector('#top-control-bar-right').append(
-                        JSaturnBuilders.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell)
+                        JSaturnBuilders.createButton('run-button', (button) => JSaturnCodeCellUtility.runCell(button.param), '▶️', cell, "Execute this cell")
                     )
                     if (JSaturnFeatures.get("syntaxHighlighting")) {
                         JSaturnCodeCellUtility.highlightCell(cell);
@@ -1207,8 +1208,11 @@
                 return JSaturnDataEngine.transformData(data, JSaturnDataEngine.transformers.htmlToData)
             }
 
+            /**
+             * @deprecated possible bug, might not even need this function. avoid usage
+             */
             static ensureDeep(data, proto) {
-                // TODO [bug-logical] @curolith check for possible issue:
+                // TODO [bug-logical] @curolith check for possible issue below, might not even need this function. avoid using
                 //   ensureDeep({a: 3, b: {x: 0}}, {a: 3, b: {x: 0, y: 1}}) == maybe ==> {a: 3, b: {x: 0}} (because b is already present. assign might not be recursive)
                 const newData = Object.assign(data, structuredClone(proto));
                 return newData;
@@ -1389,7 +1393,7 @@
                 <div id="header">
                     <div id="root-container-bar-container" class="control-bar-container">
                         <div id="root-container-top-bar-left" class="control-bar-left">
-                            <button onclick="togglePopUp('feature-popup', this)">❎✅</button>
+                            <button onclick="togglePopUp('feature-popup', this)" title="Show feature toggles">❎✅</button>
                             <div class="popup-content" id="feature-popup">
                                 <button id="auto-save-toggle" class="feature-toggle" data-feature="autoSave"
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Autosave: On
@@ -1404,10 +1408,11 @@
                         </div>
                         <div id="root-container-top-bar-center" class="control-bar-center">
                             <button class="add-code-cell-below-button"
+                                    title="Add code-cell below"
                                     onclick="document.querySelector('#cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData))">
                                 ➕ <>
                             </button>
-                            <button onclick="togglePopUp('options-popup', this)">•••</button>
+                            <button onclick="togglePopUp('options-popup', this)" title="Show general options">•••</button>
                             <div class="popup-content" id="options-popup">
                                 <button id="save" onclick="JSaturnStorage.saveState()">💾 Manual save</button>
                                 <button id="export-state-to-clipboard-button"
@@ -1438,12 +1443,13 @@
                                 </button>
                             </div>
                             <button class="add-text-cell-below-button"
+                                    title="Add text-cell below"
                                     onclick="document.querySelector('#cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData))">
                                 ➕ T
                             </button>
                         </div>
                         <div id="root-container-top-bar-right" class="control-bar-right">
-                            <button id="run-all" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
+                            <button id="run-all" title="Execute all cells" onclick="JSaturnCodeCellUtility.runAll()">⏩</button>
                         </div>
                     </div>
                 </div>
