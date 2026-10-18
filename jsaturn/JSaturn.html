@@ -234,6 +234,30 @@
                 font-weight: bolder;
                 padding: var(--padding-medium);
                 text-shadow: var(--shadow-dark-small);
+                width: max-content;
+                border-radius: var(--border-radius-big);
+            }
+
+            .main-heading {
+                cursor: pointer;
+                transition: ease-in 0.15s;
+            }
+
+            .main-heading:hover {
+                box-shadow: var(--3d-outwards-small);
+                backdrop-filter: var(--filter-textless);
+                /*border-radius: .8rem;*/
+                /*box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large);*/
+                /*var(--shadow-dark-small);*/
+                transition: ease-in 0.15s;
+                /*position: relative;*/
+                scale: 1.05;
+                /*color-adjust: economy;*/
+            }
+
+            .main-heading:active {
+                transition: ease-in 0.15s;
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75)));
             }
 
             .text-field {
@@ -832,11 +856,16 @@
                 automaticStorageDump: ["automaticStorageDump", 5, 60000]
             }
 
+            static generateIssueUrl(title, label, body) {
+                return `https://github.com/curolith/curolith.github.io/issues/new?title=${encodeURIComponent(title)
+                }&labels=${encodeURIComponent(label)
+                }&assignees=curolith&body=${encodeURIComponent(body)}`
+            }
+
             static eventRecords = {}
 
             static offerEvent(id, maxCount, coolDown) {
                 const currenRecord = JSaturnMonitor.eventRecords[id] ?? {count: 0, last: 0}
-
                 const isAccept = (
                     (currenRecord.count < maxCount)
                     && ((Date.now() - currenRecord.last) > coolDown)
@@ -860,11 +889,8 @@
                 } catch (e) {
                     errorData.abortionDataCollectionError = e;
                 }
-                const errorPageContent = `<h1>Something went wrong :(</h1><div class="cell"><div class="text-field">This is most likely due to the early development stage. Feel free to <a href="https://github.com/curolith/curolith.github.io/issues/new?${
-                    "title=Execution+abort+report"
-                    + "&labels=error-report"
-                    + "&assignees=curolith"
-                    + "&body=" + encodeURIComponent("Abort data:\n\n" + JSON.stringify(errorData))
+                const errorPageContent = `<h1>Something went wrong :(</h1><div class="cell"><div class="text-field">This is most likely due to the early development stage. Feel free to <a href="${
+                    JSaturnMonitor.generateIssueUrl("Report: Execution aborted", "error-report", "Abort data:\n\n" + JSON.stringify(errorData))
                 }">submit a rebort on github</a>.<br>Below is a JSON dump that might help to restore lost data.</div>.<br><div class="text-field">${
                     JSON.stringify(errorData)
                 }</div></div>`;
@@ -884,9 +910,13 @@
         }
 
         class JSaturnRoot {
+            static urls = {
+                root: "https://curolith.github.io/jsaturn/JSaturn.html",
+                github: "https://github.com/curolith/curolith.github.io/blob/main/jsaturn/JSaturn.html",
+            }
+
             static rootDataSet = structuredClone(JSaturnDataModel.RootData.dataset);
             static runtimeData = structuredClone(JSaturnDataModel.RootData.runtimeData);
-
 
             static init() {
                 Object.entries(console).forEach(([key, value]) => {
@@ -898,7 +928,6 @@
                     }
                     ;
                 });
-                //<div id="status-info" className="status-info"></div>
                 const saveMessagePredecessor = JSaturnBuilders.isMobile() ? document.querySelector("#root-container-bar-container") : document.querySelector("#feature-popup");
                 saveMessagePredecessor.after(JSaturnBuilders.createDiv("status-info", "status-info"))
                 const lastSave = JSaturnStorage.load(JSaturnDataModel.StorageKeys.lastSave);
@@ -912,6 +941,9 @@
                         JSaturnStorage.offerAutoSave();
                     }
                 });
+                if (window.location.search && window.confirm("This link will load data to JSaturn. Rendering this data allows for code execution. Only proceed if you trust the link-creator.")) {
+                    JSaturnIO.handleQueryLink();
+                }
                 document.addEventListener("click", (e) => {
                     if (JSaturnRoot.runtimeData.openPopUps.length > 0) {
                         while (JSaturnRoot.runtimeData.openPopUps.length > 1) {
@@ -972,7 +1004,7 @@
                 JSaturnFeatures.updateFeatureToggleText(feature, newState, toggleButton);
             }
 
-            static restoreFeatureToggles() {
+            static syncFeatureToggleTexts() {
                 document.querySelectorAll('.feature-toggle').forEach(toggleButton => {
                     const feature = toggleButton.dataset.feature;
                     const configState = JSaturnFeatures.get(feature);
@@ -1111,6 +1143,76 @@
                     JSaturnRoot.runtimeData.ignoreIssues = before;
                 });
             }
+
+            static generateLink(linkData) {
+                window.navigator.clipboard.writeText(encodeURI(`${
+                    JSaturnRoot.urls.root
+                }?${
+                    Object.entries(linkData).map(([key, value]) => `${key}=${escape(JSON.stringify(value))}`).join("&")
+                }`))
+            }
+
+            static parseLinkComponents(queryString) {
+                return Object.fromEntries(new URLSearchParams(queryString)?.entries().map(([key, value]) => [key, JSON.parse(unescape(value))]));
+            }
+
+            static linkTypesVersion = 0.0;
+
+            static linkTypes = {
+                shareCells: {
+                    generate: () => JSaturnIO.generateLink({
+                        queryType: "shareCells",
+                        data: JSaturnDataEngine.serialize(document.querySelector("#cell-container")),
+                        dataModelVersion: JSaturnDataModel.RootData.dataset.dataModelVersion
+                    }),
+                    handle: data => {
+                        const ignoreIssuesBefore = JSaturnRoot.runtimeData.ignoreIssues;
+                        JSaturnRoot.runtimeData.ignoreIssues = true;
+                        JSaturnDataEngine.deserialize(data);
+                        JSaturnRoot.runtimeData.ignoreIssues = ignoreIssuesBefore;
+                    }
+                },
+            }
+
+            static handleQueryLink() {
+                let autoSaveDisabled = false;
+                if (JSaturnFeatures.get("autoSave") && window.confirm("Disable autoSave to avoid overwriting stored data with link contents?")) {
+                    JSaturnFeatures.set("autoSave", false);
+                    autoSaveDisabled = true;
+                }
+                var queryObject = {};
+                try {
+                    queryObject = JSaturnIO.parseLinkComponents(window.location.search);
+                } catch (e) {
+                    console.error(Log(`Query could not be parsed`, "278065d7-8912-43ee-a3fa-37cb91584e36", e))
+                    window.alert("Link improperly formatted, aborting import.");
+                    if (autoSaveDisabled) {
+                        JSaturnFeatures.set("autoSave", true);
+                    }
+                    window.location.href = JSaturnRoot.urls.root;
+                    return;
+                }
+                if (!queryObject.queryType) {
+                    console.error(Log(`Query has no type`, "ba6c798f-4253-4722-8218-ddb39961be7f", queryObject))
+                    window.alert("Link improperly formatted, aborting import.");
+                    if (autoSaveDisabled) {
+                        JSaturnFeatures.set("autoSave", true);
+                    }
+                    window.location.href = JSaturnRoot.urls.root;
+                    return;
+                }
+                if (!JSaturnIO.linkTypes[queryObject.queryType]) {
+                    console.error(Log(`Query type unknown`, "a0bad550-7f88-405f-bdb0-73827695e4c7", queryObject))
+                    window.alert("Link action not supported or outdated, aborting import.");
+                    if (autoSaveDisabled) {
+                        JSaturnFeatures.set("autoSave", true);
+                    }
+                    window.location.href = JSaturnRoot.urls.root;
+                    return;
+                }
+                JSaturnFeatures.syncFeatureToggleTexts();
+                JSaturnIO.linkTypes[queryObject.queryType]?.handle?.(queryObject.data);
+            }
         }
 
         class JSaturnDataEngine {
@@ -1174,7 +1276,7 @@
 
                         JSaturnDataEngine.deserialize(data.visible.bookData);
 
-                        JSaturnFeatures.restoreFeatureToggles();
+                        JSaturnFeatures.syncFeatureToggleTexts();
                         if (JSaturnFeatures.get("syntaxHighlighting")) {
                             JSaturnFeatures.toggle("syntaxHighlighting");
                         }
@@ -1531,7 +1633,7 @@
             static resetApplication() {
                 if (window.confirm("This will erase all data and reset JSaturn. Proceed?")) {
                     localStorage.clear();
-                    window.location.reload();
+                    window.location.reload(true);
                 }
             }
         }
@@ -1570,7 +1672,17 @@
     </script>
 
     <body>
-        <h1>> JSaturn</h1>
+        <h1 id="main-heading" class="main-heading" onclick="togglePopUp('main-heading-popup', this)">> JSaturn</h1>
+        <div class="popup-content" id="main-heading-popup" style="margin-top: 7rem;">
+            <button id="return-to-root-button" onclick="window.location.assign(JSaturnRoot.urls.root)">🏚️ Return to root page
+            </button>
+            <button id="open-on-github-button" onclick="window.open(JSaturnRoot.urls.github)">🌐 Open on GitHub
+            </button>
+            <button id="submit-issue-button" onclick="window.open(JSaturnMonitor.generateIssueUrl('User Issue: ...', 'user-issue', 'Describe your issue, if you are submitting a bug and it is possible, please use the export state to file button and attach it here.'))">❗Submit issue on GitHub
+            </button>
+            <button id="submit-feature-request-button" onclick="window.open(JSaturnMonitor.generateIssueUrl('User Feature Request: ...', 'user-feature-request', 'Please describe your issue. For example: When [what state is JSaturn in before using the feature], then i can use the feature to [what the feature achieves].'))">✨ Submit feature-request on github
+            </button>
+        </div>
         <div id="root-container" class="root-container" data-datatype="RootData">
             <div class="cell">
                 <div id="header">
@@ -1606,6 +1718,10 @@
                                 <button id="import-state-from-clipboard-button"
                                         onclick="JSaturnIO.importCellsFromClipboard()">📋📥 Load cells from clipboard
                                 </button>
+                                <button id="generate-share-link-cells-button"
+                                        onclick="JSaturnIO.linkTypes.shareCells.generate()">🔗 Generate share-link for
+                                    current cells
+                                </button>
                                 <button id="export-state-to-file-button"
                                         onclick="JSaturnIO.exportStateToFile()">📤📂 Export state to file
                                 </button>
@@ -1626,8 +1742,8 @@
                                     demo cells
                                 </button>
                                 <button id="reset-application-button" onclick="JSaturnStorage.resetApplication()">
-                                💀 Reset application
-                            </button>
+                                    💀 Reset application
+                                </button>
                                 <button id="paste-below-button"
                                         onclick="JSaturnIO.pasteCellBelow()">📋📥 Paste below
                                 </button>
