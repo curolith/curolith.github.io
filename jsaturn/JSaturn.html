@@ -562,6 +562,13 @@
                             JSaturnBuilders.createDiv('control-bar-left', 'bottom-control-bar-left'),
                             JSaturnBuilders.createDiv("control-bar-center", 'bottom-control-bar-center').apply(controlBar => {
                                 const popupContent = JSaturnBuilders.createDiv('popup-content', JSaturnDataEngine.newKey());
+                                popupContent.append(
+                                    JSaturnBuilders.createButton("duplicate-cell-button", (button) => {
+                                        const newCell = JSaturnDataEngine.serialize(button.param)
+                                        newCell.key = JSaturnDataEngine.newKey();
+                                        button.param.before(JSaturnDataEngine.deserialize(newCell))
+                                    }, "⊟ Duplicate cell", cell, "")
+                                )
                                 controlBar.append(
                                     JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell, "Add code-cell below"),
                                     JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id, "Show options for this cell"),
@@ -628,15 +635,6 @@
                     cell.querySelector('#cell-content')
                         .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = data.htmlContent ?? ""));
                     cell.querySelector('.popup-content').append(
-                        JSaturnBuilders.createButton(
-                            "button",
-                            (button) => window.navigator.clipboard.readText().then((text) => {
-                                const textField = button.param.querySelector('#text-field');
-                                textField.innerHTML = textField.innerHTML + text;
-                            }),
-                            "📋 Paste HTML from clipboard",
-                            cell
-                        )
                     );
                     cell.querySelector('#top-control-bar-right').append(
                         JSaturnBuilders.createButton('raw-html-mode-button', (button) => JSaturnTextCellUtility.modeSetters.rawHtmlMode(button.param), "< T >", cell, "Set raw-html-mode")
@@ -1444,6 +1442,8 @@
                     popup: popup,
                     toggleButton: button
                 });
+            } else {
+                JSaturnRoot.runtimeData.openPopUps.pop();
             }
             ;
         }
