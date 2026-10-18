@@ -167,6 +167,7 @@
 
             .control-bar-container {
                 column-count: 3;
+                grid-template-columns: 1fr 1fr 1fr;
                 display: grid;
                 gap: 0;
             }
@@ -208,6 +209,11 @@
                 flex: contain;
                 column-span: none;
 
+            }
+
+            .status-info {
+                align-self: center;
+                color: var(--color-neutral-p75);
             }
 
             h1 {
@@ -353,25 +359,19 @@
                 align-self: center;
                 border-radius: var(--border-radius-small);
                 border: none;
-                /*box-shadow: var(--3d-outwards-small);*/
-                color: var(--color-text-normal);
-                /*cursor: pointer;*/
+                color: var(--color-primary-p87-5);
                 display: flex;
-                /*font-family: monospace;*/
                 font-family: Consolas, "Courier New", monospace;;
                 font-size: large;
                 justify-content: left;
                 margin: 0;
-                /*padding: 0;*/
                 padding: var(--padding-smaller);
                 text-align: justify;
-                /*text-shadow: var(--shadow-dark-small);*/
                 transition: ease-in 0.15s;
-            var(--shadow-dark-small);
+                var(--shadow-dark-small);
                 text-wrap: wrap;
                 outline: none;
                 width: fit-content;
-                /*width: stretch;*/
             }
 
             .cell-name:hover {
@@ -381,7 +381,7 @@
                 /*var(--shadow-dark-small);*/
                 transition: ease-in 0.15s;
                 /*position: relative;*/
-                scale: 1.1;
+                scale: 1.05;
                 /*color-adjust: economy;*/
             }
 
@@ -391,17 +391,13 @@
                 var(--shadow-dark-small);
                 transition: ease-in 0.15s;
                 /*position: relative;*/
-                scale: 1.2;
-                /*background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-secondary-p75)));*/
-                background-color: var(--color-secondary-p50);;
-                scale: 1.2;
+                background-color: color-mix(var(--color-transparency), color-mix(var(--color-secondary-p50), var(--color-secondary-p50)));
+                /*background-color: color-mix(var(--color-transparency), var(--color-secondary-p37-5));*/
+                /*background-color: var(--color-secondary-p50);;*/
+                scale: 1.1;
                 box-shadow: var(--3d-outwards-small), var(--shadow-dark-large);
                 transition: ease-in 0.25s;
-            }
-
-            .bottom-bar {
-                margin-top: var(--padding-medium);
-                z-index: 0;
+                color: var(--color-front)
             }
 
         </style>
@@ -827,7 +823,7 @@
             }
 
             static removeAll() {
-                document.getElementById('cell-container').innerHTML = "";
+                document.querySelector('#cell-container').innerHTML = "";
             }
 
             static stopRunners() {
@@ -1053,7 +1049,7 @@
                         if (JSaturnFeatures.get("syntaxHighlighting")) {
                             JSaturnFeatures.toggle("syntaxHighlighting");
                         }
-                        const rootContainer = document.getElementById('root-container');
+                        const rootContainer = document.querySelector('#root-container');
                         return rootContainer;
                     },
                     htmlToData: (htmlElement) => {
@@ -1242,11 +1238,11 @@
             }
 
             static serializeFromRoot() {
-                return JSaturnDataEngine.serialize(document.getElementById('root-container'));
+                return JSaturnDataEngine.serialize(document.querySelector('#root-container'));
             }
 
             static markdownCurrentBook() {
-                return JSaturnDataEngine.transformData(document.getElementById('cell-container'), JSaturnDataEngine.transformers.htmlToMarkdown);
+                return JSaturnDataEngine.transformData(document.querySelector('#cell-container'), JSaturnDataEngine.transformers.htmlToMarkdown);
             }
 
             static handleOutdatedModelData(data) {
@@ -1343,7 +1339,7 @@
                     JSaturnDataModel.StorageKeys.rootData,
                     JSON.stringify(JSaturnDataEngine.serializeFromRoot())
                 );
-                const bottomText = document.getElementById('bottom-info')
+                const bottomText = document.querySelector('#status-info')
                 bottomText.innerText = `Last saved: Now`;
                 const lastSave = Date.now();
                 JSaturnStorage.store(JSaturnDataModel.StorageKeys.lastSave, lastSave);
@@ -1402,6 +1398,7 @@
                                         onclick="JSaturnFeatures.handleFeatureToggle(this)">Highlight: Off
                                 </button>
                             </div>
+                            <div id="status-info" class="status-info"></div>
                         </div>
                         <div id="root-container-top-bar-center" class="control-bar-center">
                             <button class="add-code-cell-below-button"
@@ -1439,7 +1436,7 @@
                                 </button>
                             </div>
                             <button class="add-text-cell-below-button"
-                                    onclick="document.getElementById('cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData))">
+                                    onclick="document.querySelector('#cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData))">
                                 ➕ T
                             </button>
                         </div>
@@ -1450,9 +1447,6 @@
                 </div>
                 <div id="cell-container" class="cell-container" data-datatype="BookData"></div>
             </div>
-        </div>
-        <div class="cell bottom-bar">
-            <div id="bottom-info" class="bottom-info"></div>
         </div>
         <script>
             JSaturnRoot.init();
