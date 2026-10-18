@@ -1237,11 +1237,15 @@
                         };
                     },
                     htmlToMarkdown: (htmlElement) => {
-                        return `## ${
-                            htmlElement.querySelector('#name-field')?.innerHTML
+                        const modeBefore = htmlElement.dataset.mode;
+                        JSaturnTextCellUtility.modeSetters.viewMode(htmlElement);
+                        const markdownString = `## ${
+                            htmlElement.querySelector('#cell-name')?.innerHTML
                         }\n\n${
                             htmlElement.querySelector('#text-field')?.innerHTML
                         }\n`;
+                        JSaturnTextCellUtility.modeSetters[modeBefore](htmlElement);
+                        return markdownString;
                     },
                 },
             }
