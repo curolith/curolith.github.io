@@ -1098,10 +1098,11 @@
                     },
                     htmlToMarkdown: (htmlElement) => {
                         return `# JSaturn\n\n${
-                            JSaturnRoot.longtermData.username ? JSaturnRoot.longtermData.username + "\n\n" : ""
+                            JSaturnRoot.rootDataSet.configData.username ? JSaturnRoot.rootDataSet.configData.username + "\n\n" : ""
                         }${
                             document.querySelector('#cell-container')?.querySelectorAll('.cell').values()
-                                .map(cell => JSaturnDataEngine.transformers.markdown).reverse().join("\n")
+                                .map(cell => JSaturnDataEngine.transformData(cell, JSaturnDataEngine.transformers.htmlToMarkdown))
+                                .toArray().reverse().join("\n")
                         }`
                     },
                 },
@@ -1138,13 +1139,14 @@
                         }
                     },
                     htmlToMarkdown: (htmlElement) => {
+                        const output  = htmlElement.querySelector('#code-output-field')?.innerHTML;
                         return `## ${
                             htmlElement.querySelector('#cell-name')?.innerHTML
                         }\n\n\`\`\`javascript\n${
                             htmlElement.querySelector('#code-field')?.innerText
-                        }\n\`\`\`\n\n${
-                            htmlElement.querySelector('#code-output-field')?.outerHTML
-                        }\n`;
+                        }\n\`\`\`\n${
+                            output ? "\n" + output : ""
+                        }\n\n`;
                     },
                 },
 
