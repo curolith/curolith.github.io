@@ -802,11 +802,14 @@
                 });
                 document.addEventListener("click", (e) => {
                     if (JSaturnRoot.runtimeData.openPopUps.length > 0) {
+                        while (JSaturnRoot.runtimeData.openPopUps.length > 1) {
+                            JSaturnRoot.runtimeData.openPopUps.shift().popup.classList.remove('show');
+                        }
                         const entry = JSaturnRoot.runtimeData.openPopUps[0];
                         if (e.target === entry.toggleButton || e.target === entry.popup || e.target.parentElement === entry.popup) {
                             return;
                         }
-                        entry.popup.classList.toggle("show");
+                        entry.popup.classList.remove("show");
                         // Should never be more than 1
                         JSaturnRoot.runtimeData.openPopUps.pop();
                     }
