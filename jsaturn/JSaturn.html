@@ -44,14 +44,17 @@
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='164' height='164' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23454545' fill-opacity='0.31'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.31'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");
                 --shadow-dark-large: -10px 10px 20px var(--color-shadow-dark);
 
-                --shadow-dark-small: -2px 2px 2px var(--color-shadow-dark);
+                --shadow-no-color-small: -2px 2px 2px;
+                --shadow-dark-small: var(--shadow-no-color-small) var(--color-shadow-dark);
                 --shadow-light-small: -2px 2px 2px var(--color-shadow-light);
                 --color-effect: var(--color-accent-secondary);
 
                 --color-front: #ffffff;
                 --shadow-inset-dark-small: inset -2px 2px 2px var(--color-shadow-dark);
-                --shadow-inset-light-counter-dark-small: inset 2px -2px .15rem color-mix(var(--color-shadow-dark), color-mix(var(--color-shadow-dark), var(--color-transparency)));
-                --shadow-inset-light-small: inset -2px 2px .2rem /*.25rem /*2px*/ var(--color-shadow-light);
+                --shadow-inset-light-counter-no-color-small: inset 2px -2px .15rem;
+                --shadow-inset-light-counter-dark-small: var(--shadow-inset-light-counter-no-color-small) color-mix(var(--color-shadow-dark), color-mix(var(--color-shadow-dark), var(--color-transparency)));
+                --shadow-inset-small-without-color: inset -2px 2px .2rem;
+                --shadow-inset-light-small: var(--shadow-inset-small-without-color) /*.25rem /*2px*/ var(--color-shadow-light);
                 --gap-medium: calc(2 * var(--gap-small));
                 --padding-medium: calc(2 * var(--padding-small));
 
@@ -280,6 +283,11 @@
                 color: color-mix(var(--color-transparency), var(--color-text-normal))
             }
 
+            button.selected {
+                box-shadow: var(--3d-outwards-small), var(--shadow-no-color-small) var(--color-secondary-p50);
+                transition: ease-in 0.1s;
+            }
+
             .code-field {
                 background-color: var(--color-neutral-p75);
                 border-radius: var(--border-radius-small);
@@ -493,7 +501,7 @@
             static Initializer
 
             static JSaturnElement(element) {
-                element.initializers = []
+                element.initializers = [];
                 element.withProperties = function (properties) {
                     JSaturnDataEngine.ensureDeep(element, properties)
                     return this;
@@ -542,8 +550,8 @@
                 })
             }
 
-            static createCell(customClass, cellName) {
-                return JSaturnBuilders.createDiv(customClass ?? "cell").apply(cell => cell.append(
+            static createCell(customClass, cellName, dataset) {
+                return JSaturnBuilders.createDiv(customClass ?? "cell").withDataset(dataset).apply(cell => cell.append(
                     JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
                         cellControls.append(
                             JSaturnBuilders.createDiv('control-bar-left', 'top-control-bar-left').apply(controlBar => {
@@ -582,8 +590,8 @@
                 ));
             }
 
-            static createCodeCell(data) {
-                return JSaturnBuilders.createCell("cell code-cell", data.cellName).apply(cell => {
+            static createCodeCell(data, dataset) {
+                return JSaturnBuilders.createCell("cell code-cell", data.cellName, dataset).apply(cell => {
                     // cell['persistenceKey'] = 'code-cell';
                     cell.querySelector('#cell-content').append(
                         JSaturnBuilders.createDiv("code-output-box", "code-output-box").apply(codeOutputBox => {
@@ -622,28 +630,36 @@
                 )
             }
 
-            static createDiv(className, id) {
-                return JSaturnBuilders.JSaturnElement(document.createElement('div')).withProperties({
-                    className: className,
-                    id: id || className + "-" + JSaturnDataEngine.newKey()
-                });
+            static createDiv(className, id, dataset) {
+                return JSaturnBuilders.JSaturnElement(document.createElement('div'))
+                    .withDataset(dataset)
+                    .withProperties({
+                        className: className,
+                        id: id || className + "-" + JSaturnDataEngine.newKey()
+                    });
             }
 
-            static createTextCell(data) {
-                return JSaturnBuilders.createCell("cell text-cell", data.cellName).apply(cell => {
+            static createTextCell(data, dataset) {
+                return JSaturnBuilders.createCell("cell text-cell", data.cellName, dataset).apply(cell => {
                     // cell['persistenceKey'] = 'text-cell';
                     cell.querySelector('#cell-content')
                         .append(JSaturnBuilders.createTextField().apply(textField => textField.innerHTML = data.htmlContent ?? ""));
                     cell.querySelector('.popup-content').append(
                     );
                     cell.querySelector('#top-control-bar-right').append(
-                        JSaturnBuilders.createButton('raw-html-mode-button', (button) => JSaturnTextCellUtility.modeSetters.rawHtmlMode(button.param), "< T >", cell, "Set raw-html-mode")
+                        JSaturnBuilders.createButton('raw-html-mode-button', (button) => JSaturnTextCellUtility.modeSetters.rawHtmlMode(button.param), "< T >", cell, "Set raw-html-mode").apply(button => {
+                            button.dataset.mode = JSaturnTextCellUtility.modes.rawHtmlMode
+                        })
                     )
                     cell.querySelector('#top-control-bar-right').append(
-                        JSaturnBuilders.createButton('edit-mode-button', (button) => JSaturnTextCellUtility.modeSetters.editMode(button.param), '✏️', cell, "Set edit-mode")
+                        JSaturnBuilders.createButton('edit-mode-button', (button) => JSaturnTextCellUtility.modeSetters.editMode(button.param), '✏️', cell, "Set edit-mode").apply(button => {
+                            button.dataset.mode = JSaturnTextCellUtility.modes.editMode
+                        })
                     )
                     cell.querySelector('#top-control-bar-right').append(
-                        JSaturnBuilders.createButton('view-mode-button', (button) => JSaturnTextCellUtility.modeSetters.viewMode(button.param), '👁️', cell, "Set view-mode")
+                        JSaturnBuilders.createButton('view-mode-button', (button) => JSaturnTextCellUtility.modeSetters.viewMode(button.param), '👁️', cell, "Set view-mode").apply(button => {
+                            button.dataset.mode = JSaturnTextCellUtility.modes.viewMode
+                        })
                     )
                     JSaturnTextCellUtility.restoreMode(cell);
                 });
@@ -738,6 +754,16 @@
                 textField.innerText = textField.innerHTML
             }
 
+            static updateButtonIndicators(cell) {
+                cell.querySelector("#top-control-bar-right").childNodes.forEach(button => {
+                    if (button.dataset.mode === cell.dataset.mode) {
+                        button.classList.add("selected");
+                    } else {
+                        button.classList.remove("selected");
+                    }
+                })
+            }
+
             static modeSetters = {
                 viewMode: (cell) => {
                     const textField = cell.querySelector("#text-field");
@@ -747,6 +773,7 @@
                     }
                     textField.contentEditable = false;
                     cell.dataset.mode = JSaturnTextCellUtility.modes.viewMode;
+                    JSaturnTextCellUtility.updateButtonIndicators(cell);
                 },
 
                 editMode: (cell) => {
@@ -757,6 +784,7 @@
                     }
                     textField.contentEditable = true;
                     cell.dataset.mode = JSaturnTextCellUtility.modes.editMode;
+                    JSaturnTextCellUtility.updateButtonIndicators(cell);
                 },
 
                 rawHtmlMode: (cell) => {
@@ -765,8 +793,9 @@
                     if (currentMode !== JSaturnTextCellUtility.modes.rawHtmlMode) {
                         JSaturnTextCellUtility.convertHtmlToRawHtml(textField);
                     }
-                    textField.contentEditable = true;
+                    textField.contentEditable = "plaintext-only";
                     cell.dataset.mode = JSaturnTextCellUtility.modes.rawHtmlMode;
+                    JSaturnTextCellUtility.updateButtonIndicators(cell);
                 }
             }
         }
@@ -1180,7 +1209,7 @@
 
                         data.key = data.key ?? JSaturnDataEngine.newKey();
 
-                        return JSaturnBuilders.createCodeCell(data.visible).withDataset(data.dataset);
+                        return JSaturnBuilders.createCodeCell(data.visible, data.dataset);
                     },
                     htmlToData: (htmlElement) => {
                         return {
@@ -1223,7 +1252,7 @@
 
                         data.key = data.key ?? JSaturnDataEngine.newKey();
 
-                        return JSaturnBuilders.createTextCell(data.visible).withDataset(data.dataset);
+                        return JSaturnBuilders.createTextCell(data.visible, data.dataset);
                     },
                     htmlToData: (htmlElement) => {
                         return {
