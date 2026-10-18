@@ -168,9 +168,16 @@
                 animation: all .2s ease;
             }
 
-            .control-bar-container {
+            .control-bar-container-tri-column {
                 column-count: 3;
                 grid-template-columns: 1fr 1fr 1fr;
+                display: grid;
+                gap: 0;
+            }
+
+            .control-bar-container-cell-top {
+                column-count: 2;
+                grid-template-columns: 3fr 1fr;
                 display: grid;
                 gap: 0;
             }
@@ -552,7 +559,7 @@
 
             static createCell(customClass, cellName, dataset) {
                 return JSaturnBuilders.createDiv(customClass ?? "cell").withDataset(dataset).apply(cell => cell.append(
-                    JSaturnBuilders.createDiv("control-bar-container").apply(cellControls => {
+                    JSaturnBuilders.createDiv("control-bar-container-cell-top").apply(cellControls => {
                         cellControls.append(
                             JSaturnBuilders.createDiv('control-bar-left', 'top-control-bar-left').apply(controlBar => {
                                 controlBar.append(JSaturnBuilders.createButton('delete-cell-button', (button) => {
@@ -560,7 +567,6 @@
                                 }, `❌`, cell, "Delete this cell"));
                                 controlBar.append(JSaturnBuilders.createNameField(cellName))
                             }),
-                            JSaturnBuilders.createDiv('control-bar-center', 'top-control-bar-center'),
                             JSaturnBuilders.createDiv('control-bar-right', 'top-control-bar-right')
                         )
                     }),
@@ -571,6 +577,14 @@
                             JSaturnBuilders.createDiv("control-bar-center", 'bottom-control-bar-center').apply(controlBar => {
                                 const popupContent = JSaturnBuilders.createDiv('popup-content', JSaturnDataEngine.newKey());
                                 popupContent.append(
+                                    JSaturnBuilders.createButton("copy-cell-button", (button) => {
+                                        const newCell = JSaturnDataEngine.serialize(button.param)
+                                        newCell.key = JSaturnDataEngine.newKey();
+                                        window.navigator.clipboard.writeText(escape(JSON.stringify(newCell)));
+                                    }, "📤📋 Copy cell", cell, ""),
+                                    JSaturnBuilders.createButton("paste-below-button", (button) => {
+                                        window.navigator.clipboard.readText().then(value => button.param.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
+                                    }, "📋📥 Paste below", cell, ""),
                                     JSaturnBuilders.createButton("duplicate-cell-button", (button) => {
                                         const newCell = JSaturnDataEngine.serialize(button.param)
                                         newCell.key = JSaturnDataEngine.newKey();
@@ -1180,6 +1194,8 @@
                     },
                     htmlToMarkdown: (htmlElement) => {
                         return `# JSaturn\n\n${
+                            (new Date()).toString().match(/^[^:]+:[^:]+/)
+                        }\n\n${
                             JSaturnRoot.rootDataSet.configData.username ? JSaturnRoot.rootDataSet.configData.username + "\n\n" : ""
                         }${
                             document.querySelector('#cell-container')?.querySelectorAll('.cell').values()
@@ -1485,12 +1501,18 @@
         }
     </script>
 
+    <script id="api">
+        class API {
+            // TODO [feature] @curolith Add user api with doc panel
+        }
+    </script>
+
     <body>
         <h1>> JSaturn</h1>
         <div id="root-container" class="root-container" data-datatype="RootData">
             <div class="cell">
                 <div id="header">
-                    <div id="root-container-bar-container" class="control-bar-container">
+                    <div id="root-container-bar-container" class="control-bar-container-tri-column">
                         <div id="root-container-top-bar-left" class="control-bar-left">
                             <button onclick="togglePopUp('feature-popup', this)" title="Show feature toggles">❎✅
                             </button>
