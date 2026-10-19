@@ -619,19 +619,25 @@
                                 JSaturnBuilders.createDiv("control-bar-center", 'bottom-control-bar-center').apply(controlBar => {
                                     const popupContent = JSaturnBuilders.createDiv('popup-content', JSaturnDataEngine.newKey());
                                     popupContent.append(
-                                        JSaturnBuilders.createButton("copy-cell-button",
-                                            (button) => JSaturnIO.copyCellToClipboard(button.param),
-                                            "📤📋 Copy cell", cell, ""),
-                                        JSaturnBuilders.createButton("paste-below-button", (button) => {
-                                            window.navigator.clipboard.readText().then(value => button.param.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
-                                        }, "📋📥 Paste below", cell, ""),
                                         JSaturnBuilders.createButton("duplicate-cell-button", (button) => {
                                             const newCell = JSaturnDataEngine.serialize(button.param)
                                             newCell.key = JSaturnDataEngine.newKey();
                                             button.param.before(JSaturnDataEngine.deserialize(newCell))
-                                        }, "⊟ Duplicate cell", cell, "")
+                                        }, "⊟ Duplicate cell", cell, ""),
+                                        JSaturnBuilders.createButton("copy-cell-button",
+                                        (button) => JSaturnIO.copyCellToClipboard(button.param),
+                                        "📤📋 Copy cell", cell, "")
                                     )
+                                    const snippetPopupContent = JSaturnBuilders.createDiv("popup-content", JSaturnDataEngine.newKey());
+                                    JSaturnSnippetUtility.loadSnippetIndex(snippetPopupContent, cell);
+                                    popupContent.append(
+                                        JSaturnBuilders.createButton('load-snippet-below-cell-buttoon', (button) => togglePopUp(button.param, button), '✂️ Load snippet below', snippetPopupContent.id, ""),
+                                        JSaturnBuilders.createButton("paste-below-button", (button) => {
+                                            window.navigator.clipboard.readText().then(value => button.param.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
+                                        }, "📋📥 Paste below", cell, ""),
+                                    ),
                                     controlBar.append(
+                                        snippetPopupContent,
                                         JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell, "Add code-cell below"),
                                         JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id, "Show options for this cell"),
                                         popupContent,
@@ -960,7 +966,8 @@
                     }
                     JSaturnStorage.offerAutoSave();
                 });
-                JSaturnSnippetUtility.loadSnippetIndex();
+                const popup = document.querySelector("#load-snippet-popup");
+                JSaturnSnippetUtility.loadSnippetIndex(popup);
             }
 
             static triggerBreakPoint() {
@@ -1661,26 +1668,26 @@
                 JSaturnStorage.restoreState();
             }
 
-            static createLoadSnippetButton(snippetData) {
-                return JSaturnBuilders.createButton("load-snippet-button", () => JSaturnSnippetUtility.loadSnippet(snippetData), snippetData.text);
+            static createLoadSnippetButton(snippetData, cell) {
+                return JSaturnBuilders.createButton("load-snippet-button", (button) => JSaturnSnippetUtility.loadSnippet(snippetData, button.param), snippetData.text, cell);
             }
 
-            static loadSnippetIndex() {
+            static loadSnippetIndex(popup, cell) {
                 window.fetch("./snippets/snippetIndex.json").then(r =>
                     r.json().then(j => {
                         JSaturnRoot.runtimeData.snippetIndex = j;
-                        const popup = document.querySelector("#load-snippet-popup");
-                        popup.append(...j.cell?.map(data => JSaturnSnippetUtility.createLoadSnippetButton(data)));
+                        popup.append(...j.cell?.map(data => JSaturnSnippetUtility.createLoadSnippetButton(data, cell)));
                     }))
             }
 
-            static loadSnippet(snippetData) {
+            static loadSnippet(snippetData, cell) {
                 const cellContainer = document.querySelector("#cell-container");
                 const basicCellData = structuredClone(JSaturnDataModel.CodeCellData);
                 window.fetch(snippetData.file).then(r => r.text().then(s => {
                     basicCellData.visible.codeText = s;
                     basicCellData.visible.cellName = snippetData.text;
-                    cellContainer.prepend(JSaturnDataEngine.deserialize(basicCellData));
+                    cell ? cell.before(JSaturnDataEngine.deserialize(basicCellData))
+                    : cellContainer.append(JSaturnDataEngine.deserialize(basicCellData));
                 }))
             }
         }
@@ -1773,10 +1780,13 @@
                                 <button id="reset-application-button" onclick="JSaturnStorage.resetApplication()">
                                     💀 Reset application
                                 </button>
+                                <button id="reload-button" onclick="window.reload()">
+                                    🔄️ Reload page
+                                </button>
+                                <button onclick="togglePopUp('load-snippet-popup', this)">✂️ Load Snippet below
+                                </button>
                                 <button id="paste-below-button"
                                         onclick="JSaturnIO.pasteCellBelow()">📋📥 Paste below
-                                </button>
-                                <button onclick="togglePopUp('load-snippet-popup', this)">✂️ Load Snippets
                                 </button>
                             </div>
                             <div class="popup-content" id="load-snippet-popup">
