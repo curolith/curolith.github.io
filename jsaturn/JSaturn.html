@@ -494,7 +494,8 @@
                         triggerAutoSave: null
                     },
                     openPopUps: [],
-                    ignoreIssues: false
+                    ignoreIssues: false,
+                    snippetIndex: {},
                 },
                 visible: {
                     bookData: JSaturnDataModel.BookData,
@@ -959,6 +960,7 @@
                     }
                     JSaturnStorage.offerAutoSave();
                 });
+                JSaturnSnippetUtility.loadSnippetIndex();
             }
 
             static triggerBreakPoint() {
@@ -1658,6 +1660,29 @@
                 JSaturnStorage.saveState();
                 JSaturnStorage.restoreState();
             }
+
+            static createLoadSnippetButton(snippetData) {
+                return JSaturnBuilders.createButton("load-snippet-button", () => JSaturnSnippetUtility.loadSnippet(snippetData), snippetData.text);
+            }
+
+            static loadSnippetIndex() {
+                window.fetch("./snippets/snippetIndex.json").then(r =>
+                    r.json().then(j => {
+                        JSaturnRoot.runtimeData.snippetIndex = j;
+                        const popup = document.querySelector("#load-snippet-popup");
+                        popup.append(...j.cell?.map(data => JSaturnSnippetUtility.createLoadSnippetButton(data)));
+                    }))
+            }
+
+            static loadSnippet(snippetData) {
+                const cellContainer = document.querySelector("#cell-container");
+                const basicCellData = structuredClone(JSaturnDataModel.CodeCellData);
+                window.fetch(snippetData.file).then(r => r.text().then(s => {
+                    basicCellData.visible.codeText = s;
+                    basicCellData.visible.cellName = snippetData.text;
+                    cellContainer.prepend(JSaturnDataEngine.deserialize(basicCellData));
+                }))
+            }
         }
     </script>
 
@@ -1666,7 +1691,6 @@
             static setUserName(s) {
                 JSaturnRoot.rootDataSet.configData.username = s;
             }
-
             // TODO [feature] @curolith Add user api with doc panel
         }
     </script>
@@ -1674,13 +1698,18 @@
     <body>
         <h1 id="main-heading" class="main-heading" onclick="togglePopUp('main-heading-popup', this)">> JSaturn</h1>
         <div class="popup-content" id="main-heading-popup" style="margin-top: 7rem;">
-            <button id="return-to-root-button" onclick="window.location.assign(JSaturnRoot.urls.root)">🏚️ Return to root page
+            <button id="return-to-root-button" onclick="window.location.assign(JSaturnRoot.urls.root)">🏚️ Return to root
+                page
             </button>
             <button id="open-on-github-button" onclick="window.open(JSaturnRoot.urls.github)">🌐 Open on GitHub
             </button>
-            <button id="submit-issue-button" onclick="window.open(JSaturnMonitor.generateIssueUrl('User Issue: ...', 'user-issue', 'Describe your issue, if you are submitting a bug and it is possible, please use the export state to file button and attach it here.'))">❗Submit issue on GitHub
+            <button id="submit-issue-button"
+                    onclick="window.open(JSaturnMonitor.generateIssueUrl('User Issue: ...', 'user-issue', 'Describe your issue, if you are submitting a bug and it is possible, please use the export state to file button and attach it here.'))">
+                ❗Submit issue on GitHub
             </button>
-            <button id="submit-feature-request-button" onclick="window.open(JSaturnMonitor.generateIssueUrl('User Feature Request: ...', 'user-feature-request', 'Please describe your issue. For example: When [what state is JSaturn in before using the feature], then i can use the feature to [what the feature achieves].'))">✨ Submit feature-request on github
+            <button id="submit-feature-request-button"
+                    onclick="window.open(JSaturnMonitor.generateIssueUrl('User Feature Request: ...', 'user-feature-request', 'Please describe your issue. For example: When [what state is JSaturn in before using the feature], then i can use the feature to [what the feature achieves].'))">
+                ✨ Submit feature-request on github
             </button>
         </div>
         <div id="root-container" class="root-container" data-datatype="RootData">
@@ -1747,6 +1776,10 @@
                                 <button id="paste-below-button"
                                         onclick="JSaturnIO.pasteCellBelow()">📋📥 Paste below
                                 </button>
+                                <button onclick="togglePopUp('load-snippet-popup', this)">✂️ Load Snippets
+                                </button>
+                            </div>
+                            <div class="popup-content" id="load-snippet-popup">
                             </div>
                             <button class="add-text-cell-below-button"
                                     title="Add text-cell below"
@@ -1754,6 +1787,7 @@
                                 ➕ T
                             </button>
                         </div>
+
                         <div id="root-container-top-bar-right" class="control-bar-right">
                             <button id="run-all" title="Execute all cells" onclick="JSaturnCodeCellUtility.runAll()">⏩
                             </button>

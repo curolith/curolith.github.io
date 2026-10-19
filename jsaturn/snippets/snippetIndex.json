@@ -1,0 +1,13 @@
+{
+  "book": [],
+  "cell": [
+    {
+      "file": "./snippets/cell/FizzBuzz.js",
+      "text": "FizzBuzz"
+    },
+    {
+      "file": "./snippets/cell/BreadthFirstSearch.js",
+      "text": "Breadth-First Search"
+    }
+  ]
+}
