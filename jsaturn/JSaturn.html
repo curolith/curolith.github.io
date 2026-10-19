@@ -912,7 +912,7 @@
 
         class JSaturnRoot {
             static urls = {
-                root: "https://curolith.github.io/jsaturn/JSaturn.html",
+                root: window.location.origin + "/curolith.github.io/jsaturn/JSaturn.html",
                 github: "https://github.com/curolith/curolith.github.io/blob/main/jsaturn/JSaturn.html",
             }
 
@@ -1147,15 +1147,15 @@
             }
 
             static generateLink(linkData) {
-                window.navigator.clipboard.writeText(encodeURI(`${
+                window.navigator.clipboard.writeText(`${
                     JSaturnRoot.urls.root
                 }?${
-                    Object.entries(linkData).map(([key, value]) => `${key}=${escape(JSON.stringify(value))}`).join("&")
-                }`))
+                    Object.entries(linkData).map(([key, value]) => `${key}=${encodeURIComponent(JSON.stringify(value))}`).join("&")
+                }`);
             }
 
             static parseLinkComponents(queryString) {
-                return Object.fromEntries(new URLSearchParams(queryString)?.entries().map(([key, value]) => [key, JSON.parse(unescape(value))]));
+                return Object.fromEntries(new URLSearchParams(queryString)?.entries().map(([key, value]) => [key, JSON.parse(decodeURIComponent(value))]));
             }
 
             static linkTypesVersion = 0.0;
