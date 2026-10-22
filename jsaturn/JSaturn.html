@@ -1744,7 +1744,7 @@
                         <div id="root-container-top-bar-center" class="control-bar-center">
                             <button class="add-code-cell-below-button"
                                     title="Add code-cell below"
-                                    onclick="document.querySelector('#cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData))">
+                                    onclick="document.querySelector('#cell-container').prepend(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData))">
                                 ➕ <>
                             </button>
                             <button onclick="togglePopUp('options-popup', this)" title="Show general options">•••
@@ -1797,7 +1797,7 @@
                             </div>
                             <button class="add-text-cell-below-button"
                                     title="Add text-cell below"
-                                    onclick="document.querySelector('#cell-container').append(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData))">
+                                    onclick="document.querySelector('#cell-container').prepend(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData))">
                                 ➕ T
                             </button>
                         </div>
