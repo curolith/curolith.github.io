@@ -624,7 +624,7 @@
                                         JSaturnBuilders.createButton("duplicate-cell-button", (button) => {
                                             const newCell = JSaturnDataEngine.serialize(button.param)
                                             newCell.key = JSaturnDataEngine.newKey();
-                                            button.param.before(JSaturnDataEngine.deserialize(newCell))
+                                            button.param.after(JSaturnDataEngine.deserialize(newCell))
                                         }, "⊟ Duplicate cell", cell, ""),
                                         JSaturnBuilders.createButton("copy-cell-button",
                                         (button) => JSaturnIO.copyCellToClipboard(button.param),
@@ -635,15 +635,15 @@
                                     popupContent.append(
                                         JSaturnBuilders.createButton('load-snippet-below-cell-buttoon', (button) => togglePopUp(button.param, button), '✂️ Load snippet below', snippetPopupContent.id, ""),
                                         JSaturnBuilders.createButton("paste-below-button", (button) => {
-                                            window.navigator.clipboard.readText().then(value => button.param.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
+                                            window.navigator.clipboard.readText().then(value => button.param.after(JSaturnDataEngine.deserialize(JSON.parse(unescape(value)))));
                                         }, "📋📥 Paste below", cell, ""),
                                     ),
                                     controlBar.append(
                                         snippetPopupContent,
-                                        JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell, "Add code-cell below"),
+                                        JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.after(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell, "Add code-cell below"),
                                         JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id, "Show options for this cell"),
                                         popupContent,
-                                        JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.before(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell, "Add text-cell below")
+                                        JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.after(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell, "Add text-cell below")
                                     )
                                 }),
                                 JSaturnBuilders.createDiv('control-bar-right', 'bottom-control-bar-right')
@@ -1143,14 +1143,14 @@
                     window.navigator.clipboard.readText().then(value => {
                         const before = JSaturnRoot.runtimeData.ignoreIssues;
                         JSaturnRoot.runtimeData.ignoreIssues = true;
-                        document.querySelector("#cell-container").append(JSaturnDataEngine.deserialize(JSON.parse(unescape(value))));
+                        document.querySelector("#cell-container").prepend(JSaturnDataEngine.deserialize(JSON.parse(unescape(value))));
                         JSaturnRoot.runtimeData.ignoreIssues = before;
                     })
                 }
                 window.navigator.clipboard.readText().then(value => {
                     const before = JSaturnRoot.runtimeData.ignoreIssues;
                     JSaturnRoot.runtimeData.ignoreIssues = true;
-                    cell.before(JSaturnDataEngine.deserialize(JSON.parse(unescape(value))));
+                    cell.after(JSaturnDataEngine.deserialize(JSON.parse(unescape(value))));
                     JSaturnRoot.runtimeData.ignoreIssues = before;
                 });
             }
@@ -1332,7 +1332,7 @@
 
                         const cellContainer = document.querySelector('#cell-container');
                         cellContainer.innerHTML = '';
-                        cellContainer.append(...data.visible.cells.map(JSaturnDataEngine.deserialize));
+                        cellContainer.prepend(...data.visible.cells.map(JSaturnDataEngine.deserialize));
                         return cellContainer;
                     },
                     htmlToData: (htmlElement) => {
@@ -1690,8 +1690,8 @@
                 window.fetch(snippetData.file).then(r => r.text().then(s => {
                     basicCellData.visible.codeText = s;
                     basicCellData.visible.cellName = snippetData.text;
-                    cell ? cell.before(JSaturnDataEngine.deserialize(basicCellData))
-                    : cellContainer.append(JSaturnDataEngine.deserialize(basicCellData));
+                    cell ? cell.after(JSaturnDataEngine.deserialize(basicCellData))
+                    : cellContainer.prepend(JSaturnDataEngine.deserialize(basicCellData));
                 }))
             }
         }
