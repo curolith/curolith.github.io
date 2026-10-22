@@ -367,7 +367,8 @@
 
             .cell-container {
                 display: flex;
-                flex-direction: column-reverse;
+                flex-direction: column;
+                /*flex-direction: column-reverse;*/
                 gap: var(--gap-medium);
                 overflow-wrap: anywhere;
             }
@@ -384,6 +385,7 @@
                 opacity: 1;
                 padding: 1rem;
                 transition: all .1s ease-out;
+                /*z-index: initial */
                 visibility: visible;
                 position: relative;
                 overflow-wrap: anywhere;
@@ -1349,7 +1351,9 @@
                         }${
                             document.querySelector('#cell-container')?.querySelectorAll('.cell').values()
                                 .map(cell => JSaturnDataEngine.transformData(cell, JSaturnDataEngine.transformers.htmlToMarkdown))
-                                .toArray().reverse().join("\n")
+                                .toArray()
+                                //.reverse()
+                                .join("\n")
                         }`
                     },
                 },
