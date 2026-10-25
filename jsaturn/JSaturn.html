@@ -34,7 +34,7 @@
         :root {
             /*region variables*/
             --color-accent-primary: #000aff;
-            --color-accent-secondary: #DF792EFF;
+            --color-accent-secondary: #ff8934;
 
             --color-theme-base: hsl(from var(--color-accent-primary) h calc(s * .5) calc(l * .6));
 
@@ -94,7 +94,7 @@
             --color-secondary-p75: color-mix(in srgb, var(--color-front), var(--color-secondary-p50));
             --color-secondary-p87-5: color-mix(in srgb, var(--color-secondary-p75), var(--color-front));
 
-            --color-shadow-dark: hsl(0 0 0 / .25);
+            --color-shadow-dark: hsl(0 0% 0% / 0.25);
             --color-shadow-light: hsl(0 0% 100% / 0.47);
             --gap-small: 1rem;
             --padding-small: .5rem;
@@ -103,7 +103,7 @@
             --padding-smaller: .25rem;
             /*endregion variables*/
 
-            --color-text-normal: var(--color-back);
+            --color-text-normal: var(--color-primary-p12-5);
             --filter-textless: blur(.8rem);
             --color-transparency: rgb(0 0 0 / 0);
 
@@ -117,13 +117,17 @@
             );
             /*url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='164' height='164' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23454545' fill-opacity='0.31'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.31'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");*/
 
-            z-index: 1;
+            z-index2: 1;
         }
 
         html {
             height: 100%;
             width: stretch;
             z-index: 2;
+        }
+
+        a {
+            color: var(--color-secondary-p50)
         }
 
         @starting-style {
@@ -250,9 +254,10 @@
             border-radius: var(--border-radius-small);
             box-shadow: var(--3d-outwards-small),
             var(--shadow-dark-small);
-            color: var(--color-text-normal);
+            color: color-mix(var(--color-text-normal), color-mix(var(--color-text-normal), color-mix(var(--color-text-normal), color-mix(var(--color-text-normal), color-mix(var(--color-text-normal), transparent)))));
             cursor: pointer;
-            font-family: system-ui, sans-serif;
+            font-weight: 1.2;
+            font-family: "Arial";
             font-size: large;
             padding: var(--padding-smaller);
             text-align: justify;
@@ -285,13 +290,15 @@
         }
 
         button.selected {
-            box-shadow: var(--3d-outwards-small), -0px 0px 8px 2px color-mix(var(--color-secondary-p50), color-mix(var(--color-secondary-p50), transparent));
+            box-shadow:  var(--shadow-inset-small-without-color) color-mix(transparent, var(--color-secondary-p87-5)),
+            var(--shadow-inset-light-counter-no-color-small) color-mix(color-mix(transparent, color-mix(transparent, var(--color-secondary-p12-5))), color-mix(transparent, var(--color-secondary-p12-5))),
+            -0px 0px 8px 2px color-mix(var(--color-secondary-p50), color-mix(var(--color-secondary-p50), transparent));
             /*outline: var(--color-effect) solid 3px;*/
             transition: ease-in 0.1s;
         }
 
         .code-field {
-            background-color: color-mix(var(--color-primary-p87-5), transparent);
+            background-color: color-mix(var(--color-primary-p87-5), color-mix(var(--color-primary-p87-5), transparent));
             border-radius: var(--border-radius-small);
             box-shadow: var(--shadow-inset-dark-small);
             color: var(--color-text-normal);
@@ -310,7 +317,7 @@
         }
 
         .code-output-box {
-            background-color: color-mix(transparent, color-mix(transparent, var(--color-primary-p12-5)));
+            background-color: color-mix(transparent,  color-mix(var(--color-neutral-p25), color-mix(var(--color-neutral-p25), var(--color-primary-p25))));
             border-radius: 0.5rem;
             font-family: Consolas, "Courier New", monospace;
             inset: 1rem;
@@ -320,8 +327,8 @@
 
         .code-output-field {
             border-radius: 0.5rem;
-            color: var(--color-secondary-p75);
-            font-family: Consolas, "Courier New", monospace;
+            color: var(--color-secondary-p50);
+            font-family: Consolas, "Courier New", bold;
             inset: 1rem;
             outline: transparent;
             padding: var(--padding-small);
@@ -363,7 +370,7 @@
             border: none;
             color: var(--color-primary-p87-5);
             display: flex;
-            font-family: Consolas, "Courier New", monospace;;
+            font-family: Arial;
             font-size: large;
             justify-content: left;
             margin: 0;
@@ -401,7 +408,9 @@
             scale: 1.1;
             box-shadow: var(--3d-outwards-small), var(--shadow-dark-large);
             transition: ease-in 0.25s;
-            color: var(--color-front)
+            color: var(--color-front);
+            padding-left: var(--padding-small);
+            padding-right: var(--padding-small);
         }
 
         .cell-container {
