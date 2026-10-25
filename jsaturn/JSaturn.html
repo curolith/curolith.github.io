@@ -131,8 +131,8 @@
         }
 
         @starting-style {
-            scale: 0;
-            opacity: 0;
+            scale: all 0;
+            opacity: all 0;
             transition: all .2s ease-out;
             animation: all .2s ease;
         }
@@ -436,6 +436,7 @@
             height: 1000%;
             width: stretch;
             z-index: 4;
+            visibility: visible;
         }
 
         .popup-layer {
@@ -508,6 +509,18 @@
             userLogLevel: userLogLevel,
             userLogMessage: userLogMessage,
         });
+    }
+
+    class JSaturnScriptingUtility {
+        static keyAccessor(o) {
+            var x = {
+                ...o
+            };
+            for(var key in x) {
+                x[key] = String(key);
+            }
+            return x;
+        }
     }
 
     class JSaturnDataModel {
@@ -585,6 +598,8 @@
                 cellName: "",
             },
         });
+
+        static dataModelKeys = JSaturnScriptingUtility.keyAccessor(JSaturnDataModel);
     }
 
     class JSaturnBuilders {
@@ -1139,12 +1154,12 @@
         }
 
         static exportCellsToClipboard() {
-            window.navigator.clipboard.writeText(escape(JSON.stringify(JSaturnDataEngine.serialize(document.querySelector("#cell-container")))));
+            window.navigator.clipboard.writeText(escape(JSON.stringify(JSaturnDataEngine.serializeBook())));
         }
 
-        static exportStateToFile() {
+        static exportCellsToFile() {
             JSaturnIO.downloadFile(
-                JSON.stringify(JSaturnDataEngine.serializeFromRoot()),
+                JSON.stringify(JSaturnDataEngine.serialize()),
                 "JSaturn-export_" + JSaturnIO.getFileDateTimeString(),
                 "json"
             )
@@ -1229,7 +1244,7 @@
             shareCells: {
                 generate: () => JSaturnIO.generateLink({
                     queryType: "shareCells",
-                    data: JSaturnDataEngine.serialize(document.querySelector("#cell-container")),
+                    data: JSaturnDataEngine.serializeBook(),
                     dataModelVersion: JSaturnDataModel.RootData.dataset.dataModelVersion
                 }),
                 handle: data => {
@@ -1299,7 +1314,6 @@
         };
 
         static Tranformers = {
-
             RootData: {
                 dataToHtml: (data) => {
                     const rootDataClone = structuredClone(JSaturnDataModel.RootData);
@@ -1557,7 +1571,11 @@
             return JSaturnDataEngine.getTransformer(model)?.dataToHtml({});
         }
 
-        static serializeFromRoot() {
+        static serializeBook() {
+            return JSaturnDataEngine.serialize(document.querySelector("#cell-container"))
+        }
+
+        static serializeWorkSpace() {
             return JSaturnDataEngine.serialize(document.querySelector('#root-container'));
         }
 
@@ -1663,7 +1681,7 @@
         static saveState() {
             JSaturnStorage.store(
                 JSaturnDataModel.StorageKeys.rootData,
-                JSON.stringify(JSaturnDataEngine.serializeFromRoot())
+                JSON.stringify(JSaturnDataEngine.serializeWorkSpace())
             );
             const bottomText = document.querySelector('#status-info')
             bottomText.innerText = `Last saved: Now`;
@@ -1836,7 +1854,7 @@
             current cells
         </button>
         <button id="export-state-to-file-button"
-                onclick="JSaturnIO.exportStateToFile()">📤📂 Export state to file
+                onclick="JSaturnIO.exportCellsToFile()">📤📂 Export state to file
         </button>
         <button id="export-state-to-file-button"
                 onclick="JSaturnIO.importStateFromFile()">📂📥 Import state from file
