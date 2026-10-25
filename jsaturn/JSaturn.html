@@ -322,8 +322,7 @@
             overflow-wrap: anywhere;
         }
 
-
-        .cell {
+        .cell{
             backdrop-filter: var(--filter-textless);
             background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75))));
             border-radius: 1rem;
@@ -339,6 +338,8 @@
             visibility: visible;
             position: relative;
             overflow-wrap: anywhere;
+            animation: ease-in 2s;
+            transition: all 3 ease-out;
         }
 
         .code-cell {
@@ -423,12 +424,25 @@
             position: absolute;
             align-items: center;
             display: flex;
-            width: 100%;
-            height: 100vh;
-            top: 0;
-            justify-content: center;
-            visibility: hidden;
+            flex-direction: column;
+
+            /*width: 100%;*/
+            width: min(100vh, 100vw);
+            height: fit-content;
+            top: anchor(bottom);
+            /*justify-self: center;*/
+            height: stretch;
             align-self: center;
+            padding: calc(var(--padding-medium) * 2);
+            /*justify-content: center;*/
+            visibility: hidden;
+            /*align-items: center;*/
+            /*align-items: center;*/
+            /*align-self: anchor-center;*/
+            /*justify-self: anchor-center;*/
+
+            /*align-self: anchor-center;*/
+            /*position-area: anchor-center;*/
         }
 
         .popup-content {
@@ -437,7 +451,7 @@
             opacity: 0;
             visibility: hidden;
             position: absolute;
-            display: flex;
+            ;
             text-align: center;
             flex-direction: column;
             width: fit-content;
@@ -639,9 +653,8 @@
                         cellControls.append(
                             JSaturnBuilders.createDiv('control-bar-left', 'bottom-control-bar-left'),
                             JSaturnBuilders.createDiv("control-bar-center", 'bottom-control-bar-center').apply(controlBar => {
-                                const anchorKey = JSaturnDataEngine.newKey();
+                                const anchorKey = "--" + JSaturnDataEngine.newKey();
                                 const popupContent = JSaturnBuilders.createDiv('cell popup-content', JSaturnDataEngine.newKey());
-                                popupContent.positionAnchor = anchorKey;
                                 popupContent.append(
                                     JSaturnBuilders.createButton("duplicate-cell-button", (button) => {
                                         const newCell = JSaturnDataEngine.serialize(button.param)
@@ -661,13 +674,14 @@
                                     }, "📋📥 Paste below", cell, ""),
                                 );
                                 JSaturnBuilders.createDiv("popup-layer", "cell-popup-layer").apply(layer => {
+                                    layer.style.positionAnchor = anchorKey;
                                     layer.append(popupContent, snippetPopupContent);
                                     document.body.append(layer);
                                 })
                                 controlBar.append(
                                     JSaturnBuilders.createButton('add-code-cell-below-button', (button) => button.param.after(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData)), '➕ <>', cell, "Add code-cell below"),
                                     JSaturnBuilders.createButton('cell-options-button', (button) => togglePopUp(button.param, button), '•••', popupContent.id, "Show options for this cell").apply(button => {
-                                        button.anchorName = anchorKey;
+                                        button.style.anchorName = anchorKey;
                                     }),
                                     JSaturnBuilders.createButton('add-text-cell-below-button', (button) => button.param.after(JSaturnDataEngine.initElement(JSaturnDataModel.TextCellData)), '➕ T', cell, "Add text-cell below")
                                 )
@@ -1772,7 +1786,7 @@
                         onclick="document.querySelector('#cell-container').prepend(JSaturnDataEngine.initElement(JSaturnDataModel.CodeCellData))">
                     ➕ <>
                 </button>
-                <button onclick="togglePopUp('options-popup', this)" title="Show general options">•••
+                <button onclick="togglePopUp('options-popup', this)" title="Show general options" style="anchor-name: --headeranchor">•••
                 </button>
                 <button class="add-text-cell-below-button"
                         title="Add text-cell below"
@@ -1789,7 +1803,7 @@
     </div>
     <div id="cell-container" class="cell-container" data-datatype="BookData"></div>
 </div>
-<div class="popup-layer" id="root-popup-layer">
+<div class="popup-layer" id="root-popup-layer" style="position-anchor: --headeranchor">
     <div class="cell popup-content" id="options-popup">
         <button id="save" onclick="JSaturnStorage.saveState()">💾 Manual save</button>
         <button id="export-state-to-clipboard-button"
