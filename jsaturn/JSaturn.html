@@ -33,11 +33,12 @@
     <style>
         :root {
             /*region variables*/
-            --color-accent-primary: #000e64;
+            --color-accent-primary: #000aff;
             --color-accent-secondary: #DF792EFF;
 
+            --color-theme-base: hsl(from var(--color-accent-primary) h calc(s * .5) calc(l * .6));
+
             --color-back: #000000;
-            /*url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='164' height='164' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23454545' fill-opacity='0.31'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.31'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");*/
             --shadow-dark-large: -10px 10px 20px var(--color-shadow-dark);
 
             --shadow-no-color-small: -2px 2px 2px;
@@ -48,7 +49,7 @@
             --color-front: #ffffff;
             --shadow-inset-dark-small: inset -2px 2px 2px var(--color-shadow-dark);
             --shadow-inset-light-counter-no-color-small: inset 2px -2px .15rem;
-            --shadow-inset-light-counter-dark-small: var(--shadow-inset-light-counter-no-color-small) color-mix(var(--color-shadow-dark), color-mix(var(--color-shadow-dark), var(--color-transparency)));
+            --shadow-inset-light-counter-dark-small: var(--shadow-inset-light-counter-no-color-small) color-mix(var(--color-shadow-dark), color-mix(var(--color-shadow-dark), transparent));
             --shadow-inset-small-without-color: inset -2px 2px .2rem;
             --shadow-inset-light-small: var(--shadow-inset-small-without-color) /*.25rem /*2px*/ var(--color-shadow-light);
             --gap-medium: calc(2 * var(--gap-small));
@@ -72,7 +73,7 @@
             --color-primary-p25: color-mix(in srgb, var(--color-primary-p50), var(--color-back));
 
             --color-primary-p37-5: color-mix(in srgb, var(--color-primary-p25), var(--color-primary-p50));
-            --color-primary-p50: var(--color-accent-primary);
+            --color-primary-p50: var(--color-theme-base);
             --color-primary-p62-5: color-mix(in srgb, var(--color-primary-p50), var(--color-primary-p75));
             --color-primary-p75: color-mix(in srgb, var(--color-front), var(--color-primary-p50));
 
@@ -103,21 +104,26 @@
             /*endregion variables*/
 
             --color-text-normal: var(--color-back);
-            --filter-textless: blur(.5rem);
+            --filter-textless: blur(.8rem);
             --color-transparency: rgb(0 0 0 / 0);
 
             background-attachment: fixed;
             background-color: #515151;
-            background-image: linear-gradient(
+            background-image:
+            linear-gradient(
                     color-mix(var(--color-neutral-p12-5), var(--color-primary-p75)),
                     color-mix(var(--color-neutral-p12-5), color-mix(var(--color-neutral-p12-5), var(--color-primary-p75))),
                     color-mix(var(--color-neutral-p12-5), color-mix(var(--color-neutral-p12-5), color-mix(var(--color-neutral-p12-5), var(--color-primary-p75))))
             );
+            /*url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='164' height='164' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23454545' fill-opacity='0.31'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.31'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");*/
+
+            z-index: 1;
         }
 
         html {
             height: 100%;
             width: stretch;
+            z-index: 2;
         }
 
         @starting-style {
@@ -218,14 +224,14 @@
 
         .main-heading:active {
             transition: ease-in 0.15s;
-            background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75)));
+            background-color: color-mix(transparent, color-mix(transparent, var(--color-primary-p75)));
         }
 
         .text-field {
-            /*background-color: color-mix(var(--color-transparency), var(--color-primary-p87-5));*/
-            background-color: color-mix(var(--color-transparency), color-mix(var(--color-neutral-p75), var(--color-primary-p75)));
+            /*background-color: color-mix(transparent, var(--color-primary-p87-5));*/
+            /*background-color: color-mix(transparent, var(--color-primary-p87-5));*/
+            color: var(--color-primary-p87-5);
             border-radius: var(--border-radius-small);
-            color: var(--color-text-normal);
             inset: 1rem;
             outline: transparent;
             overflow-wrap: anywhere;
@@ -239,7 +245,7 @@
         }
 
         button {
-            background-color: color-mix(var(--color-transparency), var(--color-secondary-p75));
+            background-color: color-mix(transparent, color-mix(var(--color-primary-p87-5), color-mix(var(--color-primary-p87-5), var(--color-neutral-p87-5))));
             border: none;
             border-radius: var(--border-radius-small);
             box-shadow: var(--3d-outwards-small),
@@ -252,6 +258,7 @@
             text-align: justify;
             transition: ease-in 0.15s;
             width: max-content;
+            z-index: calc(inherit + 1);
         }
 
         button:hover {
@@ -259,32 +266,32 @@
             box-shadow: var(--shadow-inset-light-small), var(--shadow-dark-large),
             var(--shadow-dark-small);
             transition: ease-in 0.1s;
-            background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-secondary-p87-5)));
+            background-color: color-mix(transparent, color-mix(transparent, var(--color-primary-p87-5)));
             position: relative;
             scale: 1.05;
             color-adjust: economy;
         }
 
         button:active {
-            background-color: var(--color-transparency);
+            background-color: transparent;
             scale: 1.1;
             box-shadow: var(--3d-outwards-small), var(--shadow-dark-large);
             transition: ease-in-out 0.15s;
         }
 
         button:disabled {
-            background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-neutral-p75))));
-            color: color-mix(var(--color-transparency), var(--color-text-normal))
+            background-color: color-mix(transparent, color-mix(transparent, color-mix(transparent, var(--color-neutral-p75))));
+            color: color-mix(transparent, var(--color-text-normal))
         }
 
         button.selected {
-            box-shadow: var(--3d-outwards-small), -0px 0px 8px 2px color-mix(var(--color-secondary-p50), color-mix(var(--color-secondary-p50), var(--color-transparency)));
+            box-shadow: var(--3d-outwards-small), -0px 0px 8px 2px color-mix(var(--color-secondary-p50), color-mix(var(--color-secondary-p50), transparent));
             /*outline: var(--color-effect) solid 3px;*/
             transition: ease-in 0.1s;
         }
 
         .code-field {
-            background-color: color-mix(var(--color-neutral-p75), var(--color-primary-p75));
+            background-color: color-mix(var(--color-primary-p87-5), transparent);
             border-radius: var(--border-radius-small);
             box-shadow: var(--shadow-inset-dark-small);
             color: var(--color-text-normal);
@@ -303,7 +310,7 @@
         }
 
         .code-output-box {
-            background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p25)));
+            background-color: color-mix(transparent, color-mix(transparent, var(--color-primary-p12-5)));
             border-radius: 0.5rem;
             font-family: Consolas, "Courier New", monospace;
             inset: 1rem;
@@ -313,7 +320,7 @@
 
         .code-output-field {
             border-radius: 0.5rem;
-            color: var(--color-secondary-p62-5);
+            color: var(--color-secondary-p75);
             font-family: Consolas, "Courier New", monospace;
             inset: 1rem;
             outline: transparent;
@@ -324,7 +331,7 @@
 
         .cell{
             backdrop-filter: var(--filter-textless);
-            background-color: color-mix(var(--color-transparency), color-mix(var(--color-transparency), color-mix(var(--color-transparency), var(--color-primary-p75))));
+            background-color: color-mix(transparent, color-mix(transparent, color-mix(transparent, var(--color-primary-p75))));
             border-radius: 1rem;
             box-shadow: var(--3d-outwards-small),
             var(--shadow-dark-large);
@@ -340,6 +347,7 @@
             overflow-wrap: anywhere;
             animation: ease-in 2s;
             transition: all 3 ease-out;
+            z-index: 6;
         }
 
         .code-cell {
@@ -388,7 +396,7 @@
             background-color: color-mix(var(--color-secondary-p50), color-mix(var(--color-secondary-p50), var(--color-secondary-p50)));
             text-shadow: var(--shadow-dark-small);
 
-            /*background-color: color-mix(var(--color-transparency), var(--color-secondary-p37-5));*/
+            /*background-color: color-mix(transparent, var(--color-secondary-p37-5));*/
             /*background-color: var(--color-secondary-p50);;*/
             scale: 1.1;
             box-shadow: var(--3d-outwards-small), var(--shadow-dark-large);
@@ -402,6 +410,7 @@
             /*flex-direction: column-reverse;*/
             gap: var(--gap-medium);
             overflow-wrap: anywhere;
+            z-index: 5;
         }
 
         .root-container {
@@ -410,7 +419,6 @@
             scale: 1;
             display: flex;
             flex-direction: column;
-            gap: var(--gap-medium);
             transition: .3s linear;
             transition: all .2s ease-out;
             animation: all .2s ease;
@@ -418,6 +426,7 @@
             /* TODO [bug] @curolith find alternative to 1000%*/
             height: 1000%;
             width: stretch;
+            z-index: 4;
         }
 
         .popup-layer {
@@ -436,6 +445,7 @@
             padding: calc(var(--padding-medium) * 2);
             /*justify-content: center;*/
             visibility: hidden;
+            z-index: 100;
             /*align-items: center;*/
             /*align-items: center;*/
             /*align-self: anchor-center;*/
@@ -446,8 +456,8 @@
         }
 
         .popup-content {
-            /*background-color: color-mix(var(--color-transparency), var(--color-primary-p75));*/
-            backdrop-filter: var(--filter-textless);
+            /*background-color: color-mix(transparent, var(--color-primary-p75));*/
+            /*backdrop-filter: var(--filter-textless);*/
             opacity: 0;
             visibility: hidden;
             position: absolute;
@@ -455,7 +465,6 @@
             text-align: center;
             flex-direction: column;
             width: fit-content;
-            z-index: front;
             justify-content: center;
             align-self: center;
             justify-self: anchor-center;
@@ -465,7 +474,6 @@
             opacity: 1;
             transition: all .1s ease-out;
             visibility: visible;
-            z-index: 999;
         }
 
 
@@ -475,6 +483,7 @@
             padding: var(--padding-medium);
             height: stretch;
             width: stretch;
+            z-index: 3;
         }
 
 
@@ -1748,7 +1757,7 @@
 
 <body>
 <h1 id="main-heading" class="main-heading" onclick="togglePopUp('main-heading-popup', this)">> JSaturn</h1>
-<div id="root-container" class="root-container cell" data-datatype="RootData">
+<div id="root-container" class="root-container cell" data-datatype="RootData" style="z-index: 2;">
     <div class="cell popup-content" id="main-heading-popup" style="margin-top: 7rem;">
         <button id="return-to-root-button" onclick="window.location.assign(JSaturnRoot.urls.root)">🏚️ Return to root
             page
@@ -1765,7 +1774,7 @@
         </button>
     </div>
     <div id="header">
-        <div id="root-container-bar-container" class="control-bar-container-tri-column">
+        <div id="root-container-bar-container" class="control-bar-container-tri-column" style="padding: var(--padding-medium)">
             <div id="root-container-top-bar-left" class="control-bar-left">
                 <button onclick="togglePopUp('feature-popup', this)" title="Show feature toggles">❎✅
                 </button>
